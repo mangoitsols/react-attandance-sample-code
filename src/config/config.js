@@ -1,5 +1,11 @@
-export const BASE_URL = "https://api-aelix.mangoitsol.com";
-export const SOCKET_URL = "https://api-aelix.mangoitsol.com/"; 
+//client work
+// export const BASE_URL = "https://api-aelix.mangoitsol.com";
+// export const SOCKET_URL = "https://api-aelix.mangoitsol.com/"; 
+
+// mangoit server
+export const BASE_URL = "https://api-attendance.mangoitsol.com";
+export const SOCKET_URL = "https://api-attendance.mangoitsol.com/"; 
+
 export const API = {
   login: `${BASE_URL}/api/login`,
   sendMail: `${BASE_URL}/api/sendMail`,

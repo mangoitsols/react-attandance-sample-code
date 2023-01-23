@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import logo from '../images/aelix-logo.svg';
+import logo from '../images/logo-2.png';
 import TextField from '@material-ui/core/TextField';
 import {sendMail} from "../action/auth";
 import { connect } from "react-redux";

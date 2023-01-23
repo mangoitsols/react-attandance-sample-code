@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import logo from "../images/aelix-logo.svg";
+import logo from "../images/logo-2.png";
 import $ from "jquery";
 import validate from "jquery-validation";
 import { connect } from "react-redux";

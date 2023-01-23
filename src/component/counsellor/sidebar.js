@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from "react-router-dom";
-import logo from '../../images/aelix-logo.svg';
+import logo from '../../images/logo-2.png';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import chat from '../images/chat.svg';
