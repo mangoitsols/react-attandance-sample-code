@@ -3,19 +3,25 @@ import React, { useEffect, useRef, useState } from 'react';
 import {Box,FormControl,styled,Grid, Container,Modal,Button,FormControlLabel,Table,TableBody,TableCell,TableContainer,TableHead,TablePagination,TableRow,TableSortLabel,Typography,Paper,Switch, NativeSelect, Avatar} from '@mui/material';
 import alert1 from '../../images/white-alert.svg';
 import alert2 from '../../images/black-alert.svg';
-import { BASE_URL, SOCKET_URL } from "../../config/config";
+import { API, BASE_URL, SOCKET_URL } from "../../config/config";
 import { stylePopup } from "../css/style";
+import { setDefaultLocale } from "react-datepicker";
+import axios from "axios";
+import { authHeader } from "../../comman/authToken";
 
 const PushNotification = () => {
-    const socket = useRef(io(SOCKET_URL));
+  
+    const socket = useRef(io(SOCKET_URL), { transports: ['websocket'] });
     const [red, setRed] = useState(false);
     const [yellow, setYellow] = useState(false);
     const [dismiss, setDismiss] = useState(false);
+    const [allDismiss, setAllDismiss] = useState(false);
     const [black, setBlack] = useState(false);
+    const [data, setData] = useState('');
+    const [allData, setAllData] = useState([]);
 
     useEffect(() =>
    {
-    // GetCounsellorData();
     socket.current.on("noty", () => {
       setRed(true);
     });
@@ -25,8 +31,24 @@ const PushNotification = () => {
     socket.current.on("blacknoty", () => {
       setBlack(true);
     });
-    socket.current.on("dismissNotication", () => {
+    socket.current.on("dismissNotication", (res) => {
+      setData(res);
       setDismiss(true);
+    });
+    socket.current.on("dismissAllNotication", (ress) => {
+      
+       axios.get(`${API.getStudent}`, { headers: authHeader() }).then((res)=>{
+        for(var i=0;i < (ress.selectedRow.length);i++){ 
+          res.data.data.filter((item)=>{ 
+            if(item._id === (ress.selectedRow[i])){ 
+              allData.push(item)
+                setAllDismiss(true);
+            }
+          }) 
+        }
+      }).catch((err) => {
+         console.log("err:",err)
+      });
     });
     
   }, []);
@@ -43,6 +65,12 @@ const PushNotification = () => {
   const handleDismissNoty = () => {
     setDismiss(false);
   };
+  const handleAllDismissNoty = () => {
+    setAllDismiss(false);
+  };
+
+  const uniqueArray = a => [...new Set(a.map(o => JSON.stringify(o)))].map(s => JSON.parse(s));
+  var unique = uniqueArray(allData);
 
   return (
     <div>
@@ -106,23 +134,52 @@ const PushNotification = () => {
                     </Box>
                   </Modal>
                 }
-                 {
+             
+                  {
                   <Modal
                     open={dismiss}
                     onClose={handleDismissNoty}
                     aria-labelledby="modal-modal-title"
                     aria-describedby="modal-modal-description"
                   >
-                    <Box sx={stylePopup}>
-                      <Typography id="modal-modal-title" variant="h6" component="h2">
-                        <h1>DANGER Dismiss </h1>
+                    <Box sx={stylePopup} className="popup_box">
+                      <Typography id="modal-modal-title" variant="h6" component="h2" className="red">
+                         <span className='icon'> <img src={alert1} className="" alt="logo" /></span>
+
                       </Typography>
-                      <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-                        Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+                      <Typography id="modal-modal-description" component="div" sx={{ mt: 2 }}>
+                        <h4 className="red-text">Student Name : 
+                         <p>{data ? data.name :""} {data ? data.lastName : "" }</p></h4>
+                         <Button className="red-btn" onClick={handleDismissNoty}>OK</Button>
                       </Typography>
+                      
                     </Box>
                   </Modal>
                 }
+                {
+                  <Modal
+                    open={allDismiss}
+                    onClose={handleAllDismissNoty}
+                    aria-labelledby="modal-modal-title"
+                    aria-describedby="modal-modal-description"
+                  >
+                    <Box sx={stylePopup} className="popup_box">
+                      <Typography id="modal-modal-title" variant="h6" component="h2" className="red">
+                         <span className='icon'> <img src={alert1} className="" alt="logo" /></span>
+
+                      </Typography>
+                      <Typography id="modal-modal-description" component="div" sx={{ mt: 2 }}>
+                        <h4 className="red-text">Student Name : </h4> 
+                        {unique && unique.map((item)=>(
+                         <span>{item ? item.name :""} {item ? item.lastName : "" },</span>
+                         ))}
+                        
+                         <Button className="red-btn" onClick={handleAllDismissNoty}>OK</Button>
+                      </Typography>
+                      
+                    </Box>
+                  </Modal>
+                  }
                
     </div>
   )

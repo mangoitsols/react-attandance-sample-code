@@ -1,0 +1,210 @@
+.loginBox {
+    width: 100%;
+    display: flex;
+    height: 100vh;
+    align-items: center;
+}
+
+
+/* start banner section */
+
+.loginLeft {
+    background: #005CB3;
+    height: 100%;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    position:relative;
+    overflow: hidden;
+    justify-content: center;
+
+}
+
+.bg-circle.orange1 {
+    width: 429px;
+    height: 429px;
+    border-radius: 100%;
+    background: #F39911;
+    display: inline-block;
+    position: absolute;
+    bottom: -280px;
+    left: -180px;
+}
+
+.bg-circle.orange2 {
+    width: 144px;
+    height: 144px;
+    border-radius: 100%;
+    background: #F39911;
+    display: inline-block;
+    position: absolute;
+    top: 25px;
+    left: -90px;
+    z-index: 1;
+}
+
+.bg-circle.blue1 {
+    width: 26px;
+    height: 26px;
+    border-radius: 100%;
+    background: #21BAFE;
+    display: inline-block;
+    position: absolute;
+    top: 33px;
+    left: 24px;
+    z-index: 0;
+}
+
+.bg-circle.blue2 {
+    width: 444px;
+    height: 444px;
+    border-radius: 100%;
+    background: #21BAFE;
+    display: inline-block;
+    position: absolute;
+    top: -360px;
+    right: -47px;
+    z-index: 0;
+}
+
+.carousel-inner {
+    text-align: center;
+}
+
+.carousel-inner h2 {
+    color: #fff;
+    font-size: 25px;
+    font-weight: 500;
+    line-height: 40px;
+}
+
+.loginLeft.col-md-7 .carousel-indicators {
+    bottom: -40px;
+}
+
+/* stop banner section */
+
+/* login section */
+
+.formRight {
+    padding: 0 65px;
+}
+
+.formRight  .logo {
+     text-align: center;
+     margin-bottom: 60px;
+}
+
+.formRight  .logo img {
+    width:300px;
+}
+
+.formRight .myform {
+    border: 1px solid #EEEBEB;
+    position: relative;
+    padding: 45px 25px 25px;
+}
+
+.formRight .myform legend{
+    position: absolute;
+    top: -23px;
+    background: #fff;
+    width: auto;
+    padding: 5px;
+    color: #005CB3;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.formRight .myform .form-control {
+    height: auto;
+}
+
+.myform .form-outline .MuiFormControl-root .MuiInputBase-formControl {
+    border-radius: 10px;
+}
+
+
+.myform .form-outline .MuiFormControl-root .MuiInputBase-formControl{
+   border: 1px solid #BCBCBC;
+}
+
+.myform .form-outline .MuiFormControl-root label{
+    background: #fff;
+    padding: 0 5px;
+    font-size: 15px;
+    color: #818181;
+}
+
+#email\ outlined-basic-error,
+#password\ outlined-basic-error {
+    position: absolute;
+    bottom: -47px;
+    background: none !important;
+    font-size: 12px !important;
+  }
+
+.myform .form-outline .MuiFormControl-root label.Mui-focused,
+.myform .form-outline .MuiFormControl-root label.MuiFormLabel-filled {
+    font-size: 15px !important;
+    color: #005CB3;
+    transform: translate(14px,-6px) scale(1);
+}
+
+.myform .form-outline .MuiFormControl-root label.MuiFormLabel-filled ~ .MuiInputBase-formControl {
+    border: 1px solid #005CB3;
+}
+
+.myform .form-outline .MuiFormControl-root div.Mui-focused {
+    border: 1px solid #005CB3;
+}
+
+.checkBoxOut .MuiButtonBase-root {
+    padding-left: 0px;
+    padding-right: 5px;
+    padding-top: 0;
+    vertical-align: middle;
+    padding-bottom: 0;
+}
+
+.myform .form-outline .MuiFormControl-root label.error {
+    position: absolute;
+    bottom: -23px !important;
+    margin: 0;
+  }
+
+  .error p {
+    margin-bottom: 0px;
+  }  
+
+.checkBoxOut label {
+    font-size: 12px;
+    color: #818181;
+    font-weight: 400;
+}
+    
+.forgotpPassword a {
+    display: none;
+    font-size: 12px;
+    font-weight: 400;
+    color: #005CB3;
+    margin-top: 8px;
+  }
+.button-login.w-100 {
+  width:100% !important;
+  background: #005CB3;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.carousel-inner img {
+    max-width: 100%;
+}
+
+@media(max-width:992px) {
+    .carousel-inner h2 {
+        font-size: 18px;
+    }
+
+
+}

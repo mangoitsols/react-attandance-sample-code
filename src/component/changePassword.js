@@ -8,6 +8,7 @@ import $ from "jquery";
 import validate from "jquery-validation";
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import { toast } from "react-toastify";
+import Example from "../comman/loader1";
 import "react-toastify/dist/ReactToastify.css";
 toast.configure();
 
@@ -16,6 +17,7 @@ class ChangePassword extends Component {
       oldPass:"",
       newPass:"",
       confirmPass:"",
+      loding:false
        } 
 
      componentDidMount() {
@@ -27,9 +29,12 @@ class ChangePassword extends Component {
                 },
                 newPass: {
                   required: true,
+                  minlength: 6,
                 },
                 confirmPass: {
                   required: true,
+                    minlength: 6,
+                    equalTo: "#newPass"
                 },
             },
             messages: {
@@ -38,15 +43,20 @@ class ChangePassword extends Component {
               },
               newPass: {
                 required: "<p style='color:red'>Please provide a New Password</p>",
+                minlength: "<p style='color:red'>Please provide minimum length 6</p>",
               },
               confirmPass: {
-                required: "<p style='color:red'>Please provide a Confirm Password same as New Password</p>"
+                required: "<p style='color:red'>Please provide a Confirm Password</p>",
+                minlength: "<p style='color:red'>Please provide minimum length 6</p>",
+                equalTo:"<p style='color:red'>Confirm password must be same as new password</p>"
               }
             },
           });
         });
       }
-
+      handleCancel = () =>{
+        window.location.replace("/dashboard");
+      }
       handleSubmit = (e) => {
       e.preventDefault();
       const {oldPass,newPass,confirmPass} = this.state;
@@ -57,9 +67,18 @@ class ChangePassword extends Component {
           confirmPassword:confirmPass,
           id:localStorage.getItem("id"),
         }
+        this.setState({loding:true})
         this.props.changePassword(requestData,(res)=>{
           if(res.status === 200){
-          toast.success("Password update successfully");
+            this.setState({loding:false})
+            this.setState({oldPass:""})
+            this.setState({newPass:""})
+            this.setState({confirmPass:""})
+            toast.success("Password updated");
+            this.setState({loding:false})
+          }
+          else{
+        this.setState({loding:false})
           }
         })
      
@@ -83,24 +102,31 @@ class ChangePassword extends Component {
               <div className='row'>
                 <div className="form-outline mb-4 col-md-6">
                   <label for="oldPass">Old Password</label>
-                  <input type="text" id="oldPass" name="oldPass" className="form-control" value={this.state.oldPass} onChange={(e) => this.setState({ oldPass: e.target.value }) } />
+                  <input type="password" id="oldPass" name="oldPass" className="form-control" placeholder='Please provide old password' value={this.state.oldPass} onChange={(e) => this.setState({ oldPass: e.target.value }) } />
                 </div>
               </div>
               <div className='row'>
                 <div className="form-outline mb-4 col-md-6">
                   <label for="newPass">New Password</label>
-                  <input type="text" id="newPass" name="newPass" className="form-control"  value={this.state.newPass} onChange={(e) => this.setState({ newPass: e.target.value }) } />
+                  <input type="password"  id="newPass" name="newPass" className="form-control" placeholder='Please provide new password' value={this.state.newPass} onChange={(e) => this.setState({ newPass: e.target.value }) } />
                 </div>
               </div>
+              {this.state.loding === true ? (
+                  <div className="loader">
+                    <Example />
+                  </div>
+                ) : (
+                  ""
+                )}
               <div className='row'>  
                 <div className="form-outline mb-4 col-md-6">
                   <label for="confirmPass">Confirm Password</label>
-                  <input type="text" id="confirmPass" name="confirmPass" className="form-control"  value={this.state.confirmPass} onChange={(e) => this.setState({ confirmPass: e.target.value }) } />
+                  <input type="password" id="confirmPass" name="confirmPass" className="form-control" placeholder='Please provide confirm password'  value={this.state.confirmPass} onChange={(e) => this.setState({ confirmPass: e.target.value }) } />
                 </div>
               </div>
               <div className='mt-4'>
-              <button type="button" className="btn btn-transparent btn-block mb-4" >CANCEL</button>
-              <input type="submit" className="btn btn-primary btn-block mb-4" value="SAVE" />
+              <button type="button" className="btn btn-transparent btn-block mb-4" onClick={this.handleCancel} >CANCEL</button>
+              <input type="submit" className="btn btn-primary btn-block mb-4" value="UPDATE" />
             </div>
           </form>
           </Container>

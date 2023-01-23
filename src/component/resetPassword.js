@@ -22,11 +22,11 @@ const ResetPassword = () => {
               rules: {
                   newPass: {
                     required: true,
-                    minlength: 5,
+                    minlength: 6,
                   },
                   confirmPass: {
                     required: true,
-                    minlength: 5,
+                    minlength: 6,
                     equalTo: "#newPass"
                   },
               },

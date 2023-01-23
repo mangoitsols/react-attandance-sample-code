@@ -1,405 +1,538 @@
-import React, {useState,useEffect} from 'react';
-import Sidebar from './sidebar';
-import ImageAvatars from './header';
-import Container from '@mui/material/Container';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import { API } from '../config/config';
-import { Link, useParams } from "react-router-dom";
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
-import Example from '../comman/loader';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from "react";
+import Sidebar from "./sidebar";
+import ImageAvatars from "./header";
+import Container from "@mui/material/Container";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import { API } from "../config/config";
+import { Link, useParams ,useNavigate} from "react-router-dom";
+import Example from "../comman/loader";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from 'axios';
-import Pdf from "react-to-pdf";
-import { FormControl, NativeSelect } from '@mui/material';
-import moment from 'moment';
-import { authHeader } from '../comman/authToken';
+import axios from "axios";
+import {
+	FormControl,
+	NativeSelect,
+	TableRow,
+	TableCell,
+	TableContainer,
+	TableHead,
+	TableBody,
+	Table,
+} from "@mui/material";
+import moment from "moment";
+import { authHeader } from "../comman/authToken";
+import {
+	format,
+	addDays,
+	lastDayOfWeek,
+	lastDayOfMonth,
+	addWeeks,
+	subWeeks,
+	subDays,
+	addMonths,
+	subMonths,
+} from "date-fns";
+import ArrowBackIosIcon from "@material-ui/icons/ArrowBackIos";
+import ArrowForwardIosIcon from "@material-ui/icons/ArrowForwardIos";
+import CalendarTodayIcon from "@material-ui/icons/CalendarToday";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import SearchBar from "material-ui-search-bar";
+import html2pdf from "html2pdf-jspdf2";
 toast.configure();
-
-const ref = React.createRef();
 
 export default function AttandanceReport(props) {
 
-	const [rowsPerPage, setRowsPerPage] = useState(5);
-	const [page, setPage] = useState(0);
-	const [dense, setDense] = useState(false);
 	const [loading, setLoading] = useState(true);
-	const [attandanceData,setattandanceData]=useState([]);
-    const [classData,setClassData]=useState([]);
-    const [onSelectData,setOnSelectData]= useState('');
-    const [weekDate,setWeekDate]= useState([]);
-    const [monthDate,setMonthDate]= useState([]);
-    const [monthSundays,setMonthSundays]= useState([]);
-    const [monthSaturdays,setMonthSaturdays]= useState([]);
-    const [monthData,setMonthData]= useState(false);
-    const [counsellorName,setCounsellorName]= useState('');
-    
+	const [attandanceData, setattandanceData] = useState([]);
+	const [classData, setClassData] = useState([]);
+	const [onSelectData, setOnSelectData] = useState("");
+	const [monthData, setMonthData] = useState(false);
+	const [counsellorName, setCounsellorName] = useState("");
+	const [currentMonth, setCurrentMonth] = useState(new Date());
+	const [currentMonthNew, setCurrentMonthNew] = useState(new Date());
+	const [startDate, setStartDate] = useState(getFirstDayOfWeek(new Date()));
+	const [startDateOfMonth, setStartDateMonth] = useState(getFirstDayOfMonth(new Date()));
+	const [search, setSearch] = useState("");
+	let classNameId = localStorage.getItem("className");
 
 	useEffect(() => {
-        handleAttandanceReport(id,"week");
-        GetClassData();
-        currentWeekDates();
-        currentMonthDates();
-        handleCounsellorNameByClassId(id);
-        
-	}, [])
+		handleAttandanceReport(finalId, "week");
+		GetClassData();
+		handleCounsellorNameByClassId(finalId);
+	}, []);
 
-    const { id } = useParams();
-  
-    const currentWeekDates = () =>{
-        let curr = new Date(); 
-        let week=[];
-        
-        for (let i = 1; i <= 7; i++) {
-          let first = curr.getDate() - curr.getDay() + i 
-          let day = new Date(curr.setDate(first)).toISOString().slice(0, 10);
-          week.push(day);
-        }
-        setWeekDate(week);
-    }
+	const { id } = useParams();
 
-    const currentMonthDates = (year,month) =>{
-        const now = new Date();
-        const date = new Date(now.getFullYear(), now.getMonth(), 1);
-        const dates = [];
-       
-        while (date.getMonth() === now.getMonth()) {
-            dates.push(new Date(date));
-            date.setDate(date.getDate() + 1);
-        }
-        setMonthDate(dates);
-        getAllSat();
-    }
+	let finalId = id ? id : classNameId;
 
+	// Week Data render 
+	function getFirstDayOfWeek(d) {
+		const date = new Date(d);
+		const day = date.getDay(); // 👉️ get day of week
+		const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+		return new Date(date.setDate(diff));
+	}
 
-    const getAllSat = () =>{
-        const now = new Date();
-        var days = new Date( now.getFullYear(),now.getMonth(),0 ).getDate();
-        var sundays = [ 6 - (new Date( now.getMonth() +'/01/'+ now.getFullYear() ).getDay()) ];
-        for ( var i = sundays[0] + 7; i < days; i += 7 ) {
-            sundays.push( i);
-        }
-        setMonthSundays(sundays);
-
-        var saturdays = [ 12 - (new Date( now.getMonth() +'/01/'+ now.getFullYear() ).getDay()) ];
-        for ( var i = saturdays[0] + 7; i < days; i += 7 ) {
-          saturdays.push( i );
-        }
-        setMonthSaturdays(saturdays);
-      }
-    
-
-    const GetClassData = async() => {
-        const response = await axios
-        .get(`${API.getClass}`)
-        .catch((err) => {});
-        if(response.status === 200){
-          setLoading(false);
-        }else{
-          setLoading(true);
-        }
-        setClassData(response.data.data);
-    };
-
-    const handleAttandanceReport = async(idd,byWhich) =>{
-
-        const response = await axios
-        .get(`${API.attendanceReport}/${idd}?date=${byWhich}`, { headers: authHeader() })
-        .catch((err) => {});
-        setLoading(false);
-        setattandanceData(response.data.data);
-    }
-
-    const SelectOnChange = async(ele) =>{
-        setOnSelectData(ele);
-        if(ele === ele){
-            handleAttandanceReport(ele,"week");
-            handleCounsellorNameByClassId(ele);
-        }
-    }
-	
-    const handleDataAccWeekAndMonth = async(data) =>{
-        if(data === "month"){
-            setMonthData(true);
-        }
-        else{
-            setMonthData(false);
-        }
-        handleAttandanceReport(onSelectData ? onSelectData : id,data);
-    }
-
-    const handleCounsellorNameByClassId = async(idd)=>{
-        const response = await axios
-        .get(`${API.getCounsellorNameByClassId}/${idd}`, { headers: authHeader() })
-        .catch((err) => {});
-        setCounsellorName(response.data.data[0])
-        
-    }
-
-	const handleChangeRowsPerPage = (event) => {
-		setRowsPerPage(parseInt(event.target.value, 10));
-		setPage(0);
+	const changeWeekHandle = (btnType) => {
+		if (btnType === "prev") {
+			setStartDate((date) => {
+				return subDays(date, 7);
+			});
+			let sd = subDays(startDate, 7);
+			let ld = addDays(sd, 6);
+			setCurrentMonth(subWeeks(currentMonth, 1));
+			handleAttandanceReport(onSelectData? onSelectData: id, "week",sd,ld);
+		}
+		if (btnType === "next") {
+			setStartDate((date) => {
+				return addDays(date, 7);
+			});
+			let sd = addDays(startDate, 7);
+			let ld = addDays(sd, 6);
+			setCurrentMonth(addWeeks(currentMonth, 1));
+			handleAttandanceReport(onSelectData? onSelectData: id, "week",sd,ld);
+		}
+	};
+	const ExampleCustomInput = ({ value, onClick }) => {
+		return <CalendarTodayIcon onClick={onClick} />;
 	};
 
-	const handleChangePage = (event, newPage) => {
-		setPage(newPage);
-	};
-
-	const handleChangeDense = (event) => {
-		setDense(event.target.checked);
-	};
-
-	const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - attandanceData.length) : 0;
-const yy = [];
-    const classNaam = classData.find((item)=> {return item && item._id === (counsellorName && counsellorName.classId)? item.className : "" })
-
-    const options = {
-        orientation: 'portrait',
-        unit: 'in',
-        format: [16,7]
-    };
-
-    return ( 
-        <>
-			
-		<Sidebar />
-		<div className='col-md-8 col-lg-9 col-xl-10 mr-30'>
-        <Pdf targetRef={ref} filename="attandance.pdf" options={options} x={.5} y={.5} scale={0.8}>
-        {({ toPdf }) => <button onClick={toPdf}>Generate Pdf</button>}
-      </Pdf>
-  
-			<div className='header'> <ImageAvatars /></div>
-		{!loading ? <div > 
-			<Container maxWidth="100%" style={{ padding: "0", display: "inline-block" }}>
-				<div className='heading'>
-					<h1>
-						<span className='icon'><DashboardIcon fontSize='35px' /></span>
-						Attendance Reports
-					</h1>
-                    <div >
-                        <label>Filter By:</label>
-                        <FormControl sx={{ m: 1, minWidth: 120 }} className="filter">
-                            <NativeSelect
-                            defaultValue={id}
-                            onChange={(e) => SelectOnChange(e.target.value)}
-                            inputProps={{
-                                name: 'age',
-                                id: 'uncontrolled-native',
-                            }}
-                            className="w-100"
-                            >
-                            {classData.map((item)=>{
-                                return(
-                            <option key={item._id} value={item._id}>{item.className}</option>
-                            )})}  
-                        </NativeSelect>   
-                    </FormControl>
-                    </div>          
+	const renderCellsWeek = () => {
+		const endDate = lastDayOfWeek(currentMonth, { weekStartsOn: 1 });
+		const dateFormat = "d ";
+		const dateFormatMonth = " MMM ";
+		const dateFormatWeek = "EEE";
+		const rows = [];
+		let days = [];
+		let day = startDate;
+		let formattedDate = "";
+		let formattedDateMonth = "";
+		let formattedDateWeek = "";
+		
+		for (let i = 0; i < 7; i++) {
+			formattedDate = format(day, dateFormat);
+			formattedDateMonth = format(day, dateFormatMonth);
+			formattedDateWeek = format(day, dateFormatWeek);
+			days.push(
+				<div
+				key={day}
+				
+				style={{ display: "inline-block" }}
+				>
+					<div >{formattedDateWeek}</div>
+					<div >{formattedDate}</div>
+					<div>{formattedDateMonth}</div>
 				</div>
-				<div>
-					<div>
-                    <span>{classNaam && classNaam.className}</span>{" "}|{" "}
-                    <span>{counsellorName ? `${counsellorName.name} ${counsellorName.lastname}` : `No Counsellor assign to this class`}</span>
-					</div>
-                    <div>
-                        <span onClick={() => handleDataAccWeekAndMonth("week")}>Week </span>|<span onClick={() => handleDataAccWeekAndMonth("month")}> Month</span>
-                    </div>
-
-				</div>
-                {monthData ? <div className='counselloTabel' style={{ width: "100%" }}>
-					<TableContainer>
-						<Table sx={{ minWidth: 750 }}
-							aria-labelledby="tableTitle"
-							size={dense ? 'small' : 'medium'} >
-							<TableHead>
-								<TableRow>
-									<TableCell >
-										Student Name
-									</TableCell>
-                                    {monthDate.map((month)=>{
-                                        return(
-                                            <TableCell style={{ textAlign: "center" }}>
-                                                {moment(month).format("MMM DD")}
-                                            </TableCell>
-                                        )
-                                    })}
-									
-								</TableRow>
-							</TableHead>
-							<TableBody>
-                            
-                                   
-								{attandanceData.length > 0 ? attandanceData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((item) => {
+			);
+			day = addDays(day, 1);
+		}
+		rows.pop();
+		rows.push(<div key={day}>{days}</div>);
+		days = [];
+		
+		return (
+			<div id="weekpdf" className="counselloTabel" style={{ width: "100%" }}>
+				<TableContainer>
+					<Table >
+						<TableHead>
+							<TableRow>
+								<TableCell style={{ textAlign: "center" }}>
+									Student Name
+								</TableCell>
+								{rows[0].props.children.map((res) => {
 									return (
-                                        <>
-										<TableRow key={item._id}>
-											<TableCell  >{item.studentId && item.studentId.name}{" "} {item.studentId && item.studentId.lastName}</TableCell>
-                                           {monthDate.map((month)=>{
-                                               const mon = moment(month).format("DD/MM/YY");
-                                               const monDat = moment(month).format("D");
-                                            
-                                            const sun =  monthSundays.filter((val)=>{
-                                                const tt  = JSON.stringify(val) === monDat ? true : null;
-                                                return tt
-                                            })
-
-                                            const sat =  monthSaturdays.filter((val)=>{
-                                                const tt  = JSON.stringify(val) === monDat ? true : null;
-                                                return tt
-                                            })
-                                                
-                                            return(<>
-                                                 {item.date === mon ?<TableCell align="center" style={{ width: "200px", }}>{item.attendence === "0" ? "A" : "P"}</TableCell>:
-                                                 sun.length !== 0 || sat.length !== 0 ? <TableCell align="center" style={{ width: "200px", }}>Leave</TableCell> :<TableCell align="center" style={{ width: "200px", }}>{"-"}</TableCell>}
-                                                 </>
-                                                ) 
-                                           })}
-										</TableRow>
-                                        </>
+										<TableCell style={{ textAlign: "center" }}> {moment(res.key).format("DD MMM YYYY")} </TableCell>
 									)
-								}): <p>Record Not found</p>}
-                                        {/* <TableRow >
-											<TableCell>Total</TableCell>
-                                            </TableRow> */}
-								{emptyRows > 0 && (
-									<TableRow
-										style={{
-											height: (dense ? 33 : 53) * emptyRows,
-										}}
-									>
-									<TableCell colSpan={6} />
-									</TableRow>
-								)}
-							</TableBody>
-						</Table>
-					</TableContainer>
-					<TablePagination
-						rowsPerPageOptions={[5, 10, 15]}
-						component="div"
-						count={attandanceData.length}
-						rowsPerPage={rowsPerPage}
-						page={page}
-						rows={attandanceData}
-						onPageChange={handleChangePage}
-						onRowsPerPageChange={handleChangeRowsPerPage}
-					/>
-					<FormControlLabel
-						control={<Switch checked={dense} onChange={handleChangeDense} />}
-						label="Dense padding"
-					/>
-				</div> : 
-
-				<div className='counselloTabel' style={{ width: "100%" }}>
-					<TableContainer>
-						<Table sx={{ minWidth: 750 }}
-							aria-labelledby="tableTitle"
-							size={dense ? 'small' : 'medium'} >
-							<TableHead>
-								<TableRow>
-									<TableCell >
-										Student Name
-									</TableCell>
-                                    {weekDate.map((week)=>{
-                                        return(
-                                            <TableCell style={{ textAlign: "center" }}>
-                                                {moment(week).format("MMM DD")}
-                                            </TableCell>
-                                        )
-                                    })}
-									
-								</TableRow>
-							</TableHead>
-							<TableBody>
-                            
-                                   
-								{attandanceData.length > 0 ? attandanceData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((item) => {
-									
-                                    return (
-                                        <>
-										<TableRow key={item._id}>
-											<TableCell  >{item && item.studentId && item.studentId.name}{" "} {item && item.studentId && item.studentId.lastName}</TableCell>
-                                           {weekDate.map((week)=>{
-                                               const wek = moment(week).format("DD/MM/YY");
-                                               const last1day = moment().subtract(0, 'weeks').endOf('week').format('DD/MM/YY');
-                                               const last2day = moment().subtract(0, 'weeks').endOf('isoWeek').format('DD/MM/YY');
-                                             
-                                               return(<>
-                                                {item.date === wek ?<TableCell align="center" style={{ width: "200px", }}>{item.attendence === "0" ? "A" : "P"}</TableCell>:
-                                                wek === last1day || wek === last2day  ? <TableCell align="center" style={{ width: "200px", }}>Leave</TableCell> :<TableCell align="center" style={{ width: "200px", }}>{"-"}</TableCell>}
-                                                </>
-                                               )
-                                           })}
-										</TableRow>
-                                        </>
-									)
-								}): <p>Record Not found</p>}
-                              
-                                    <TableRow >
-                                        {weekDate.map((week)=>{
-                                            const wek = moment(week).format("DD/MM/YYYY");
-                                            
-                                            const f = attandanceData.filter((asa)=>{
-                                                console.log(wek,"date")
-                                                console.log(asa.date,"asa.date")
-                                                return(
-                                                  moment(asa.date).format("DD/MM/YY") === wek ? asa.attendence :"NO"
-                                                )
-                                            })
-                                            // console.log(f,"((*&^%$#))")
-                                            //    const last1day = moment().subtract(0, 'weeks').endOf('week').format('DD/MM/YY');
-                                            //    const last2day = moment().subtract(0, 'weeks').endOf('isoWeek').format('DD/MM/YY');
-                                           
-
-                                            // total week
-                                            //    return(<>
-                                            //     {wek ?<TableCell align="center" style={{ width: "200px", }}>{yy.length}</TableCell>
-                                            //   :"yyuu" } 
-                                            //     </>
-                                            //    )
-                                           })}
-                                           {/* <TableCell>fddfd</TableCell> */}
+								})}
+							</TableRow>
+						</TableHead>
+						<TableBody>
+							{attandanceData && attandanceData.length > 0 ? attandanceData.map((item) => {
+								return (
+									<TableRow >
+										<TableCell style={{ textAlign: "center" }}>
+										{item.studentId && item.studentId.name}{" "}{item.studentId && item.studentId.lastName}
+										</TableCell>
+										{rows[0].props.children.map((week) => {
 											
-                                            </TableRow>
-                                            
-								{emptyRows > 0 && (
-									<TableRow
-										style={{
-											height: (dense ? 33 : 53) * emptyRows,
-										}}
-									>
-									<TableCell colSpan={6} />
+											return (
+												moment(week.key).format("ddd") === "Sat" || moment(week.key).format("ddd") === "Sun" ?
+												<TableCell style={{ textAlign: "center" }} > Leave </TableCell> :
+												item.attandan.length === 0 ?  <TableCell style={{ textAlign: "center" }} > - </TableCell>:
+												<TableCell   style={{ textAlign: "center" }}>
+													{ 
+													(
+														item.attandan.map((e) => {
+															
+															if(moment(e.createdAt).format("YYYY-MM-DD") === moment(week.key).format("YYYY-MM-DD")){
+																return e.attendence === null || e.attendence === "0" || e.dismiss === null ? "A" : e.attendence === "1" ? "P" : "";
+															}
+															// else{
+															// 	return "no"; 
+															// }
+														})
+													)
+
+													}
+												</TableCell>
+											)})}
 									</TableRow>
 								)}
-							</TableBody>
-						</Table>
-					</TableContainer>
-					<TablePagination
-						rowsPerPageOptions={[5, 10, 15]}
-						component="div"
-						count={attandanceData.length}
-						rowsPerPage={rowsPerPage}
-						page={page}
-						rows={attandanceData}
-						onPageChange={handleChangePage}
-						onRowsPerPageChange={handleChangeRowsPerPage}
-					/>
-					<FormControlLabel
-						control={<Switch checked={dense} onChange={handleChangeDense} />}
-						label="Dense padding"
-					/>
-				</div>}
-			</Container>
-            </div>:<Example/> }
-		</div>
-        </>
-	 );
-}
+							):<TableRow style={{ textAlign: "center" }} >Record not found</TableRow>}
+						</TableBody>
+					</Table>
+				</TableContainer>
 
+			</div>
+		)};
+
+	//Month data render
+	function daysInMonth(iMonth, iYear) {
+		return new Date(iYear, iMonth, 0).getDate();
+	}
+
+	function getFirstDayOfMonth(d) {
+		const date = new Date(d);
+		var firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+		return new Date(date.setDate(format(firstDay, "d")));
+	}
+
+	const renderCellsMonth = (btnType) => {
+		const dateFormat = "d ";
+		const dateFormatMonth = " MMM ";
+		const dateFormatWeek = "EEE";
+		const rows = [];
+		let days = [];
+		let day = startDateOfMonth;
+		let formattedDate = "";
+		let formattedDateMonth = "";
+		let formattedDateWeek = "";
+		let daysCount;
+
+		if (btnType === "prev") {
+			let changee = subMonths(currentMonthNew, 1);
+			daysCount = daysInMonth(format(changee, "M"), format(changee, "yyyy"));
+			setCurrentMonthNew(changee);
+			setStartDateMonth((date) => {
+				return subDays(date, daysCount);
+			});
+			let sd = subDays(startDateOfMonth, daysCount);
+			let ld = addDays(sd, daysCount);
+			handleAttandanceReport(onSelectData? onSelectData: id, "month",sd,ld);
+		} else if (btnType === "next") {
+			setCurrentMonthNew(addMonths(currentMonthNew, 1));
+			daysCount = daysInMonth(
+				format(currentMonthNew, "M"),
+				format(currentMonthNew, "yyyy")
+			);
+			setStartDateMonth((date) => {
+				return addDays(date, daysCount);
+			});
+			let sd = addDays(startDateOfMonth, daysCount);
+			let ld = addDays(sd, daysCount-1);
+
+			handleAttandanceReport(onSelectData? onSelectData: id, "month",sd,ld);
+		} else if (btnType === undefined) {
+			daysCount = daysInMonth(
+				format(currentMonthNew, "M"),
+				format(currentMonthNew, "yyyy")
+			);
+
+		}
+
+		for (let i = 0; i < daysCount; i++) {
+			formattedDate = format(day, dateFormat);
+			formattedDateMonth = format(day, dateFormatMonth);
+			formattedDateWeek = format(day, dateFormatWeek);
+			days.push(
+				<div key={day} style={{ display: "inline-block" }}>
+					<div>{formattedDateWeek}</div>
+					<div>{formattedDate}</div>
+					<div>{formattedDateMonth}</div>
+				</div>
+			);
+			day = addDays(day, 1);
+		}
+		rows.pop();
+		rows.push(<div key={day}>{days}</div>);
+		days = [];
+
+
+		return (
+			<div className="counselloTabel" style={{ width: "100%" }}>
+				<TableContainer>
+					<Table >
+						<TableHead>
+							<TableRow>
+								<TableCell style={{ textAlign: "center" }}>Student Name</TableCell>
+								{rows[0].props.children.map((month) => {
+									return (<TableCell style={{ textAlign: "center" }}> {moment(month.key).format("DD MMM YYYY")}</TableCell>);
+								})}
+							</TableRow>
+						</TableHead>
+						<TableBody>
+							{attandanceData && attandanceData.length > 0 ? attandanceData.map((item) => {
+									return (
+										<>
+											<TableRow key={item._id}>
+												<TableCell style={{ textAlign: "center" }}>
+													{item.studentId && item.studentId.name}{" "}{item.studentId && item.studentId.lastName}
+												</TableCell >
+												{rows[0].props.children.map((month) => {
+													return (
+														moment(month.key).format("ddd") === "Sat" || moment(month.key).format("ddd") === "Sun" ?
+														<TableCell style={{ textAlign: "center" }} > Leave </TableCell> 
+														: item.attandan.length === 0 ?  <TableCell   style={{ textAlign: "center" }}> - </TableCell> :(
+														<TableCell  style={{ textAlign: "center" }}>															
+																{item.attandan.map((e) => {
+																	if (moment(e.createdAt).format("YYYY-MM-DD") === moment(month.key).format("YYYY-MM-DD")) {
+																 		return e.attendence === null || e.attendence === "0" ? "A" : e.attendence === "1" ? "P" : "";
+																	}
+																})
+															}
+														</TableCell>)
+								 					)
+												})}
+											</TableRow>
+										</>
+									);
+								}):<TableRow style={{ textAlign: "center" }} >Record not found</TableRow>}	
+						</TableBody>
+					</Table>
+				</TableContainer>
+			</div>
+		)};
+
+	const GetClassData = async () => {
+		const response = await axios.get(`${API.getClass}`).catch((err) => { });
+		if (response.status === 200) {
+			setLoading(false);
+		} else {
+			setLoading(true);
+		}
+		setClassData(response.data.data);
+	};
+
+	const handleAttandanceReport = async (idd, byWhich,strd,endd,data) => {
+		setSearch(data);
+
+		setattandanceData([])
+		if(byWhich === "week"){
+
+			const requestData = {
+				fromDate: moment(strd? strd:startDate).format("YYYY-MM-DD"),
+				toDate:	moment(endd ? endd : lastDayOfWeek(currentMonth, { weekStartsOn: 1 })).format("YYYY-MM-DD"),
+				searchName:data
+			}
+			await axios({
+				method: "post",
+				url: `${API.previousAttendanceReport}/${idd}`,
+				data: requestData,
+				headers: authHeader(),
+			  }).then((res)=> {
+				setLoading(false);
+				setattandanceData(res.data);
+			}).catch((err) => {
+				toast.error("Failed to fetch week of data")
+			 });
+
+		}else if(byWhich === "month"){
+			const requestData = {
+				fromDate: moment(strd ? strd : startDateOfMonth).format("YYYY-MM-DD"),
+				toDate:	moment(endd ? endd : lastDayOfMonth(currentMonthNew, { weekStartsOn: 1 })).format("YYYY-MM-DD")
+			}
+			await axios({
+				method: "post",
+				url: `${API.previousAttendanceReport}/${idd}`,
+				data: requestData,
+				headers: authHeader(),
+			  }).then((res)=> {
+				setLoading(false);
+				setattandanceData(res.data);
+			}).catch((err) => {
+				toast.error("Failed to fetch month of data")
+			 });
+		}
+	};
+
+	const SelectOnChange = async (ele) => {
+		setOnSelectData(ele);
+		localStorage.setItem("className", ele);
+		if (ele === ele) {
+			handleAttandanceReport(ele, "week");
+			handleCounsellorNameByClassId(ele);
+		}
+	};
+
+	const handleDataAccWeekAndMonth = (data) => {
+		if (data === "month") {
+			setMonthData(true);
+
+		} else {
+			setMonthData(false);
+			window.location.reload();
+		}
+		handleAttandanceReport(onSelectData ? onSelectData : id, data);
+	};
+
+	const handleCounsellorNameByClassId = async (idd) => {
+		const response = await axios
+			.get(`${API.getCounsellorNameByClassId}/${idd}`, {
+				headers: authHeader(),
+			})
+			.catch((err) => { });
+		setCounsellorName(response.data.data[0]);
+	};
+
+	const classNaam = classData.find((item) => {
+		return item && item._id === (counsellorName && counsellorName.classId)
+			? item.className
+			: "";
+	});
+
+	const pdfClick = () => {
+		if(monthData){
+			var opt = {
+				margin:       1,
+				filename:     'Attandance_report.pdf',
+				image:        { type: 'jpeg', quality: 0.98 },
+				html2canvas:  { scale: 2 },
+				jsPDF:        { unit: 'cm', format: 'a2', orientation: 'landscape'}
+			};
+			var element = document.getElementById('main-div');
+			html2pdf().set(opt).from(element).save();
+		}else{
+			var opt = {
+				margin:       1,
+				filename:     'Attandance_report.pdf',
+				image:        { type: 'jpeg', quality: 0.98 },
+				html2canvas:  { scale: 2 },
+				jsPDF:        { unit: 'cm', format: 'a4', orientation: 'landscape'}
+			  };
+			var element = document.getElementById('main-div');
+			html2pdf().set(opt).from(element).save();
+		}
+		
+	}
+
+	return (
+		<>
+			<Sidebar />
+			<div className="col-md-8 col-lg-9 col-xl-10 mr-30">
+				<button onClick={pdfClick}>Download PDF</button> 
+				<div className="header">  {" "}  <ImageAvatars />
+				</div>
+		
+				{!loading ? (
+					<div id="main-div">
+						<Container maxWidth="100%"	style={{ padding: "0", display: "inline-block" }}>
+							<div className="heading">
+								<h1>
+									<span className="icon">
+										<DashboardIcon fontSize="35px" />
+									</span>
+									Attendance Reports
+								</h1>
+								<div>
+									<label>Filter By:</label>
+									<FormControl sx={{ m: 1, minWidth: 120 }} className="filter">
+										<NativeSelect
+											defaultValue={id}
+											onChange={(e) => SelectOnChange(e.target.value)}
+											inputProps={{
+												name: "age",
+												id: "uncontrolled-native",
+											}}
+											className="w-100"
+										>
+											{classData.map((item) => {
+												return (
+													<option key={item._id} value={item._id}>
+														{item.className}
+													</option>
+												);
+											})}
+										</NativeSelect>
+									</FormControl>
+									<div style={{ display: "flex" }} >
+
+										{monthData ? <>
+
+											{/* previous next functionality of Month */}
+											<div>
+												<div style={{ display: "inline-block" }}>
+													<ArrowBackIosIcon onClick={() => renderCellsMonth("prev")} />
+												</div>
+												<div style={{ display: "inline-block" }} hidden>
+													<DatePicker
+														selected={startDateOfMonth}
+														onChange={(date) => setStartDateMonth(date)}
+														customInput={<ExampleCustomInput />}
+													/>
+												</div>
+												<div style={{ display: "inline-block" }}>
+													<ArrowForwardIosIcon onClick={() => renderCellsMonth("next")} />
+												</div>
+											</div></> : <>
+
+											{/* previous next functionality of week */}
+											<div >
+												<div style={{ display: "inline-block" }}>
+													<ArrowBackIosIcon
+														onClick={() => changeWeekHandle("prev")}
+													/>
+												</div>
+												<div style={{ display: "inline-block" }} hidden>
+													<DatePicker
+														selected={startDate}
+														onChange={(date) => setStartDate(date)}
+														customInput={<ExampleCustomInput />}
+													/>
+												</div>
+												<div style={{ display: "inline-block" }}>
+													<ArrowForwardIosIcon
+														onClick={() => changeWeekHandle("next")}
+													/>
+												</div>
+											</div>
+										</>}
+									</div>
+								</div>
+							</div>
+							<div>
+								<div>
+									<span>{classNaam && classNaam.className}</span> |{" "}
+									<span>
+										{counsellorName
+											? `${counsellorName.name} ${counsellorName.lastname}`
+											: `No Counsellor assign to this class`}
+									</span>
+								</div>
+								<div>
+								<div>
+									<span onClick={() => handleDataAccWeekAndMonth("week")}> Week{" "}  </span> | <span onClick={() => handleDataAccWeekAndMonth("month")}>{" "} Month </span>
+								</div>
+								<SearchBar
+									value={search}
+									onChange={(newValue) => handleAttandanceReport(onSelectData? onSelectData: id, monthData ? "month" : "week", '','',newValue)}
+									placeholder="Search Counsellor"
+								/>
+								</div>
+							</div>
+							<div >
+							</div>
+							{monthData ? (
+								<div>{renderCellsMonth()} </div>
+							) : (
+								<div>{renderCellsWeek()}</div>
+							)}
+						</Container>
+					</div>
+				) : (
+					<Example />
+				)}
+			</div>
+		</>
+	);
+}

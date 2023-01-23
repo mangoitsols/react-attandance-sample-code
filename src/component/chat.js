@@ -15,18 +15,26 @@ import { Theme, useTheme } from '@mui/material/styles';
 import "react-toastify/dist/ReactToastify.css";
 import io from "socket.io-client";
 import InputField from '../comman/inputField';
-import ScrollableChat from './counsellor/scrollableChat';
 import animationData from "../comman/12966-typing-indicator.json";
 import send from "./images/send.svg";
 import chat from './images/chat.svg';
-
+import $ from "jquery";
+import validate from "jquery-validation";
+import ScrollableFeed from "react-scrollable-feed";
+import EditableLabel from "react-inline-editing";
+import moment from "moment";
+import {
+  isLastMessage,
+  isSameSender,
+  isSameSenderMargin,
+  isSameUser,
+} from "../config/chatLogics";
 toast.configure();
-
-
 
 const Chat = () => {
 
     const classes = useStyles();
+    const userId = localStorage.getItem("id");
     const [counsellorDetail, setCounsellorDetail] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -47,8 +55,12 @@ const Chat = () => {
     const [groupData, setGetGroupsData] = useState([]);
     const [groupVisible, setGroupVisible] = useState('');
     const [highlightId, setHighlightId] = useState(false);
-
-    var socket, selectedChatCompare;
+    const [data, setData] = useState();
+    const [togglee, setTogglee] = useState(false);
+    const [index, setIndex] = useState('');
+    const [oldMessage, setOldMessage] = useState('');
+    
+    var socket;
 
     const defaultOptions = {
         loop: true,
@@ -58,33 +70,54 @@ const Chat = () => {
             preserveAspectRatio: "xMidYMid slice",
         },
     };
-    
+     
     useEffect(() => {
         
-        socket = io(SOCKET_URL);  
-        socket.emit("setup", localStorage.getItem("id"));
+        socket = io.connect(SOCKET_URL);  
         socket.on("connected", () => setSocketConnected(true));
+        socket.emit("setup", localStorage.getItem("id"));
         socket.on("typing", () => setIsTyping(true));
         socket.on("stop typing", () => setIsTyping(false));
+
+        return () => {
+            socket.disconnect();
+          }
     }, []);
     
     useEffect(() => {
         handleGetOnlyGroups();
         handleGetOnlyCounsellor();
         handleGetGruops();
+    }, [1])
+    
+    
+    useEffect(() => {
         fetchMessages();
         setSearch('');
-        selectedChatCompare = chatId;
+        handleGetGruops()
     }, [chatId])
-
+    
     useEffect(() => {
-       
-        socket?.on("message recieved", (newMessageReceived) => {
-            message.push(newMessageReceived)
-            fetchMessages();
-            //   setMessage([...message, newMessageReceived]);
+        
+        socket?.on("message recieved",(newMessageReceived) => {
+            
+            let localData = localStorage.getItem("chatId");
+            let chatIdLocal = chatId ? chatId._id : localData
+            
+        if(newMessageReceived[0].chat._id === chatIdLocal){
+          setMessage( newMessageReceived)
+        }
+        else{
+         
+        }
         });
-    })
+        
+        socket?.on("count", (messagesData) => {   
+            toast.info("You have new message")  
+            handleGetGruops();
+        });
+    },[])
+
 
     const handleGetOnlyGroups = async() => {
         const res = await axios({
@@ -108,8 +141,11 @@ const Chat = () => {
             }
     }
 
-    const handleGetGruops = async () => {
-            fetch(`${API.allGCs}/${localStorage.getItem('id')}`,{headers:authHeader()}).then((a) => {
+    const handleGetGruops = async (data) => {
+        if(!data){
+            data = '';
+        }
+            fetch(`${API.allGCs}/${localStorage.getItem('id')}?searchkey=${data}`,{headers:authHeader()}).then((a) => {
                 if(a.status === 200 ){
                     setLoading(false);
                     return a.json();
@@ -123,24 +159,6 @@ const Chat = () => {
                 Array.prototype.push.apply(dat1,dat2);
                 setCounsellorDetail(dat1);
             })
-    }
-
-    const handleSearch = async (data) => {
-        setSearch(data);
-        if (data !== "") {
-            await axios
-                .get(`${API.counsellorSearch}/${data}`, { headers: authHeader() })
-                .then((data) => {
-                    const dataCouncellor = data.data.data.filter((e) => e.role.name === "counsellor")
-                    setCounsellorDetail(dataCouncellor)
-                })
-                .catch((err) => {
-                    setCounsellorDetail([])
-                });
-        }
-        else {
-            handleGetGruops();
-        }
     }
 
     const handleEditGroup = () => {
@@ -164,17 +182,69 @@ const Chat = () => {
       toast.success("Group Deleted");
       
       window.location.reload();
-  }else{
-      toast.error("Something went wrong");
-  }  
+    }else{
+        toast.error("Something went wrong");
+    }  
+  }
 
+  const handleOnChangeGroup = (e) => {
+    setGropName(e.target.value)
+    $(document).ready(function () {
+        $("#create-channeladd").validate({
+          rules: {
+            groupname: {
+              required: true,
+              minlength: 3,
+            },
+          },
+          messages: {
+            name: {
+              required: "<p style='color:red'>Please provide your group name</P>",
+              minlength:
+                "<p style='color:red'>Your group name must consist of at least 3 characters</p>",
+            }, 
+          },
+        });
+    })
   }
    
-
-    const handleSubmit = async (e) => {
+  
+  const handleSubmit = async (e) => {
         e.preventDefault();
+        if(selected === "" || groupName === "" || photo === ""){
+        $(document).ready(function () {
+            $("#create-channeladd").validate({
+              rules: {
+                groupname: {
+                  required: true,
+                  minlength: 3,
+                },
+                photo: {
+                  required: true,
+                },
+                groupmember: {
+                  required: true,
+                },
+              },
+              messages: {
+                name: {
+                  required: "<p style='color:red'>Please provide your group name</P>",
+                  minlength:
+                    "<p style='color:red'>Your group name must consist of at least 3 characters</p>",
+                },
+                photo: {
+                    required: "<p style='color:red'>Please choose your group photo</P>",
+                  },
+                groupmember: {
+                    required: "<p style='color:red'>Please choose your group member</P>",
+                  },
+              },
+            });
+        })
+    }
+
         const id = localStorage.getItem("id");
-      selected.push(id);
+        selected.push(id);
         const formData = new FormData();
         const reqData = {
             chatName: groupName,
@@ -250,9 +320,15 @@ const Chat = () => {
             
         })
         if (res.status === 200) {
-            toast.success("Changes updated");
+            toast.success("Channel updated");
             setEditModal(!editModal);
+            handleGetOnlyGroups();
+
             handleGetGruops();
+           
+            setTimeout(() => {
+                window.location.reload("/chat")
+            }, 3000);
         }
         else{
             toast.error("Failed to update the group");
@@ -265,12 +341,15 @@ const Chat = () => {
         let reader = new FileReader();
         let file = e.target.files[0];
 
-        reader.onloadend = () => {
-            setFile(file)
-            setPhoto(reader.result)
-        }
-        reader.readAsDataURL(file)
-
+        if (file.size >= 6000) {
+            toast.error("Group image must be less than 6kb");
+          } else {
+            reader.onloadend = () => {
+                setFile(file)
+                setPhoto(reader.result)
+            };
+            reader.readAsDataURL(file);
+          }
     }
     let $imagePreview = null;
 
@@ -296,46 +375,46 @@ const Chat = () => {
     const theme = useTheme();
 
     const handleSelectChatUser = async(ele) => {
+       
         setHighlightId(ele._id)
-       var chatid ;
-       var keys =  Object.keys(ele);
-    
-       setToggle(!toggle);
-       if(keys.indexOf("isGroupChat") !== -1)  
-       {               
-                chatid = ele._id;
-                setChatId(ele);
-                setGroupVisible(chatid);
-                handleGetGruops();
+        var chatid ;
+        var keys =  Object.keys(ele);
+        
+        setToggle(!toggle);
+        if(keys.indexOf("isGroupChat") !== -1)  
+        {      
+            chatid = ele._id;
+            localStorage.setItem("chatId",'')
+            localStorage.setItem("chatId",chatid)
+            setChatId(ele);
+            setGroupVisible(chatid);
         }   
         else  
         {  
-            // setToggle(true)
-            
-                   const reqData = {
-                       userId: localStorage.getItem("id"),
-                       recieverId: ele._id,
-                   }
-           
-                  await axios({
-                       method: "post",
-                       url: `${API.accessChatByChatId}`,
-                       data: reqData,
-                       headers: authHeader(),
-                   }).then((res) => {
-                       setChatId(res.data);
-                       fetchMessages();
-                   }).catch((err) => {
-                       toast.error("Something went wrong")
-                   })
-                }  
+            const reqData = {
+                userId: localStorage.getItem("id"),
+                recieverId: ele._id,
+            }
+            await axios({
+                method: "post",
+                url: `${API.accessChatByChatId}`,
+                data: reqData,
+                headers: authHeader(),
+            }).then((res) => {
+                setChatId(res.data);
+                localStorage.setItem("chatId",'')
+                localStorage.setItem("chatId",res.data._id)
+                fetchMessages();
+            }).catch((err) => {
+                toast.error("Something went wrong")
+            })
+        }  
 
     }
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        socket = io(BASE_URL);
-     
+        socket = io.connect(SOCKET_URL);     
         socket.on("connected", () => { setSocketConnected(true) });
         if (newMessage) {
             socket.emit("stop typing", chatId._id);
@@ -345,6 +424,7 @@ const Chat = () => {
                     content: newMessage,
                     senderId: localStorage.getItem("id"),
                 }
+              
                 setNewMessage("")
                 const request = await axios({
                     method: 'post',
@@ -352,12 +432,15 @@ const Chat = () => {
                     data: reqData,
                     headers: authHeader(),
                 })
+              
+                let objectSeenMessage = {messagesData:counsellorDetail,userid:request.data.at(-1)}
+                socket.emit("notification",(objectSeenMessage))
                 socket.emit("message", request.data);
-                setMessage([...message, request.data]);
-                // handleGetGruops();
-                fetchMessages();
+                setMessage(request.data);
+             
             }
             catch (error) {
+              
                 toast.error("Message not send!");
             }
 
@@ -365,53 +448,137 @@ const Chat = () => {
     }
 
     const fetchMessages = async () => {
-    console.log(chatId,"fff")
-        if (!chatId) {
-            return;
-        }
-
+  
+        setMessage([]);
+    if(!chatId) {
+        return;
+      }
         try {
-            setMessage([]);
             setLoading(true)
-            const data = await axios.get(`${API.getMessage}/${chatId._id}`, { headers: authHeader() })
-            setMessage(data.data);
+            const data = await axios.get(`${API.getMessage}/${chatId._id}`, { headers: authHeader() });
+            const receiverHideData = data.data.filter((item)=>{
+                return item.deleteUsers.some(function(el) {
+                    return (el === localStorage.getItem("id") && item.deletedBy === true) 
+            })})
+            var finalArrayCompare = data.data.filter(val => !receiverHideData.includes(val));
+           
+            setMessage(finalArrayCompare);
+
             setLoading(false);
             socket.emit("join chat", chatId._id);
         }
         catch (error) {
-
+            setLoading(false)
         };
     }
 
     
     const typingHandler = (e) => {
         setNewMessage(e.target.value);
-        
-        if (!socketConnecttion) return;
-        socket = io(BASE_URL);
-        socket.on("connected", () => { setSocketConnected(true) });
+ 
+        // if (!socketConnecttion) return;
+        // socket = io.connect(SOCKET_URL);
+        // socket.on("connected", () => { setSocketConnected(true) });
         // if (!typing) {
-            setTyping(true);
-            socket?.emit("typing", chatId._id)
+        //     setTyping(true);
+        //     socket?.emit("typing", chatId._id)
         // }
-        let lastTypingTime = new Date().getTime();
-        var timerLength = 1000;
-        setTimeout(() => {
-            var timeNow = new Date().getTime();
-            var timeDiff = timeNow - lastTypingTime;
-            if (timeDiff >= timerLength && typing) {
-                socket?.emit("stop typing", chatId._id);
-                setTyping(false);
-            }
-        }, timerLength);
+        // let lastTypingTime = new Date().getTime();
+        // var timerLength = 1000;
+        // setTimeout(() => {
+        //     var timeNow = new Date().getTime();
+        //     var timeDiff = timeNow - lastTypingTime;
+        //     if (timeDiff >= timerLength && typing) {
+        //         socket?.emit("stop typing", chatId._id);
+        //         setTyping(false);
+        //     }
+        // }, timerLength);
         
     }
+
+      const handleDeleteReceiver = async (id) => {
+  
+        setLoading(true)
+        const del = await axios.put(`${API.deleteMessageReceiver}/${id}`, {
+            deleteUsers : localStorage.getItem("id")},{headers: authHeader()});
+        
+        if (del) {
+        toast.success("Message deleted"); 
+        setTogglee(false);
+        setLoading(false)
+        fetchMessages()
+        } else {
+        setTogglee(false);
+        setLoading(false)
+        toast.error("Something went wrong");
+        }     
+  }
+
+    const handleToggle = () => {
+        setTogglee(true);
+      };
+      
+      const handleFocus = (text) => {  
+        setTogglee(false)    
+      };
+      
+      const handleFocusOut = (text) => {
+        setTogglee(true);
+        if(oldMessage && oldMessage === text){
+          toast.warning("You haven't made any changes with previous message");
+        }
+        else{
+        const reqData = {
+          content: text,
+        };
+        setLoading(true)
+        const res = axios({
+          method: "put",
+          url: `${API.updateMessage}/${data._id}`,
+          data: reqData,
+          headers: authHeader(),
+        })
+        .then((res) => {
+          setLoading(false)
+            setTogglee(false);
+            fetchMessages()
+          toast.success("Message updated");
+        })
+        .catch((err) => {
+          toast.error("Message can't updated");
+        });
+    }
+      };
+
+    const handleOnClickId =(id,oldChat) => {
+        setIndex(id);
+        setOldMessage(oldChat)
+        setTogglee(!toggle)
+      }
+
+    const handleDelete = async (id) => {
+        setLoading(true)
+        const del = await axios.delete(`${API.deleteMessage}/${id}`, {
+          headers: authHeader(),
+        });
+        
+        if (del) {
+          toast.success("Message deleted");
+          setTogglee(false);
+          setLoading(false)
+          fetchMessages()
+        } else {
+          toast.error("Something went wrong");
+        }
+      };
+
+
 
     const groupChatData = groupData && groupData.filter((e)=> e._id === groupVisible);
     const receivername = chatId && chatId.users && chatId.users.filter((e) => (e._id !== localStorage.getItem("id")));
 
     const handleRemoveMember = async(ele,item) =>{
-      
+
         if(ele){
         try {
             const reqData = {
@@ -425,7 +592,7 @@ const Chat = () => {
                 data: reqData,
                 headers: authHeader(),
             })
-           
+            handleGetOnlyGroups();
             handleGetGruops();
           
         }
@@ -434,8 +601,25 @@ const Chat = () => {
         }}
     }
 
+    const handleSeenGroupMessage = async(group_id,user_id) => {
+
+        const reqData = {
+          
+            userId:user_id,
+            groupId:group_id
+            };
+           
+            await axios({
+              method: "put",
+              url: `${API.seenGroupMessage}`,
+              data: reqData,
+              headers: authHeader(),
+            }).then((res)=>{})
+      }
+
     return (
         <React.Fragment>
+            
             <Sidebar />
             <div className='col-md-8 col-lg-9 col-xl-10 mr-30'>
                 <div className='header'> <ImageAvatars /></div>
@@ -451,7 +635,7 @@ const Chat = () => {
                             <h3>Message</h3>
                             <SearchBar
                                 value={search}
-                                onChange={(newValue) => handleSearch(newValue)}
+                                onChange={(newValue) => handleGetGruops(newValue)}
                                 placeholder='Search Counsellor' />
                         </div>
                         <div className="createpersonal">
@@ -460,81 +644,131 @@ const Chat = () => {
                                     <p onClick={handleCreateGroup}># Create Personal Channels </p>
                                 </li>
                                
-                                {!loading  ? counsellorDetail && counsellorDetail.map((item) => {
+                                {!loading  ? counsellorDetail.length > 0 ?  counsellorDetail.map((item) => {
                              
                                     return (
                                         <li key={item._id} >
-                                            <p className={highlightId === item._id ? "avatar-image bg-secondary" :"avatar-image "} onClick={() => handleSelectChatUser(item)} >
-                                                {<Avatar alt="Remy Sharp" src={`${BASE_URL}/${item ? item.image : ""}`} sx={{ width: 56, height: 56 }} />}
-                                                {item.name ? item.name : item.chatName} {" "} {item.lastname} </p>
-                                                {(item.chatName || item.readBy === 0) ? "" :<span className='notfication'>{item.readBy}</span>}
+                                            <p className={highlightId === item._id ? "avatar-image bg-secondary" :"avatar-image "} onClick={() => {handleSelectChatUser(item); handleSeenGroupMessage(item._id,localStorage.getItem('id'));}} >
+                                                {<Avatar alt={item.name ? item.name : item.chatName} src={`${BASE_URL}/${item ? item.image : ""}`} sx={{ width: 56, height: 56 }} />}
+                                                {item.name ? item.name : item.chatName} {" "} {item.lastname}
+                                                {(item.readBy === 0) ? "" :<span className='notfication'>{item.readBy}</span>}</p>
                                         </li>
                                     )
-                                }) : <div className='loader'><Example /></div>}
+                                }) : <p>Record not found</p>: <div className='chat-loader'></div>}
 
                             </ul>
                         </div>
                     </div>
            
-                   <div className='chat-right col-md-8 col-xl-10 border-left'>
-
-                    {/* {groupChatData  && groupChatData.map((item) => {
-                                    return (<div className='row'>
-                                    <div className='profile-top'>
-                                        <span className='avatar-image'>{<Avatar alt="Gemy Sharp" src={`${BASE_URL}/${item ? item.image : ""}`} sx={{ width: 56, height: 56 }} />}</span>
-                                        <h3>{item ? item.chatName : ""} </h3>
-                                        {item.users.map((member)=>{
-                                            return(
-                                                <span>{member.name === localStorage.getItem("name") ? "you" : member.name} {" , "}</span>
-                                            )
-                                        })}
-                                        <button onClick={() => {handleEditGroup(); setChatId(item)} }> edit</button>
-                                    </div>
-                                    
-                                     {message.length === 0 ? <p>Message not found</p> :
-                                        <div >
-                                            <ScrollableChat messages={message} />
-                                        </div>} 
-                                    <div className='chatmessage'>
-                                         {isTyping ? (
-                                            <div>
-                                                <Lottie
-                                                    options={defaultOptions}
-                                                    // height={50}
-                                                    width={70}
-                                                    style={{ marginBottom: 15, marginLeft: 0 }}
-                                                />
-                                            </div>
-                                        ) : (
-                                            ""
-                                        )} 
-                                        <InputField id="message" name="message" className="form-control" placeholder="type here..." value={newMessage} onChange={(e) => typingHandler(e)} />
-                                        <Button type='submit' onClick={(e) => {handleSendMessage(e);}}>SEND</Button>
-    
-                                    </div>
-                                </div>
-                                    )})}
-                                    </div> */}
-                                    {/* <div className='chat-right col-md-10 border-left'> */}
-                
-                                    {chatId ? 
+                   <div className='chat-right col-md-8 col-xl-10 border-left'>                
+                {chatId ? 
                     chatId && chatId.isGroupChat === false ?
                      <div className='row'>
                         <div className='profile-top'>
-                           <span className='avatar-image'>{<Avatar alt="Remy Sharp" src={`${BASE_URL}/${receivername ?receivername[0].image: ""}`}  sx={{ width: 56, height: 56 }} />}</span>
-                           <h3>{receivername ?receivername[0].name: ""} {" "} {receivername ?receivername[0].lastname : ""}</h3>
+                           <span className='avatar-image'>{<Avatar alt={receivername ? receivername[0].name : "Demo"} src={`${BASE_URL}/${receivername ?receivername[0].image: ""}`}  sx={{ width: 56, height: 56 }} />}</span>
+                           <h3>
+                            {receivername ? receivername[0].name : ""}{" "}
+                            {receivername ? receivername[0].lastname : ""}
+                            </h3>
                         </div>
                         <div className='chat-section'>
-                         {message.length === 0 ? <div className='not-found'><p>Message not found</p></div> :
+                            {message.length === 0 ? <div className='not-found'><p>Message not found</p></div> :
                           <div >
-                             <ScrollableChat messages={message}/>
+                            {/* 1-1 scrollable feed  */}
+                             <ScrollableFeed>
+                                {message &&
+                                    message.map((m, i) => (
+                                    <div style={{ display: "flex" }} key={i}>
+                                        <div style={{ display: "none" }}>
+                                        {(isSameSender(message, m, i, userId) ||
+                                            isLastMessage(message, i, userId)) && (
+                                            <Avatar
+                                            cursor="pointer"
+                                            alt="Remy Sharp"
+                                            src={`${BASE_URL}/${m?.sender?.image}`}
+                                            sx={{ width: 30, height: 30 }}
+                                            className="mr-1 mt-1 "
+                                            />
+                                        )}
+                                        {isSameSender(message, m, i, userId) ? (
+                                            <p>{moment(m.createdAt).format("hh:mm A")}</p>
+                                        ) : (
+                                            ""
+                                        )}
+                                        </div>
+                                        <span
+                                        onClick={() => {
+                                            setData(m);
+                                            handleToggle();
+                                        }}
+                                        style={{
+                                            backgroundColor: `${
+                                            m?.sender?._id === userId ? "#21BAFE" : "#EAE8E8"
+                                            }`,
+                                            marginLeft: isSameSenderMargin(message, m, i, userId),
+                                            marginTop: isSameUser(message, m, i, userId) ? 3 : 10,
+                                            borderRadius: "20px",
+                                            padding: "5px 15px",
+                                            maxWidth: "75%",
+                                            marginBottom: "20px",
+                                        }}
+                                        >
+                                     
+                                        {m && m?.sender?._id !== userId 
+                                            ?  <span onClick={() => handleOnClickId(m._id,m.content)}>{m.content}</span>
+                                            : (togglee ===true || togglee === false)
+                                            ? togglee === true && m._id === index ? <span style={{color:"white"}}>Edit</span> :<span onClick={() => handleOnClickId(m._id,m.content)}>{ m.content}</span> 
+                                            : ""}
+
+                                        {m && m._id === index && m.sender._id === userId && togglee? (
+                                            <EditableLabel
+                                            text={m.content}
+                                            inputWidth="100px"
+                                            onFocus={handleFocus}
+                                            onFocusOut={handleFocusOut}
+                                            
+                                            />
+                                        ) : (
+                                            ""
+                                        )}
+
+                                        </span>
+
+                                        {/* sender msg delete */}
+
+                                        {loading ? <Example/> : ""}
+                                        {m && m._id === index && m.sender._id === userId && togglee ? (
+                                        <>
+                                            <span className="mt-3 m-2"  onClick={() => handleDelete(m._id,m.chat._id)}>
+                                                <i className='fa fa-trash-o' style={{color:"red",fontSize:"23px"}}></i>
+                                            </span>
+                                        </>
+                                        ) : (
+                                        ""
+                                        )}
+
+                                         {/* receiver msg delete */}
+
+                                         {m && m._id === index && m.sender._id !== userId && togglee ? (
+                                            <>
+                                           
+                                                <span className="mt-3 m-2" onClick={() => handleDeleteReceiver(m._id)}>
+                                                <i className='fa fa-trash-o' style={{color:"red",fontSize:"23px"}} ></i>
+
+                                                </span>
+                                            </>
+                                            ) : (
+                                            ""
+                                            )}
+                                    </div>
+                                ) )}
+                                </ScrollableFeed>
                           </div>}
                         <div className='chatmessage'> 
                         {isTyping? (
                                 <div>
                                <Lottie
                                     options={defaultOptions}
-                                    // height={50}
                                     width={70}
                                     style={{ marginBottom: 15, marginLeft: 0 }}
                                 />
@@ -546,25 +780,114 @@ const Chat = () => {
                             <Button type='submit' onClick={(e) =>handleSendMessage(e)}><img src={send} className="" alt="logo" /></Button>
                          
                         </div></div>
-                     </div>: 
-                      // group chat header
+                     </div>:
+                      // group chat header{}
                       <div className='row'>
                         <div className='profile-top'>
-                           <span className='avatar-image'>{<Avatar alt="Remy Sharp" src={`${BASE_URL}/${chatId ?chatId.image: ""}`}  sx={{ width: 56, height: 56 }} />}</span>
-                           <h3>{chatId ?chatId.chatName: ""}</h3>
+                           <span className='avatar-image'>
+                            {<Avatar alt={chatId ? chatId.chatName.charAt(0).toUpperCase() + chatId.chatName.slice(1) : ""} 
+                                    src={`${BASE_URL}/${chatId ?chatId.image: ""}`}  
+                                    sx={{ width: 56, height: 56 }} />}
+                            </span>
+                           <h3>{chatId ? chatId.chatName.charAt(0).toUpperCase() + chatId.chatName.slice(1) : ""}</h3>
                            {chatId.users.map((member)=>{
                                             return(
-                                                <span>{member.name === localStorage.getItem("name") ? "you" : member.name} {" , "}</span>
+                                                <div>{member.name === localStorage.getItem("name") ? "you" :  member.name +","}</div>
                                             )
                                         })}
                              <button onClick={() => handleEditGroup()}> edit</button>
                              <div>
-         <button type='button' onClick={handleGroupDelete}>leave group</button>
-       </div>   
+                            <button type='button' onClick={handleGroupDelete}>leave group</button>
+                        </div> 
+
+                      {/* group chat scollable feed  */}
                         </div>
                          {message.length === 0 ? <p>Message not found</p> :
                           <div >
-                             <ScrollableChat messages={message}/>
+                            <ScrollableFeed>
+                                {message &&
+                                    message.map((m, i) => (
+                                    <div style={{ display: "flex" }} key={i}>
+                                        <div style={{ display: "none" }}>
+                                        {(isSameSender(message, m, i, userId) ||
+                                            isLastMessage(message, i, userId)) && (
+                                            <Avatar
+                                            cursor="pointer"
+                                            alt="Remy Sharp"
+                                            src={`${BASE_URL}/${m?.sender?.image}`}
+                                            sx={{ width: 30, height: 30 }}
+                                            className="mr-1 mt-1 "
+                                            />
+                                        )}
+                                        {isSameSender(message, m, i, userId) ? (
+                                            <p>{moment(m?.createdAt).format("hh:mm A")}</p>
+                                        ) : (
+                                            ""
+                                        )}
+                                        </div>
+                                        <span
+                                        onClick={() => {
+                                            setData(m);
+                                            handleToggle();
+                                        }}
+                                        style={{
+                                            backgroundColor: `${
+                                            m?.sender?._id === userId ? "#21BAFE" : "#EAE8E8"
+                                            }`,
+                                            marginLeft: isSameSenderMargin(message, m, i, userId),
+                                            marginTop: isSameUser(message, m, i, userId) ? 3 : 10,
+                                            borderRadius: "20px",
+                                            padding: "5px 15px",
+                                            maxWidth: "75%",
+                                            marginBottom: "20px",
+                                        }}
+                                        >
+                                        {m && m?.sender?._id !== userId 
+                                            ?  <span onClick={() => handleOnClickId(m?._id)}>{m.content}</span>
+                                            : (togglee ===true || togglee === false)
+                                            ? togglee === true && m?._id === index ? <span style={{color:"white"}}>Edit</span> :<span onClick={() => handleOnClickId(m?._id,m.content)}>{ m.content}</span>
+                                            : ""}
+
+                                        {m && m._id === index && m.sender._id === userId && togglee? (
+                                            <EditableLabel
+                                            text={m.content}
+                                            inputWidth="100px"
+                                            onFocus={handleFocus}
+                                            onFocusOut={handleFocusOut}
+                                            
+                                            />
+                                        ) : (
+                                            ""
+                                        )}
+                                        </span>
+
+                                        {/* sender msg delete */}
+                                        {loading ? <Example/> : ""}
+                                        {m && m._id === index && m.sender._id === userId && togglee ? (
+                                        <>
+                                            <span className="mt-3 m-2" onClick={() => handleDelete(m._id,m.chat._id)}>
+                                            <i className='fa fa-trash-o' style={{color:"red",fontSize:"23px"}} ></i>
+                                            </span>
+                                        </>
+                                        ) : (
+                                        ""
+                                        )}
+
+                                        {/* receiver msg delete */}
+
+                                         {m && m._id === index && m.sender._id !== userId && togglee ? (
+                                            <>
+                                            
+                                                <span className="mt-3 m-2" onClick={() => handleDeleteReceiver(m._id)}>
+                                                <i className='fa fa-trash-o' style={{color:"red",fontSize:"23px"}} ></i>
+                                                </span>
+                                            </>
+                                            ) : (
+                                            ""
+                                            )} 
+                                    </div>
+                                ) )}
+                                </ScrollableFeed>
                           </div>}
                         <div className='chatmessage'> 
                         {isTyping? (
@@ -584,6 +907,10 @@ const Chat = () => {
                          
                         </div>
                      </div>:""}
+                     {loading===true?
+                     <div className='chat-loader'><Example /></div>
+                     
+                    :''}
 
                     </div>
                 </div>
@@ -600,7 +927,7 @@ const Chat = () => {
                     <Typography id="modal-modal-title" variant="h6" component="h2">
                         <strong>Create Your Channel</strong>
                     </Typography>
-                    <form className="mui-form" onSubmit={handleSubmit}>
+                    <form className="mui-form" id="create-channeladd" onSubmit={handleSubmit}>
                         <div className="form-outline mb-4 col-md-6">
                             <label htmlFor="photo">
                                 {photo ? (
@@ -609,6 +936,7 @@ const Chat = () => {
                                     $imagePreview = <div className="previewText"> <Avatar alt="Remy Sharp" src={`${photo}`} sx={{ width: 56, height: 56 }} /> <i className="fa fa-camera" style={{ "fontSize": "35px" }}></i></div>
                                 )}
                             </label>
+                                <label>Group image must be less than 6kb</label>
                             <input
                                 type="file"
                                 id="photo"
@@ -619,7 +947,7 @@ const Chat = () => {
                             />
                         </div>
                         <div className="mui-textfield">
-                            <input type="text" placeholder='Enter Your Group Name' value={groupName} onChange={(e) => setGropName(e.target.value)} />
+                            <input type="text" placeholder='Enter Your Group Name' name="groupname" value={groupName} onChange={(e) => {handleOnChangeGroup(e)}} />
                         </div>
                         <div >
                             <FormControl className={classes.formControl}>
@@ -630,6 +958,7 @@ const Chat = () => {
                                     multiple
                                     value={selected}
                                     onChange={handleChange}
+                                    name="groupmember"
                                     MenuProps={MenuProps}
                                 >
                                     {onlyCounsellorDetail.map((name) => (
@@ -667,8 +996,7 @@ const Chat = () => {
                 open={editModal}
                 onClose={handleEditGroup}
                 aria-labelledby="modal-modal-title"
-                aria-describedby="modal-modal-description"
-            >
+                aria-describedby="modal-modal-description">
                 <Box sx={style}>
                     <Typography id="modal-modal-title" variant="h6" component="h2">
                         <strong>Update Your Channel</strong>
@@ -744,7 +1072,7 @@ const Chat = () => {
                             <input
                                 type="submit"
                                 className="btn btn-primary"
-                                value="SAVE"
+                                value="UPDATE"
                             />
 
                         </div>
@@ -753,8 +1081,6 @@ const Chat = () => {
                     </form>
                 </Box>
             </Modal>
-
-
         </React.Fragment>
     )
 }

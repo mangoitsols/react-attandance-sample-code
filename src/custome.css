@@ -5,7 +5,7 @@
   --bggrey : #F1F1F1;
 }
 html body {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Poppins', sans-serif !important;
     font-size: 16px;
 }
 
@@ -140,11 +140,15 @@ legend{
 .header  span  small {
     font-size: 12px;
     color: #005CB3;
+    cursor: pointer;
+
 }
 
 .header strong{
     width:100%;
     display: inline-block;
+    cursor: pointer;
+
 }
 
 .arrow {
@@ -264,7 +268,7 @@ h1 .icon svg{
 }
 
 .dashboard-grid .MuiPaper-root.MuiPaper-elevation h2 {
-    font-size: 23px;
+    font-size: 25px;
     font-weight: 600;
     color: #000000;
 
@@ -281,8 +285,28 @@ h1 .icon svg{
 }
 
 .dashboard-bottom-grid .MuiPaper-root.MuiPaper-elevation {
-    border: 1px solid #E5E9F2;
-    box-shadow: none;
+  border: 1px solid #E5E9F2;
+  box-shadow: none;
+  height: 100%;
+  max-height: 450px;
+  overflow: auto;
+  margin-bottom: 45px;
+}
+
+.phoneNo span.col-md-4 {
+  max-width: 32%;
+}
+
+.MuiToolbar-root.MuiToolbar-gutters.MuiToolbar-regular.delete-outer-box button {
+  padding: 0;
+}
+
+.MuiToolbar-root.MuiToolbar-gutters.MuiToolbar-regular.delete-outer-box {
+  min-height: auto;
+}
+
+.delete-box {
+  padding: 13px 0;
 }
 
 .dashboard-bottom-grid .dashboaed-text {
@@ -291,7 +315,7 @@ h1 .icon svg{
 }
 
 .dashboard-bottom-grid .dashboaed-text h2 { 
-   font-size: 22px; 
+   font-size: 18px; 
    color: #192838;
    font-weight: 600;
    margin-bottom: 32px;
@@ -478,10 +502,19 @@ h1 .icon svg{
     border: 1px solid #EDF0F3 !important;
   }
 
-   input.form-control {
+   input.form-control, select.form-control {
       height: 50px;
       background: #FAFBFC;
       border:1px solid #EDF0F3;
+  }
+
+  /* body .MuiList-root.MuiList-padding.MuiMenu-list li {
+    text-align: left;
+  } */
+
+  .MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded.MuiPaper-elevation1.MuiMenu-paper.MuiPaper-elevation8.MuiPopover-paper.css-1poimk-MuiPaper-root-MuiMenu-paper-MuiPaper-root-MuiPopover-paper {
+    max-width: 628px;
+    max-height: 300px;
   }
 
   /* #myform .form-outline .MuiFormControl-root .MuiInputBase-formControl {
@@ -496,7 +529,7 @@ h1 .icon svg{
 
   .profileBtn {
     margin-top: 45px;
-  
+    margin-bottom: 45px;
   }
 
    input.btn,
@@ -521,6 +554,11 @@ h1 .icon svg{
 
   .editable div {
     display: inline-block;
+    font-weight: 500;
+  }
+
+  .editable{
+    font-weight: 500;
   }
 
   .previewText {
@@ -575,6 +613,7 @@ h1 .icon svg{
   }
   .delete-box span {
     margin: 0 6px;
+    cursor: pointer;
   }
 
   .MuiToolbar-root.MuiToolbar-gutters.MuiToolbar-regular.MuiTablePagination-toolbar.css-11bfvty-MuiToolbar-root-MuiTablePagination-toolbar p {
@@ -970,6 +1009,12 @@ padding-left: 4px;
 .btn.btn-transparent {
   border: 1px solid #312725;
 }
+.chat-loader{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 
 .loader {
   position: absolute;
@@ -1104,9 +1149,58 @@ right: -10px;
   width: 45%;
 }
 
-.phoneNo input.form-control.mb-3.col-md-8 {
+.createpersonal ul li:first-child p {
+  margin-top: 20px;
+}
+
+.MuiTableRow-root.MuiTableRow-head th input {
+  opacity: 1;
+  width: 22px;
+  height: 20px;
+  border: 1px solid #000;
+  position: static;
+}
+
+.phoneNo input.form-control.mb-3 {
   background: url(component/images/phone.png) no-repeat 10px center;
   padding-left: 30px;
+}
+
+.MuiList-root.MuiList-padding.MuiMenu-list li {
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+}
+
+.MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.MuiTablePagination-selectIcon.MuiSelect-icon.MuiSelect-iconStandard.MuiSelect-iconOpen {
+  right: -10px;
+}
+
+.MuiTablePagination-select.MuiSelect-select.MuiSelect-standard.MuiInputBase-input:focus {
+  background: none;
+}
+
+.phoneNo input.form-control.mb-3.col-md-12{
+  background: #fff;
+  padding-left: 15px;
+}
+
+.editable .myLabelClass::after {
+  width: 23px;
+  height: 23px;
+  display: inline-block;
+  content: "";
+  background: url(component/images/edit.png) no-repeat 0 0;
+  margin-left: 7px;
+}
+
+.srv-validation-message {
+  color: red;
+  font-size: 12px;
+}
+
+.error p {
+  font-size: 12px;
 }
 
 .emergency .emergency-data > .form-group input {
@@ -1362,6 +1456,8 @@ body .upload_csv_box legend {
   width: 100%;
 }
 
+
+
 .loader-bar > div {
   width: 253px;
   margin: 0 auto;
@@ -1496,6 +1592,19 @@ margin-bottom: 10px;
     }
 }
 
+.profileFields{
+  justify-content: space-between
+}
+
+.form-outline.mb-4.col-md-6.addressProfileFields {
+  flex: 0 0 43%;
+}
+
+div.profileName {
+  max-width: 43% !important;
+  margin-left: 92px;
+}
+
 @media (min-width: 850px) and (max-width: 1199px) {
   .sidebar ul li a {
     font-size: 17px;
@@ -1514,3 +1623,18 @@ margin-bottom: 10px;
     max-width: 72%;
   }
 }
+select.form-control {
+  height: 50px;
+  background: #FAFBFC;
+  border:1px solid #EDF0F3;
+}
+
+.pinButtonDesign {
+  max-width: 170px !important;
+height: 54px !important;
+padding: 16px !important;
+}
+
+.pinDivDesign {
+  margin:23px 0px 10px 0px;
+}    

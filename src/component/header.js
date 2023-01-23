@@ -18,7 +18,7 @@ export default function ImageAvatars() {
   },[])
    
   const [newPass,setNewPass]=useState(""); 
-  const socket = useRef(io(`${SOCKET_URL}`));
+  const socket = useRef(io(`${SOCKET_URL}`, { transports: ['websocket'] }));
 
   const handleLogout = () => {
     localStorage.clear("token");
@@ -29,13 +29,9 @@ export default function ImageAvatars() {
       window.location = "/";
     }, 1000);
   };
-
- 
    
   const getUser = () => {
     const id = localStorage.getItem("id")
-
-
    fetch(`${API.getUser}/${id}`, { headers: authHeader() }
     )
                 .then((res) => res.json())
@@ -72,6 +68,11 @@ export default function ImageAvatars() {
     setOpenBlack(false);  
   };
 
+  const roleStr = localStorage?.getItem("role");
+  const capitalizeRoleFirstLetter = roleStr.charAt(0).toUpperCase() + roleStr.slice(1);
+
+  const nameStr = localStorage?.getItem("name");
+  const capitalizeNameFirstLetter = nameStr.charAt(0).toUpperCase() + nameStr.slice(1);
   
   return (
     <React.Fragment>
@@ -195,15 +196,15 @@ export default function ImageAvatars() {
         
       </div>
       <Stack direction="row" spacing={2}>
-        {/* <Avatar
+        <Avatar
           alt="Remy Sharp"
-          src={`${BASE_URL}/${newPass.data[0].image}`}
+          src={newPass.data && newPass.data[0].image ? `${BASE_URL}/${newPass.data[0].image}` : localStorage.getItem("image") ? localStorage.getItem("image").startsWith('uploads/') ? `${BASE_URL}/${localStorage.getItem("image")}` : localStorage.getItem("image"): ""}
           sx={{ width: 56, height: 56 }}
-        /> */}
+        />
         <span>
           <div onClick={ToggleClass}>
-          <strong >{localStorage.getItem("name")}</strong>
-          <small > {localStorage.getItem("role")} </small>
+          <strong >{capitalizeNameFirstLetter}</strong>
+          <small > {capitalizeRoleFirstLetter} </small>
           <span className="arrow" >
             <ArrowBackIosOutlinedIcon />
           </span>
@@ -212,12 +213,12 @@ export default function ImageAvatars() {
             <div className="myprofileToggle">
               <Avatar
                 alt="Remy Sharp"
-                src={require("../images/avatar/Avatar.jpg")}
+                src={newPass.data && newPass.data[0].image ? `${BASE_URL}/${newPass.data[0].image}` : require("../images/avatar/Avatar.jpg")}
                 sx={{ width: 56, height: 56 }}
               />
               <span>
-                <strong>{localStorage.getItem("name")}</strong>
-                <small> {localStorage.getItem("role")} </small>
+                <strong>{capitalizeNameFirstLetter}</strong>
+                <small> {capitalizeRoleFirstLetter} </small>
               </span>
               <a href="/profile">Manage Profile</a>
               <Divider />

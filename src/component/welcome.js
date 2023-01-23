@@ -21,7 +21,7 @@ class Welcome extends Component {
                 <div className='welcome-center'>
                   <img src={require("./images/welcome-icon.png")} />
                   {this.state.lastname === null ? <h2>Welcome {this.state.name}</h2> : 
-                <h2>Welcome {this.state.name.charAt(0).toUpperCase() + this.state.name.slice(1) }{" "}{this.state.lastname.charAt(0).toUpperCase() + this.state.lastname.slice(1)}</h2>}
+                <h2>Welcome {this.state.name.charAt(0).toUpperCase() + this.state.name.slice(1) }{" "}{this.state.lastname.charAt(0).toUpperCase() +  this.state.lastname.slice(1)}</h2>}
                 </div>
                 
                </div>

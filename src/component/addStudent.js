@@ -1,252 +1,438 @@
-import React, { Component } from 'react';
-import ImageAvatars from './header';
-import Sidebar from './sidebar';
-import {Fade, Modal, Backdrop, Box, FormControl, MenuItem, Select, Container } from "@mui/material";
-import { createClass,getClass} from "../action/index";
-import {addStudent} from "../action/student";
+import React, { Component } from "react";
+import ImageAvatars from "./header";
+import Sidebar from "./sidebar";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import {
+  Fade,
+  Modal,
+  Backdrop,
+  Box,
+  FormControl,
+  MenuItem,
+  Select,
+  Container,
+} from "@mui/material";
+import { createClass, getClass } from "../action/index";
+import { addStudent } from "../action/student";
 import { connect } from "react-redux";
 import $ from "jquery";
 import validate from "jquery-validation";
-import Example from '../comman/loader';
+import Example from "../comman/loader";
 import { toast } from "react-toastify";
+import SimpleReactValidator from "simple-react-validator";
 import "react-toastify/dist/ReactToastify.css";
+import moment from "moment";
 toast.configure();
 
 class AddStudent extends Component {
-    state = {
-      nameC:'',
-      openmodel: false,
-      openmodelNumber: false,
-      name: "",
-			lastname: "",
-      fatherName: "",
-			dob: "",
-			phonename1: "",
-      phonename2: "",
-      phonename3: "",
-      phone:"",
-      phone1:"",
-      phone2:"",
-      photo:"",
-      file: "",
-      medical:"",
-      address:"",
-      emergency:[],
-      getclasses:[],
-      classSelect:"",
-      addName:"",
-      addNumber:"",
-      database:[],
-      checked:false,
-      
-       } 
+  state = {
+    nameC: "",
+    openmodel: false,
+    openmodelNumber: false,
+    name: "",
+    lastname: "",
+    fatherName: "",
+    dob: "",
+    phonename1: "",
+    phonename2: "",
+    phonename3: "",
+    phone: "",
+    phone1: "",
+    phone2: "",
+    photo: "",
+    file: "",
+    medical: "",
+    address: "",
+    emergency: [],
+    getclasses: [],
+    classSelect: "",
+    addName: "",
+    addNumber: "",
+    database: [],
+    checked: false,
+    startDate: "",
+    dateError: "",
+  };
+  handleChange = (event) => {
+    let checkedbox = event.target.checked;
+    this.setState({
+      checked: checkedbox,
+    });
+  };
 
-       handleChange = (event) => {
-        let checkedbox = event.target.checked 
-         this.setState({
-          checked: checkedbox 
-        })
+  componentDidMount() {
+    $('input[name="name"]').keyup(function (e) {
+      if (/[^a-zA-Z]/g.test(this.value)) {
+        this.value = this.value.replace(/[^a-zA-Z]/g, "");
       }
-      
+    });
+    $('input[name="lastname"]').keyup(function (e) {
+      if (/[^a-zA-Z]/g.test(this.value)) {
+        this.value = this.value.replace(/[^a-zA-Z]/g, "");
+      }
+    });
+    $('input[name="fatherName"]').keyup(function (e) {
+      if (/[^a-zA-Z]/g.test(this.value)) {
+        this.value = this.value.replace(/[^a-zA-Z]/g, "");
+      }
+    });
+    $('input[name="phonename1"]').keyup(function (e) {
+      if (/[^a-zA-Z]/g.test(this.value)) {
+        this.value = this.value.replace(/[^a-zA-Z]/g, "");
+      }
+    });
+    $('input[name="phonename2"]').keyup(function (e) {
+      if (/[^a-zA-Z]/g.test(this.value)) {
+        this.value = this.value.replace(/[^a-zA-Z]/g, "");
+      }
+    });
+    $('input[name="phonename3"]').keyup(function (e) {
+      if (/[^a-zA-Z]/g.test(this.value)) {
+        this.value = this.value.replace(/[^a-zA-Z]/g, "");
+      }
+    });
+    $('input[name="phone"]').keyup(function (e) {
+      if (/\D/g.test(this.value)) {
+        this.value = this.value.replace(/\D/g, "");
+      }
+    });
+    $('input[name="phone1"]').keyup(function (e) {
+      if (/\D/g.test(this.value)) {
+        this.value = this.value.replace(/\D/g, "");
+      }
+    });
+    $('input[name="phone2"]').keyup(function (e) {
+      if (/\D/g.test(this.value)) {
+        this.value = this.value.replace(/\D/g, "");
+      }
+    });
+    $(document).ready(function () {
+      $("#myform").validate({
+        rules: {
+          name: {
+            required: true,
+            minlength: 3,
+          },
+          lastname: {
+            required: true,
+            minlength: 3,
+          },
+          fatherName: {
+            required: true,
+            minlength: 3,
+          },
+          dob: {
+            required: true,
+          },
+          address: {
+            required: true,
+          },
+          phonename1: {
+            required: true,
+            minlength: 3,
+          },
+          phonename2: {
+            required: true,
+            minlength: 3,
+          },
+          phonename3: {
+            required: true,
+            minlength: 3,
+          },
+          phone: { required: true, minlength: 10, maxlength: 10 },
+          phone1: { required: true, minlength: 10, maxlength: 10 },
+          phone2: { required: true, minlength: 10, maxlength: 10 },
+          demoselect: { required: true },
+        },
+        messages: {
+          name: {
+            required: "<p style='color:red'>Please Enter your first name</P>",
+            minlength:
+              "<p style='color:red'>Your first name must consist of at least 3 characters</p>",
+          },
+          lastname: {
+            required: "<p style='color:red'>Please Enter your last name</P>",
+            minlength:
+              "<p style='color:red'>Your last name must consist of at least 3 characters</p>",
+          },
+          fatherName: {
+            required: "<p style='color:red'>Please Enter your father Name</P>",
+            minlength:
+              "<p style='color:red'>Father name must consist of at least 3 characters</p>",
+          },
+          dob: {
+            required: "<p style='color:red'>Date of birth is required</P>",
+          },
+          address: {
+            required: "<p style='color:red'>Address is required</P>",
+          },
+          phonename1: {
+            required: "<p style='color:red'>Please enter name</P>",
+            minlength:
+              "<p style='color:red'>Your phone name must consist of at least 3 characters</p>",
+          },
+          phonename2: {
+            required: "<p style='color:red'>Please enter name</P>",
+            minlength:
+              "<p style='color:red'>Your phone name must consist of at least 3 characters</p>",
+          },
+          phonename3: {
+            required: "<p style='color:red'>Please enter name</P>",
+            minlength:
+              "<p style='color:red'>Your phone name must consist of at least 3 characters</p>",
+          },
+          phone: {
+            required: "<p style='color:red'> Mobile number is required</p>",
+            minlength:
+              "<p style='color:red'>Mobile number must be 10 digit</p>",
+            maxlength:
+              "<p style='color:red'>Mobile number must be 10 digit</p>",
+          },
+          phone1: {
+            required: "<p style='color:red'> Mobile number is required</p>",
+            minlength:
+              "<p style='color:red'>Mobile number must be 10 digit</p>",
+            maxlength:
+              "<p style='color:red'>Mobile number must be 10 digit</p>",
+          },
+          phone2: {
+            required: "<p style='color:red'> Mobile number is required</p>",
+            minlength:
+              "<p style='color:red'>Mobile number must be 10 digit</p>",
+            maxlength:
+              "<p style='color:red'>Mobile number must be 10 digit</p>",
+          },
 
-     componentDidMount() {
+          demoselect: {
+            required:
+              "<p style='color:red;position: absolute;top: 56px;' >Assign class is required </p>",
+          },
+        },
+      });
+    });
 
-      $('input[name="phone"]').keyup(function(e){
-        if (/\D/g.test(this.value))
-        {
-          // Filter non-digits from input value.
-          this.value = this.value.replace(/\D/g, '');
-        }
-        });
-      this.getClassData();
-        $(document).ready(function () {
-          $("#myform").validate({
-            rules: {
-              name: {
-                required: true,
-                },
-              lastname: {
-                required: true,
-              },
-              fatherName: {
-                required: true,
-              },
-              dob: {
-                required: true,
-              },
-              phonename1: {
-                required: true,
-              },
-              phone:{
-                required:true,
-              },
-              photo:{
-                required:true,
-              },
-             
-              address: {
-                required: true,
-              },
-             
-            },
-            messages: {
-              name: {
-                required: "<p style='color:red'>Please provide a Name</p>",
-              },
-              lastname: {
-                required: "<p style='color:red'>Please provide a Last Name</p>",
-              },
-              fatherName: {
-                required: "<p style='color:red'>Please provide a Father Name</p>",
-              },
-              dob: {
-                required: "<p style='color:red'>Please select your Date of Birth</p>",
-              },
-              phonename1: {
-                required: "<p style='color:red'>Please provide a name for emergency no.</p>",
-              },
-              phone: {
-                required: "<p style='color:red'>Please provide a Emergency No.</p>",
-              },
-              photo: {
-                required: "<p style='color:red'>Please select a photo</p>",
-              },
-             
-              address: {
-                required: "<p style='color:red'>Please provide a address</p>",
-              },
-            },
-          });
-        });
+    $('input[name="phone"]').keyup(function (e) {
+      if (/\D/g.test(this.value)) {
+        // Filter non-digits from input value.
+        this.value = this.value.replace(/\D/g, "");
       }
+    });
+    this.getClassData();
+  }
 
-      getClassData = () => {
-        this.props.getClass((res)=>{
-            this.setState({getclasses:res.data.data})
-        })
-      }
+  getClassData = () => {
+    this.props.getClass((res) => {
+      this.setState({ getclasses: res.data.data });
+    });
+  };
 
-  
-      handleSubmit = (e) => {
-        e.preventDefault();
-      const {name,lastname,fatherName,dob,phonename1,phone,phone1,phone2,phonename2,phonename3,emergency,medical,address,classSelect,file} = this.state;
-      emergency.push({Ename:phonename1,number:phone},{Ename:phonename2,number:phone1},{Ename:phonename3,number:phone2})
-      
-      const formData = new FormData();
-      if(classSelect === ""){
-          toast.error("Please assign a class");
-      }
-       if(file.size >= 6000) {
-        toast.error("Profile size should be less than 6kb");
-      }
-      else{
-        const requestData = {
-          name: name,
-          lastName: lastname,
-          fatherName: fatherName,
-          DOB: dob,
-          address: address,
-          image: file,
-          assignClass: classSelect,
-          medical: medical,
-          emergency:JSON.stringify(emergency),    
-        };
-        for (var key in requestData) {
-          formData.append(key, requestData[key]);
-        }
-        this.props.addStudent(formData, (res) => {
-         
-          if (res.status === 200) {
-            toast.success("Student Added Successfully");
-            setTimeout(
-              () => {
-              window.location.replace("/student");
-              }, 500)
-          } else if (res.status === 400 ) {
-            toast.error("Student Added Failed");
-          }
-      
-        });
-      }
-    }
-    
-    handleClose = () => this.setState({ openmodel: false });
-    handleOpen = () => this.setState({ openmodel: true });
-    handleAddNumber = () => this.setState({ openmodelNumber: true });
-    handleCloseNumber = () => this.setState({ openmodelNumber: false });
-    modelEmergency = (e) => {
-      this.setState({ addNumber : e.target.value })
-      $('input[name="phone"]').keyup(function(e){
-        if (/\D/g.test(this.value))
-        {
-          // Filter non-digits from input value.
-          this.value = this.value.replace(/\D/g, '');
-        }
-        });
-    }
-    
-    handleCreateClass = (e) => {
-    e.preventDefault()
-    const { nameC } = this.state;
-    if(!nameC.startsWith("class")){
-      toast.error("classname must start with class ex: 'class A'");
-    }
-    else{
+  handleSubmit = (e) => {
+    e.preventDefault();
+    const {
+      name,
+      lastname,
+      fatherName,
+      startDate,
+      phonename1,
+      phone,
+      phone1,
+      phone2,
+      phonename2,
+      phonename3,
+      emergency,
+      medical,
+      address,
+      classSelect,
+      file,
+    } = this.state;
+    emergency.push(
+      { Ename: phonename1, number: phone },
+      { Ename: phonename2, number: phone1 },
+      { Ename: phonename3, number: phone2 }
+    );
+
+    const formData = new FormData();
+    // if ( this.state.dateError ==="") {
+    //   // toast.warn("Please assign a class");
+    // } else {
+
       const requestData = {
-        className: nameC
+        name: name,
+        lastName: lastname,
+        fatherName: fatherName,
+        DOB: this.state.startDate,
+        address: address,
+        image: file,
+        assignClass: classSelect,
+        medical: medical,
+        emergency: JSON.stringify(emergency),
+      };
+    
+      for (var key in requestData) {
+        formData.append(key, requestData[key]);
+      }
+      this.props.addStudent(formData, (res) => {
+        if (res.status === 200) {
+          toast.success("Student Added Successfully");
+          setTimeout(() => {
+            window.location.replace("/student");
+          }, 3000);
+        } else if (res.status === 400) {
+          toast.error("Student Added Failed");
+        }
+      });
+    // }
+  };
+
+  handleClose = () => this.setState({ openmodel: false });
+  handleOpen = () => this.setState({ openmodel: true });
+  handleAddNumber = () => this.setState({ openmodelNumber: true });
+  handleCloseNumber = () => this.setState({ openmodelNumber: false });
+  modelEmergency = (e) => {
+    this.setState({ addNumber: e.target.value });
+    $('input[name="phone"]').keyup(function (e) {
+      if (/\D/g.test(this.value)) {
+        // Filter non-digits from input value.
+        this.value = this.value.replace(/\D/g, "");
+      }
+    });
+  };
+
+  handleCreateClass = (e) => {
+    e.preventDefault();
+    const { nameC } = this.state;
+    if (nameC === "") {
+      toast.error("Classname is required");
+    } else if (!nameC.startsWith("class")) {
+      toast.error("Classname must start with class ex: 'class A'");
+    } else if (nameC.charAt(6) === " ") {
+      toast.warning("Given classname is not in correct format ex- 'class A'");
+    } else if (nameC.charAt(5) !== " ") {
+      toast.warning("Given classname is not in correct format ex- 'class A'");
+    } else {
+      const requestData = {
+        className: nameC.slice(0, -1) + nameC.charAt(6).toUpperCase(),
       };
       this.props.createClass(requestData, (res) => {
         if (res.status === 200) {
           toast.success(res.data.message);
-          this.setState({openmodel:false})
+          this.setState({ openmodel: false });
         } else if (res.status === 400) {
           toast.error(res.data.message);
         }
       });
     }
-  }
-  
+  };
+
   handleAddNewNumber = (e) => {
-    e.preventDefault()
-    const { addName,addNumber,database,emergency } = this.state;
-    
-    if(addName === "" || addNumber === ""){
-      toast.error("Fields are required");
-    }
-    else{
+    e.preventDefault();
+    const { addName, addNumber, database, emergency } = this.state;
+
+    if (addName === "" || addNumber === "") {
+      toast.error("All fields are required");
+    } else {
       emergency.push({
         Ename: addName,
         number: addNumber,
       });
-      this.setState({database:emergency})
-      if(emergency.length !== 0){
-        this.setState({openmodelNumber:false});
+      this.setState({ database: emergency });
+      if (emergency.length !== 0) {
+        this.setState({ openmodelNumber: false });
         toast.success("Number added successfully");
-      }else{
+      } else {
         toast.error("Number added failed");
-      }      
+      }
     }
-    
-  }
-  
+  };
+
   _handleImageChange(e) {
     e.preventDefault();
-    
-		let reader = new FileReader();
-		let file = e.target.files[0];
 
-		reader.onloadend = () => {
-      this.setState({
-        file: file,
-				photo: reader.result
-			});
-		}
-		reader.readAsDataURL(file)
+    let reader = new FileReader();
+    let file = e.target.files[0];
+    if (file.size >= 6000) {
+      toast.error("Student image must be less than 6kb");
+    } else {
+      reader.onloadend = () => {
+        this.setState({
+          file: file,
+          photo: reader.result,
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  setOnChange(e) {
+    this.setState({ [e.target.name]: e.target.value });
+  }
+
+  addClassOnChange(e) {
+    this.setState({ nameC: e.target.value });
+
+    $(document).ready(function () {
+      $("#addClass").validate({
+        rules: {
+          class: {
+            required: true,
+            minlength: 7,
+            maxlength: 7,
+          },
+        },
+        messages: {
+          class: {
+            required: "<p style='color:red'>Please enter classname</P>",
+            minlength:
+              "<p style='color:red'>Classname must be 7 characters</p>",
+            maxlength:
+              "<p style='color:red'>Classname must be 7 characters</p>",
+          },
+        },
+      });
+    });
+    $('input[name="class"]').keyup(function (e) {
+      if (/[^A-Za-z\s]/g.test(this.value)) {
+        // Filter non-digits from input value.
+        this.value = this.value.replace(/[^A-Za-z\s]/g, "");
+      }
+    });
+  }
+  HandleDate(e) {
+    var now = new Date();
+    var a = now.getFullYear();
+    var yyyy = e.getFullYear();
     
-	}
-  
-  render() { 
-    const {openmodel,openmodelNumber,classSelect,getclasses,photo,phone,phone1,phone2,phonename1,phonename2,phonename3,medical,address,name,lastname,fatherName,dob,database} = this.state;
+    var date = a - 2;
+    if (yyyy > date) {
+      this.setState({ dateError: "Student age must be greater than 2 year" });
+    } else {
+      this.setState({ startDate: e });
+      this.setState({ dateError: "" });
+    }
+  }
+
+  render() {
+    const {
+      openmodel,
+      openmodelNumber,
+      classSelect,
+      getclasses,
+      photo,
+      phone,
+      phone1,
+      phone2,
+      phonename1,
+      phonename2,
+      phonename3,
+      medical,
+      address,
+      name,
+      lastname,
+      fatherName,
+      dob,
+      database,
+    } = this.state;
     let $imagePreview = null;
     const style = {
       position: "absolute",
@@ -257,229 +443,503 @@ class AddStudent extends Component {
       borderRadius: "15px",
       p: 4,
     };
+    const current = new Date().toISOString().split("T")[0];
 
-    const content = (this.state.checked === true ) ? "display form-outline mb-4 col-md-12 medicaltextarea" : "no-display form-outline mb-4 col-md-12 medicaltextarea";
+    const content =
+      this.state.checked === true
+        ? "display form-outline mb-4 col-md-12 medicaltextarea"
+        : "no-display form-outline mb-4 col-md-12 medicaltextarea";
 
-    const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
-    return (<>
-          <Sidebar/>
-          <div className='col-md-8 col-lg-9 col-xl-10 mr-30 '>
-             <div className='header'> <ImageAvatars/></div>
-             <Modal
-          aria-labelledby="transition-modal-title"
-          aria-describedby="transition-modal-description"
-          open={openmodel}
-          onClose={this.handleClose}
-          closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
-          }}
-        >
-          <Fade in={openmodel}>
-            <Box sx={style}>
-            <form className="mui-form" onSubmit={this.handleCreateClass}> 
-                <legend >Add Class</legend>
-                <div className="mui-textfield">
-                  <input type="text" placeholder='class E' onChange={(e) => this.setState({ nameC: e.target.value })}/>
-                </div>
-                <div className="btndesign text-right">
-                <button
-                    type="button"
-                    className="btn btn-transparent"
-                    onClick={this.handleClose}
-                  >CLOSE</button>
+    const label = { inputProps: { "aria-label": "Checkbox demo" } };
+
+    const addFillName = (e) => {
+      $('input[name="name"]').keyup(function (e) {
+        if (/[^a-zA-Z]/g.test(this.value)) {
+          this.value = this.value.replace(/[^a-zA-Z]/g, "");
+        }
+      });
+      $(document).ready(function () {
+        $("#popupval").validate({
+          rules: {
+            name: {
+              required: true,
+              minlength: 3,
+            },
+            phone: { required: true, minlength: 10, maxlength: 10 },
+          },
+          messages: {
+            name: {
+              required: "<p style='color:red'>The name field is required</p>",
+              minlength:
+                "<p style='color:red'>Your first name must consist of at least 3 characters</p>",
+            },
+            phone: {
+              required: "<p style='color:red'> Mobile number is required</p>",
+              minlength:
+                "<p style='color:red'>Mobile number must be 10 digit</p>",
+              maxlength:
+                "<p style='color:red'>Mobile number must be 10 digit</p>",
+            },
+          },
+        });
+      });
+      this.setState({ addName: e.target.value });
+    };
+
+    return (
+      <>
+        <Sidebar />
+        <div className="col-md-8 col-lg-9 col-xl-10 mr-30 ">
+          <div className="header">
+            {" "}
+            <ImageAvatars />
+          </div>
+          <Modal
+            aria-labelledby="transition-modal-title"
+            aria-describedby="transition-modal-description"
+            open={openmodel}
+            onClose={this.handleClose}
+            closeAfterTransition
+            BackdropComponent={Backdrop}
+            BackdropProps={{
+              timeout: 500,
+            }}
+          >
+            <Fade in={openmodel}>
+              <Box sx={style}>
+                <form
+                  className="mui-form"
+                  id="addClass"
+                  onSubmit={this.handleCreateClass}
+                >
+                  <legend>Add Class</legend>
+                  <div className="mui-textfield">
+                    <input
+                      type="text"
+                      placeholder="class E"
+                      name="class"
+                      onChange={(e) => this.addClassOnChange(e)}
+                    />
+                  </div>
+                  <div className="btndesign text-right">
+                    <button
+                      type="button"
+                      className="btn btn-transparent"
+                      onClick={this.handleClose}
+                    >
+                      CLOSE
+                    </button>
+                    <input
+                      type="submit"
+                      className="btn btn-primary"
+                      value="SAVE"
+                    />
+                  </div>
+                </form>
+              </Box>
+            </Fade>
+          </Modal>
+          <Modal
+            aria-labelledby="transition-modal-title"
+            aria-describedby="transition-modal-description"
+            open={openmodelNumber}
+            onClose={this.handleCloseNumber}
+            closeAfterTransition
+            BackdropComponent={Backdrop}
+            BackdropProps={{
+              timeout: 500,
+            }}
+          >
+            <Fade in={openmodelNumber}>
+              <Box sx={style}>
+                <form
+                  name="popupval"
+                  id="popupval"
+                  className="mui-form"
+                  onSubmit={this.handleAddNewNumber}
+                >
+                  <legend>Add New Number</legend>
+                  <div className="mui-textfield">
+                    <input
+                      type="text"
+                      name="name"
+                      id="name"
+                      placeholder="Please enter your name"
+                      onChange={(e) => addFillName(e)}
+                    />
+                    <input
+                      type="tel"
+                      name="phone"
+                      id="phone"
+                      placeholder="Please enter your mobile no."
+                      onChange={(e) => this.modelEmergency(e)}
+                    />
+                  </div>
+                  <div className="btndesign text-right">
+                    <button
+                      type="button"
+                      className="btn btn-transparent"
+                      onClick={this.handleCloseNumber}
+                    >
+                      CLOSE
+                    </button>
+                    <input
+                      type="submit"
+                      className="btn btn-primary"
+                      value="SAVE"
+                    />
+                  </div>
+                </form>
+              </Box>
+            </Fade>
+          </Modal>
+          <Container
+            maxWidth="100%"
+            style={{ padding: "0", display: "inline-block" }}
+          >
+            <div className="heading1 mb-5">
+              <h1>Add Student</h1>
+            </div>
+            <form id="myform" onSubmit={this.handleSubmit}>
+              <div className="row">
+                <div className="form-outline mb-4 col-md-6">
+                  <label htmlFor="name">First Name</label>
                   <input
-                    type="submit"
-                    className="btn btn-primary"
-                    value="SAVE"
-                  />      
-                
+                    type="text"
+                    id="name"
+                    name="name"
+                    className="form-control"
+                    value={name}
+                    onChange={(e) => this.setOnChange(e)}
+                    placeholder="Please provide first name"
+                  />
+                  {/* {this.validator.message('first name',name,'required|min:3' )} */}
                 </div>
-              </form>
-            </Box>
-          </Fade>
-        </Modal>
-        <Modal
-          aria-labelledby="transition-modal-title"
-          aria-describedby="transition-modal-description"
-          open={openmodelNumber}
-          onClose={this.handleCloseNumber}
-          closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
-          }}
-        >
-          <Fade in={openmodelNumber}>
-            <Box sx={style}>
-            <form className="mui-form" onSubmit={this.handleAddNewNumber}> 
-                <legend >Add Number</legend>
-                <div className="mui-textfield">
-                  <input type="text" placeholder='Please enter your name' onChange={(e) => this.setState({ addName : e.target.value })}/>
-                  <input type="tel" name="phone" placeholder='Please enter your mobile no.' onChange={(e) => this.modelEmergency(e)}/>
-                </div>
-                <div className="btndesign text-right">
-                <button
-                    type="button"
-                    className="btn btn-transparent"
-                    onClick={this.handleCloseNumber}
-                  >CLOSE</button>
+                <div className="form-outline mb-4 col-md-6 ">
+                  <label htmlFor="lastname">Last Name</label>
                   <input
-                    type="submit"
-                    className="btn btn-primary"
-                    value="SAVE"
-                  />      
-                
+                    type="text"
+                    id="lastname"
+                    name="lastname"
+                    className="form-control"
+                    value={lastname}
+                    onChange={(e) => this.setOnChange(e)}
+                    placeholder="Please provide last name"
+                  />
+                  {/* {this.validator.message('lastname',lastname,'required|min:3' )} */}
                 </div>
-              </form>
-            </Box>
-          </Fade>
-        </Modal>
-             <Container maxWidth="100%" style={{padding:"0", display:"inline-block"}}>
-             <div className='heading1 mb-5' >
-                <h1>Add Student</h1>
-            </div>
-            <form id='myform' onSubmit={this.handleSubmit}>
-            <div className='row'>   
-              <div className="form-outline mb-4 col-md-6">
-                <label htmlFor="name">Name</label>
-                <input type="text" id="name" name="name" className="form-control" value={name} onChange={(e) => this.setState({ name: e.target.value }) } />
               </div>
-              <div className="form-outline mb-4 col-md-6 ">
-                <label htmlFor="lastname">Last Name</label>
-                <input type="text" id="lastname" name="lastname" className="form-control"  value={lastname} onChange={(e) => this.setState({ lastname: e.target.value }) } />
-              </div>
-            </div>
-            <div className='row'>
-              <div className="form-outline mb-4 col-md-6">
-                <label htmlFor="fatherName">Father Name</label>
-                <input type="text" id="fatherName" name="fatherName" className="form-control"  value={fatherName} onChange={(e) => this.setState({ fatherName: e.target.value }) } />
-              </div>
-              <div className="form-outline mb-4 col-md-6">
-                <label htmlFor="dob">Date of Birth</label>
-                <input type="text" id="dob" name="dob" className="form-control"  value={dob} onChange={(e) => this.setState({ dob: e.target.value }) } />
-              </div>
-            </div>
-            <div className='row'>
-              <div className="form-outline mb-4 col-md-6">
-                <div className='col-md-12 pl-0 pr-0 mb-4'>
-                  <label htmlFor="address">Address</label>
-                  <input type="text" id="address" name="address" className="form-control" value={address} onChange={(e) => this.setState({ address: e.target.value }) } />
+              <div className="row">
+                <div className="form-outline mb-4 col-md-6">
+                  <label htmlFor="fatherName">Father Name</label>
+                  <input
+                    type="text"
+                    id="fatherName"
+                    name="fatherName"
+                    className="form-control"
+                    value={fatherName}
+                    onChange={(e) => this.setOnChange(e)}
+                    placeholder="Please provide father name"
+                  />
+                  {/* {this.validator.message('father name',fatherName,'required|min:3' )} */}
                 </div>
-                <div className='col-md-12 pl-0 pr-0'>
-                <div className="form-outline mb-4">
-                    <label className='w-100' htmlFor="assign">Assign</label>
-                    <FormControl sx={{ m: 1, minWidth: 120 }} className="filter ml-0 mb-3 w-100 select-box">
-                      <Select
-                          labelId="demo-simple-select-helper-label"
-                          id="demo-simple-select-helper"
+                <div className="form-outline mb-4 col-md-6">
+                  <label htmlFor="dob">Date of Birth</label>
+                  <div>
+                  <DatePicker
+                    placeholderText="Please select date of birth"
+                    name="dob"
+                    selected={this.state.startDate}
+                    onChange={(date) => this.HandleDate(date)}
+                  />
+                  </div>
+                </div>
+                  <p style={{ color: "red" ,fontSize: "12px" }}>{this.state.dateError}</p>
+              </div>
+
+              <div className="row">
+                <div className="form-outline mb-4 col-md-6">
+                  <div className="col-md-12 pl-0 pr-0 mb-4">
+                    <label htmlFor="address">Address</label>
+                    <input
+                      type="text"
+                      id="address"
+                      name="address"
+                      className="form-control"
+                      value={address}
+                      onChange={(e) => this.setOnChange(e)}
+                      placeholder="Please provide address"
+                    />
+                    {/* {this.validator.message('address',address,'required' )} */}
+                  </div>
+                  <div className="col-md-12 pl-0 pr-0">
+                    <div className="form-outline mb-4">
+                      <label className="w-100" htmlFor="assign">
+                        Assign Class
+                      </label>
+
+                      <FormControl
+                        sx={{ m: 1, minWidth: 120 }}
+                        className="filter ml-0 mb-3 w-100 select-box"
+                      >
+                        <select
+                          labelId="demo-simple-select-helper-label "
+                          id="demo-simple-select-helper "
+                          name="demoselect"
                           value={classSelect}
                           label="Filter"
-                          onChange={(e) => this.setState({ classSelect: e.target.value })}
-                          inputProps={{ 'aria-label': 'Without label' }}
-                          className="w-100"
-                          >
-                          
-                          {getclasses.map((item)=>{ 
-                            return(
-                              <MenuItem key={item._id} value={item._id}>{item.className}</MenuItem> 
-                          ) })} 
-                          
-                      </Select>
-                    </FormControl>
-                    <a  className='float-right pointer blue' onClick={this.handleOpen}>Add new class</a>
-                </div>
-                </div>
-              </div>
-              <div className="form-outline mb-4 col-md-6">
-                <label htmlFor="emergency">Emergency</label>
-                <div className='phoneNo'>
-                  <input type="text" id="phonename1" name="phonename1" placeholder='Name' className="form-control mb-3 col-md-4 mr-2" value={phonename1} onChange={(e) => this.setState({ phonename1: e.target.value})} />
-                  <input type="tel" id="phone" name="phone" className="form-control mb-3 col-md-8" value={phone} onChange={(e) => this.setState({ phone:e.target.value }) } />
-                </div>
-                <div className='phoneNo'>
-                  <input type="text" id="phonename2" name="phonename1" placeholder='Name' className="form-control mb-3 col-md-4 mr-2" value={phonename2} onChange={(e) => this.setState({ phonename2: e.target.value})} />
-                  <input type="tel" id="phone1" name="phone" className="form-control mb-3 col-md-8" value={phone1} onChange={(e) => this.setState({ phone1:e.target.value }) } />
-                </div>
-                <div className='phoneNo'>  
-                  <input type="text" id="phonename3" name="phonename1" placeholder='Name' className="form-control mb-3 col-md-4 mr-2" value={phonename3} onChange={(e) => this.setState({ phonename3: e.target.value})} />
-                  <input type="tel" id="phone2" name="phone" className="form-control mb-3 col-md-8" value={phone2} onChange={(e) => this.setState({ phone2:e.target.value }) } />
-                </div>  
-                {database ? 
-                <>
-                {database.map((data)=>{
-                  return( 
-                    <div className='phoneNo'>  
-                   <input type="text" className="form-control mb-3 col-md-4 mr-2" value={data.Ename}/>
-                  <input type="tel"  className="form-control mb-3 col-md-8" value={data.number} />
+                          onChange={(e) =>
+                            this.setState({
+                              classSelect: e.target.value,
+                            })
+                          }
+                          inputProps={{ "aria-label": "Without label" }}
+                          className="w-100 form-control "
+                        >
+                          <option value="">select</option>
+                          {getclasses.map((item) => {
+                            return (
+                              <option key={item._id} value={item._id}>
+                                {item.className}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </FormControl>
+                      {/* 
+                      {this.validator.message(
+                        "Assign class",
+                        classSelect,
+                        "required"
+                      )} */}
+                      <a
+                        className="float-right pointer blue"
+                        onClick={this.handleOpen}
+                      >
+                        Add new class
+                      </a>
                     </div>
-                )})}</>
-                :""}
-                
-                
-                <a className='float-right pointer blue' onClick={this.handleAddNumber}>Add new</a>
+                  </div>
+                </div>
+                <div className="form-outline mb-4 col-md-6">
+                  <label htmlFor="emergency">Emergency</label>
+                  <div className="phoneNo">
+                    <span className="col-md-4 mr-2 p-0">
+                      <input
+                        type="text"
+                        id="phonename1"
+                        name="phonename1"
+                        placeholder="Name"
+                        className="form-control mb-3 col-md-12 "
+                        value={phonename1}
+                        onChange={(e) => this.setOnChange(e)}
+                      />
+                      {/* {this.validator.message('name',phonename1,'required|min:3' )} */}
+                    </span>
+                    <span className="col-md-8 p-0">
+                      <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        className="form-control mb-3  "
+                        value={phone}
+                        onChange={(e) => this.setOnChange(e)}
+                        // maxLength={10}
+                        placeholder="Mobile number"
+                      />
+                      {/* {this.validator.message('mobile number',phone,'required|min:10' )} */}
+                    </span>
+                  </div>
+                  <div className="phoneNo">
+                    <span className="col-md-4 mr-2 p-0">
+                      <input
+                        type="text"
+                        id="phonename2"
+                        name="phonename2"
+                        placeholder="Name"
+                        className="form-control mb-3 col-md-12 "
+                        value={phonename2}
+                        onChange={(e) => this.setOnChange(e)}
+                      />
+                      {/* {this.validator.message('name',phonename1,'required|min:3' )} */}
+                    </span>
+                    <span className="col-md-8 p-0">
+                      <input
+                        type="tel"
+                        id="phone1"
+                        name="phone1"
+                        className="form-control mb-3 "
+                        value={phone1}
+                        onChange={(e) => this.setOnChange(e)}
+                        // maxLength={10}
+                        placeholder="Mobile number"
+                      />
+                      {/* {this.validator.message('mobile number',phone,'required|min:10' )} */}
+                    </span>
+                  </div>
+                  <div className="phoneNo">
+                    <span className="col-md-4 mr-2 p-0">
+                      <input
+                        type="text"
+                        id="phonename3"
+                        name="phonename3"
+                        placeholder="Name"
+                        className="form-control mb-3 col-md-12 "
+                        value={phonename3}
+                        onChange={(e) => this.setOnChange(e)}
+                      />
+                      {/* {this.validator.message('name',phonename1,'required|min:3' )} */}
+                    </span>
+                    <span className="col-md-8 p-0">
+                      {" "}
+                      <input
+                        type="tel"
+                        id="phone2"
+                        name="phone2"
+                        className="form-control mb-3 "
+                        value={phone2}
+                        onChange={(e) => this.setOnChange(e)}
+                        // maxLength={10}
+                        placeholder="Mobile number"
+                      />
+                      {/* {this.validator.message('mobile number',phone,'required|min:10' )} */}
+                    </span>
+                  </div>
+                  {database ? (
+                    <>
+                      {database.map((data) => {
+                        return (
+                          <div className="phoneNo">
+                            <input
+                              type="text"
+                              className="form-control mb-3 col-md-4 mr-2"
+                              value={data.Ename}
+                            />
+                            <input
+                              type="tel"
+                              className="form-control mb-3 col-md-8"
+                              value={data.number}
+                            />
+                          </div>
+                        );
+                      })}
+                    </>
+                  ) : (
+                    ""
+                  )}
 
+                  {phone === "" ||
+                  phone1 === "" ||
+                  phone2.length !== 10 ||
+                  phonename1 === "" ||
+                  phonename2 === "" ||
+                  phonename3 === "" ? (
+                    ""
+                  ) : (
+                    <a
+                      className="float-right pointer blue"
+                      onClick={this.handleAddNumber}
+                    >
+                      Add new
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-            
-             <div className='row'>
-               <div className="form-outline mb-4 col-md-6">
-                <label className='w-100'> Photo</label>
 
-								<label htmlFor="photo">
-									{photo ? (
-										$imagePreview = <img src={photo} alt="dummy" width="80px" height="80px" />
-									) : (
-										$imagePreview = <div className="previewText1"> <strong>Upload image</strong></div>
-									)}
-								</label>
-								<input
-									type="file"
-									id="photo"
-                  name="photo"
-                  className="form-control"
-									style={{ display: "none" }}
-									onChange={(e) => this._handleImageChange(e)}
-								/>
-						</div>
-            </div>
-             <div className='row'>
-             <div className="form-outline mb-4 col-md-6 medicalCheckbox">
-              
-               {/* <Checkbox {...label} className="medicalChe" id="medicalcheck" checked={ this.state.checked }  /> */}
-               <input 
-                  type="checkbox" 
-                  className='checkbox'
-                  checked={ this.state.checked } 
-                  onChange={ this.handleChange } />
+              <div className="row">
+                <div className="form-outline mb-4 col-md-6">
+                  <label className="w-100"> Photo</label>
 
-            
-              <label htmlFor='medicalCheckbox' className='medicalLabel'> Enter Medical Information</label>
-              <div className={content}> 
-              <label htmlFor="medical">Medical</label>
-                <textarea id="medical" name="medical" rows="4" cols="50" value={medical} onChange={(e) => this.setState({ medical: e.target.value })}></textarea>
+                  <label htmlFor="photo">
+                    {photo
+                      ? ($imagePreview = (
+                          <img
+                            src={photo}
+                            alt="dummy"
+                            width="80px"
+                            height="80px"
+                          />
+                        ))
+                      : ($imagePreview = (
+                          <>
+                            <div className="previewText1">
+                              {" "}
+                              <strong>Upload image</strong>
+                            </div>
+                            <p style={{ fontSize: "13px" }}>
+                            Student image must be less than 6kb
+                            </p>
+                          </>
+                        ))}
+                  </label>
+                  <input
+                    type="file"
+                    id="photo"
+                    name="photo"
+                    className="form-control"
+                    style={{ display: "none" }}
+                    onChange={(e) => this._handleImageChange(e)}
+                  />
+        
+                </div>
               </div>
-             </div>
-            </div>
-            
-            <div>
-             <a href="/student" className="btn btn-transparent btn-block mb-4" >CANCEL</a>
-            <input type="submit" className="btn btn-primary btn-block mb-4" value="SAVE" />
-            
-          </div>
-          </form>
+              <div className="row">
+                <div className="form-outline mb-4 col-md-6 medicalCheckbox">
+     
+                  <input
+                    type="checkbox"
+                    className="checkbox"
+                    checked={this.state.checked}
+                    onChange={this.handleChange}
+                  />
+
+                  <label htmlFor="medicalCheckbox" className="medicalLabel">
+                    {" "}
+                    Enter Medical Information
+                  </label>
+                  <div className={content}>
+                    <label htmlFor="medical">Medical</label>
+                    <textarea
+                      id="medical"
+                      name="medical"
+                      rows="4"
+                      cols="50"
+                      value={medical}
+                      onChange={(e) =>
+                        this.setState({ medical: e.target.value })
+                      }
+                    ></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <a
+                  href="/student"
+                  className="btn btn-transparent btn-block mb-4"
+                >
+                  CANCEL
+                </a>
+                <input
+                  type="submit"
+                  className="btn btn-primary btn-block mb-4"
+                  value="SAVE"
+                />
+              </div>
+            </form>
           </Container>
         </div>
-        </>
-        );
-    }
+      </>
+    );
+  }
 }
- 
+
 const mapStateToProps = (state) => {
   return {};
 };
 
 export default connect(mapStateToProps, {
-  createClass,getClass,addStudent,
+  createClass,
+  getClass,
+  addStudent,
 })(AddStudent);

@@ -1,0 +1,125 @@
+/* .heading > div {
+    width:100%;
+} */
+
+.heading > div a {
+    font-size: 15px;
+    margin: 0 10px;
+    text-transform: uppercase;
+}
+
+.assign a {
+    color: #005cb3 !important;
+    font-size: 16px;
+  } 
+
+.heading2 .MuiPaper-root {
+    box-shadow: none;
+    width: 443px;
+    height: 50px;
+    border:1px solid #BCBCBC;
+}
+
+.studentTabel.MuiPaper-root.MuiPaper-elevation  {
+    box-shadow: none;
+}
+
+.studentTabel.MuiPaper-root.MuiPaper-elevation thead th {
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+}
+
+.studentTabel.MuiPaper-root.MuiPaper-elevation th,
+.studentTabel.MuiPaper-root.MuiPaper-elevation  td{
+   font-size: 15px;
+   font-weight: 500;
+   font-family: 'Poppins', sans-serif;
+}
+ 
+
+.action span {
+  margin: 0 5px;
+}
+
+.checkbox {
+    margin-right: 12px;
+    display: inline-block;
+    border: 1px solid #ccc;
+}
+
+.no-display {
+    display: none;
+}
+
+.form-outline.mb-4.col-md-12.medicaltextarea {
+    margin-top: 15px;
+    padding: 0;
+} 
+
+.form-outline.mb-4.col-md-12.medicaltextarea textarea{
+    resize: none;
+    background: #FAFBFC;
+    border: 1px solid #EDF0F3;
+    border-radius: 4px;
+    padding: 8px;
+    color: #495057;
+}
+
+#myform {
+    margin-bottom: 25px;
+  }
+
+.form-outline.mb-4.col-md-12.medicaltextarea label {
+    color: #000;
+    margin-bottom: 9px;
+}
+
+.attendance button {
+   border:none;
+   width: 25px;
+   height: 25px;
+   background: #D8D8D8;
+   text-align: center;
+   line-height: 20px;
+   margin: 0 5px;
+}
+
+ .disabled.form-outline.mb-4.col-md-12.medicaltextarea button {
+   
+    background: #D8D8D8;
+  
+}
+
+.attendance button {
+    border: none;
+    width: 25px;
+    height: 25px;
+    text-align: center;
+    line-height: 20px;
+    margin: 0 5px;
+    
+}
+
+.attendance button.present-button {
+    background-color: #005CB3;
+}
+
+.attendance button.absent-button {
+    background-color: #F39911;
+}
+
+.student_table .css-1ptx2yq-MuiInputBase-root-MuiInput-root::before {
+  display: none;
+}
+
+.student_table select {
+    background: #E8E8E8;
+    border-radius: 5px;
+    padding: 5px 7px;
+}
+
+.MuiAvatar-root.MuiAvatar-circular.css-1a5g0a6-MuiAvatar-root {
+    display: inline-block;
+    vertical-align: middle;
+}
