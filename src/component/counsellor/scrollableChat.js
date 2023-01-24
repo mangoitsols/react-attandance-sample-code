@@ -14,7 +14,7 @@ import axios from "axios";
 import { authHeader } from "../../comman/authToken";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Example1 from "../../comman/loader1";
+import LoaderButton from "../../comman/loader1";
 toast.configure();
 
 const ScrollableChat = ({ messages }) => {
@@ -170,7 +170,7 @@ const ScrollableChat = ({ messages }) => {
                 ""
               )}
             </span>
-            {loading ? <Example1/> : ""}
+            {loading ? <LoaderButton/> : ""}
             {m && m._id === index && m.sender._id === userId && toggle ? (
               <>
                 <span className="mt-3 m-2" onClick={() => handleDelete(m._id,m.chat._id)}>

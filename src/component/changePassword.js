@@ -8,7 +8,7 @@ import $ from "jquery";
 import validate from "jquery-validation";
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import { toast } from "react-toastify";
-import Example from "../comman/loader1";
+import Loader from "../comman/loader1";
 import "react-toastify/dist/ReactToastify.css";
 toast.configure();
 
@@ -17,7 +17,7 @@ class ChangePassword extends Component {
       oldPass:"",
       newPass:"",
       confirmPass:"",
-      loding:false
+      loading:false
        } 
 
      componentDidMount() {
@@ -67,18 +67,18 @@ class ChangePassword extends Component {
           confirmPassword:confirmPass,
           id:localStorage.getItem("id"),
         }
-        this.setState({loding:true})
+        this.setState({loading:true})
         this.props.changePassword(requestData,(res)=>{
           if(res.status === 200){
-            this.setState({loding:false})
+            this.setState({loading:false})
             this.setState({oldPass:""})
             this.setState({newPass:""})
             this.setState({confirmPass:""})
             toast.success("Password updated");
-            this.setState({loding:false})
+            this.setState({loading:false})
           }
           else{
-        this.setState({loding:false})
+        this.setState({loading:false})
           }
         })
      
@@ -111,9 +111,9 @@ class ChangePassword extends Component {
                   <input type="password"  id="newPass" name="newPass" className="form-control" placeholder='Please provide new password' value={this.state.newPass} onChange={(e) => this.setState({ newPass: e.target.value }) } />
                 </div>
               </div>
-              {this.state.loding === true ? (
+              {this.state.loading === true ? (
                   <div className="loader">
-                    <Example />
+                    <Loader />
                   </div>
                 ) : (
                   ""
@@ -126,7 +126,7 @@ class ChangePassword extends Component {
               </div>
               <div className='mt-4'>
               <button type="button" className="btn btn-transparent btn-block mb-4" onClick={this.handleCancel} >CANCEL</button>
-              <input type="submit" className="btn btn-primary btn-block mb-4" value="UPDATE" />
+             {!this.state.loading ? <input type="submit" className="btn btn-primary btn-block mb-4" value="UPDATE" /> : <input type="button" className="btn btn-secondary btn-block mb-4" disabled value="UPDATE" /> }
             </div>
           </form>
           </Container>

@@ -10,7 +10,7 @@ import Checkbox from "@material-ui/core/Checkbox";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./css/login.css";
-import Example1 from "../comman/loader1";
+import LoaderButton from "../comman/loader1";
 import { authHeader } from "../comman/authToken";
 import { API, BASE_URL } from "../config/config";
 
@@ -66,14 +66,14 @@ class Login extends Component {
       localStorage.getItem("token") != null ? (
         <div className="welcome">
           <div className="welcome-center">
-            <img src={require("./images/welcome-icon.png")} />
+            <img src={require("./images/welcome-icon.png")} alt='Alternate Message'/>
             <h2>Welcome {localStorage.getItem("lastname")}</h2>
           </div>
         </div>
       ) : (
         <div className="welcome" style={{ display: "none" }}>
           <div className="welcome-center">
-            <img src={require("./images/welcome-icon.png")} />
+            <img src={require("./images/welcome-icon.png")} alt='Alternate Message'/>
             <h2>Welcome {localStorage.getItem("lastname")}</h2>
           </div>
         </div>
@@ -165,7 +165,7 @@ class Login extends Component {
                     typesetting industry.
                     <br /> Lorem Ipsum{" "}
                   </h2>
-                  <img src={require("../images/banner.png")} />
+                  <img src={require("../images/banner.png")} alt='Alternate Message'/>
                 </div>
                 <div className="carousel-item">
                   <h2>
@@ -173,7 +173,7 @@ class Login extends Component {
                     typesetting industry.
                     <br /> Lorem Ipsum{" "}
                   </h2>
-                  <img src={require("../images/banner.png")} />
+                  <img src={require("../images/banner.png")}  alt='Alternate Message'/>
                 </div>
                 <div className="carousel-item">
                   <h2>
@@ -181,7 +181,7 @@ class Login extends Component {
                     typesetting industry.
                     <br /> Lorem Ipsum{" "}
                   </h2>
-                  <img src={require("../images/banner.png")} />
+                  <img src={require("../images/banner.png")} alt='Alternate Message'/>
                 </div>
               </div>
             </div>
@@ -255,7 +255,7 @@ class Login extends Component {
                   />
                 ) : (
                   <div className="loader">
-                    <Example1 />
+                    <LoaderButton />
                   </div>
                 )}
               </fieldset>

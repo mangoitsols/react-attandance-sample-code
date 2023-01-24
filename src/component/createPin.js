@@ -9,8 +9,9 @@ import validate from "jquery-validation";
 import PinInput from "react-pin-input";
 import { toast } from "react-toastify";
 import pin from "../images/pin.svg";
-import Example from "../comman/loader1";
+import Loader from "../comman/loader1";
 import "react-toastify/dist/ReactToastify.css";
+import LoaderButton from "../comman/loader1";
 toast.configure();
 
 class CreatePin extends Component {
@@ -83,7 +84,7 @@ class CreatePin extends Component {
                     <div>
                       <PinInput
                         length={4}
-                        initialValue="0000"
+                        initialValue=""
                         type="numeric"
                         inputMode="number"
                         style={{ padding: "10px" }}
@@ -92,6 +93,7 @@ class CreatePin extends Component {
                         }}
                         autoSelect={true}
                         regexCriteria={/^[ A-Za-z0-9_@./#&+-]*$/}
+                        placeholder="0"
                       />
                     </div>
                   </div>
@@ -102,9 +104,10 @@ class CreatePin extends Component {
                     <div>
                       <PinInput
                         length={4}
-                        initialValue="0000"
+                        initialValue=""
                         type="numeric"
                         inputMode="number"
+                        placeholder="0"
                         style={{ padding: "10px" }}      
                         onComplete={(value, index) => {
                           this.setState({ pintt: value });
@@ -124,7 +127,8 @@ class CreatePin extends Component {
                     <div>
                       <PinInput
                         length={4}
-                        initialValue="0000"
+                        initialValue=""
+                        placeholder="0"
                         // secret
                         // onChange={ (value, index) => {this.setState({ pint: value })}}
                         type="numeric"
@@ -142,7 +146,7 @@ class CreatePin extends Component {
                   </div>
                 </div>
 
-                {this.state.loading === false ? (
+                {!this.state.loading ? (
                  <div className="text-right pinSave">
                  <input
                     type="submit"
@@ -150,7 +154,7 @@ class CreatePin extends Component {
                     value="UPDATE"
                   /> 
                 </div>)  : (
-                    <Example />
+                    <><button type="button" class="btn btn-secondary" disabled>UPDATE</button><LoaderButton /></>
                 )}
               </div>
             </form>

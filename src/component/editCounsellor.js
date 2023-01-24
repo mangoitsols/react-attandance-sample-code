@@ -10,7 +10,7 @@ import { getClasses } from "../action/functional";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { authHeader } from "../comman/authToken";
-import Example from "../comman/loader";
+import Loader from "../comman/loader";
 import $ from "jquery";
 toast.configure();
 

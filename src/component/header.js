@@ -18,7 +18,8 @@ export default function ImageAvatars() {
   },[])
    
   const [newPass,setNewPass]=useState(""); 
-  const socket = useRef(io(`${SOCKET_URL}`, { transports: ['websocket'] }));
+
+  // const socket = useRef(io(`${SOCKET_URL}`, { transports: ['websocket'] }));
 
   const handleLogout = () => {
     localStorage.clear("token");
@@ -56,15 +57,15 @@ export default function ImageAvatars() {
     setActive(!isActive);
   };
   const handleRed = () => {
-    socket.current.emit("sendNotification", {});
+    // socket.current.emit("sendNotification", {});
     setOpenRed(false);
   };
   const handleYellow = () => {
-    socket.current.emit("sendYellowNotification", {});
+    // socket.current.emit("sendYellowNotification", {});
     setOpenYellow(false);
   };
   const handleBlack = () => {
-    socket.current.emit("sendBlackNotification", {});
+    // socket.current.emit("sendBlackNotification", {});
     setOpenBlack(false);  
   };
 
@@ -176,28 +177,28 @@ export default function ImageAvatars() {
                 </Modal>
                  </div>
         <div>
-          <img className="mr-2" src={require("../images/security.png")} />
+          <img className="mr-2" src={require("../images/security.png")} alt='Alternate Message'/>
           Security Alert
         </div>
         <ul>
           <li onClick={handleOpenRed}>
             {" "}
-            <img src={require("../images/red alert.png")} />{" "}
+            <img src={require("../images/red alert.png")} alt='Alternate Message' />{" "}
           </li>
           <li onClick={handleOpenYellow}>
             {" "}
-            <img src={require("../images/yellow alert.png")} />{" "}
+            <img src={require("../images/yellow alert.png")} alt='Alternate Message'/>{" "}
           </li>
           <li onClick={handleOpenBlack}>
             {" "}
-            <img src={require("../images/black alert.png")} />{" "}
+            <img src={require("../images/black alert.png")} alt='Alternate Message'/>{" "}
           </li>
         </ul>
         
       </div>
       <Stack direction="row" spacing={2}>
         <Avatar
-          alt="Remy Sharp"
+          alt={capitalizeNameFirstLetter}
           src={newPass.data && newPass.data[0].image ? `${BASE_URL}/${newPass.data[0].image}` : localStorage.getItem("image") ? localStorage.getItem("image").startsWith('uploads/') ? `${BASE_URL}/${localStorage.getItem("image")}` : localStorage.getItem("image"): ""}
           sx={{ width: 56, height: 56 }}
         />
@@ -212,8 +213,8 @@ export default function ImageAvatars() {
           <div className={isActive ? "toggleNone" : "active"}>
             <div className="myprofileToggle">
               <Avatar
-                alt="Remy Sharp"
-                src={newPass.data && newPass.data[0].image ? `${BASE_URL}/${newPass.data[0].image}` : require("../images/avatar/Avatar.jpg")}
+                alt={capitalizeNameFirstLetter}
+                src={newPass.data && newPass.data[0].image ? `${BASE_URL}/${newPass.data[0].image}` : localStorage.getItem("image") ? localStorage.getItem("image").startsWith('uploads/') ? `${BASE_URL}/${localStorage.getItem("image")}` : localStorage.getItem("image"): ""}
                 sx={{ width: 56, height: 56 }}
               />
               <span>

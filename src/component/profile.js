@@ -24,7 +24,7 @@ import { BASE_URL } from "../config/config";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "font-awesome/css/font-awesome.css";
-import Example from "../comman/loader";
+import Loader from "../comman/loader";
 import SimpleReactValidator from "simple-react-validator";
 import { Link } from "react-router-dom";
 import ChatNotify from "../comman/chatNotify";
@@ -59,7 +59,7 @@ class Profile extends Component {
     loading: "true",
     numberValid: true,
     cancel: false,
-    profileName:''
+    profileName: "",
   };
   componentDidMount() {
     this.props.getAllCountry((res) => {
@@ -68,10 +68,10 @@ class Profile extends Component {
         this.setState({ getCountry: res.data.country });
       }
     });
-    
+
     this.getDetailUser();
   }
-  
+
   handleSubmit = (e) => {
     e.preventDefault();
     const {
@@ -86,7 +86,7 @@ class Profile extends Component {
       image,
       file,
       numberValid,
-      imagePreviewUrl
+      imagePreviewUrl,
     } = this.state;
     const formData = new FormData();
 
@@ -103,7 +103,7 @@ class Profile extends Component {
         name: name,
         image: file === "" ? image : file,
       };
-      
+
       for (var key in requestData) {
         formData.append(key, requestData[key]);
       }
@@ -111,8 +111,8 @@ class Profile extends Component {
         if (res.status === 200) {
           toast.success("Profile updated successfully");
           this.getDetailUser();
-          localStorage.setItem('name',name)
-          localStorage.setItem("image",image)
+          localStorage.setItem("name", name);
+          localStorage.setItem("image", image);
         } else if (res.status === 400) {
           toast.error(res.data.message);
         }
@@ -150,14 +150,12 @@ class Profile extends Component {
           file: file,
           imagePreviewUrl: reader.result,
         });
-        localStorage.setItem("image",reader.result)
-
+        localStorage.setItem("image", reader.result);
       };
       reader.readAsDataURL(file);
     }
   }
 
- 
   getDetailUser() {
     const id = localStorage.getItem("id");
 
@@ -208,7 +206,6 @@ class Profile extends Component {
     }
   }
 
- 
   render() {
     const {
       getCountry,
@@ -224,11 +221,16 @@ class Profile extends Component {
       city,
       email,
       mobileNumber,
-      profileName
+      profileName,
     } = this.state;
     let $imagePreview = null;
+    
     const roleStr = localStorage?.getItem("role");
     const capitalizeFirstLetter = roleStr.charAt(0).toUpperCase() + roleStr.slice(1);
+
+    const capitalizeFirstLetterofName = name.charAt(0).toUpperCase() + name.slice(1);
+    const capitalizeFirstLetterofProfileName = profileName.charAt(0).toUpperCase() + profileName.slice(1);
+
     return (
       <>
         <Sidebar />
@@ -242,44 +244,42 @@ class Profile extends Component {
             style={{ padding: "0", display: "inline-block" }}
           >
             {loading ? (
-              <Example />
+              <Loader />
             ) : (
               <React.Fragment>
                 <form onSubmit={this.handleSubmit}>
                   <Stack direction="row" spacing={2} className="profileAvtar">
                     <div>
                     <Avatar
-                        alt="Remy Sharp"
+                        alt={capitalizeFirstLetterofName}
                         src={`${BASE_URL}/${image}` }
                         sx={{ width: 56, height: 56 }}
                       />
                     </div>
                     <span>
                       <span className="editable">
-                       {profileName}
+                       {capitalizeFirstLetterofProfileName}
                       </span>
                       <br />
                       <small> {capitalizeFirstLetter} </small>
                     </span>
                   </Stack>
                   <div className="profileBox">
-                  <div className="row">
-
-                  <div className="form-outline mb-4 col-md-6">
-                      <label htmlFor="upload-button">
-                      <label>Profile Image</label>
+                    <div className="row">
+                      <div className="form-outline mb-4 col-md-6">
+                        <label htmlFor="upload-button">Profile Image</label>
                         {imagePreviewUrl
                           ? ($imagePreview = (
                               <div className="previewText">
                                 {" "}
                                 <Avatar
-                                  alt="Remy Sharp"
+                                  alt={capitalizeFirstLetterofName}
                                   src={imagePreviewUrl}
                                   sx={{ width: 56, height: 56 }}
                                 />{" "}
                                 <i
                                   className="fa fa-camera"
-                                  style={{ fontSize: "35px"}}
+                                  style={{ fontSize: "35px" }}
                                 ></i>
                               </div>
                             ))
@@ -287,27 +287,26 @@ class Profile extends Component {
                               <div className="previewText">
                                 {" "}
                                 <Avatar
-                                  alt="Remy Sharp"
+                                  alt={capitalizeFirstLetterofName}
                                   src={`${BASE_URL}/${image}`}
                                   sx={{ width: 56, height: 56 }}
                                 />{" "}
                                 <i
                                   className="fa fa-camera"
-                                  style={{ fontSize: "35px",right:"44px" }}
+                                  style={{ fontSize: "35px", right: "44px" }}
                                 ></i>
                               </div>
                             ))}
 
-                      </label>
-                      <input
-                        type="file"
-                        id="upload-button"
-                        style={{ display: "none" }}
-                        onChange={(e) => this._handleImageChange(e)}
-                      />
-                    </div>
+                        <input
+                          type="file"
+                          id="upload-button"
+                          style={{ display: "none" }}
+                          onChange={(e) => this._handleImageChange(e)}
+                        />
+                      </div>
 
-                  <div className="form-outline mb-4 col-md-6 profileName">
+                      <div className="form-outline mb-4 col-md-6 profileName">
                         <label htmlFor="streetAddress">Profile Name</label>
                         <input
                           type="text"
@@ -315,14 +314,10 @@ class Profile extends Component {
                           name="name"
                           className="form-control"
                           placeholder="Please enter your name"
-                          value={name}
+                          value={capitalizeFirstLetterofName}
                           onChange={(e) => this.setOnChange(e)}
                         />
-                        {this.validator.message(
-                          "name",
-                          name,
-                          "required|min:3"
-                        )}
+                        {this.validator.message("name", name, "required|min:3")}
                       </div>
                     </div>
                     <h5>My Address</h5>

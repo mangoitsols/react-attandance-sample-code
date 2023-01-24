@@ -53,6 +53,7 @@ import student from "../images/student.svg";
 import Example1 from "../comman/loader1";
 import PinInput from "react-pin-input";
 import $ from "jquery";
+import LoaderButton from "../comman/loader1";
 
 toast.configure();
 
@@ -433,12 +434,7 @@ const EnhancedTableToolbar = (props) => {
                     value="SAVE"
                   />
                 ) : (
-                  <input
-                    type="submit"
-                    className="btn btn-secondary"
-                    disabled
-                    value="SAVE"
-                  />
+                  <><Button type="button" disabled>SAVE</Button><LoaderButton /></>
                 )}
               </div>
             </form>
@@ -1035,7 +1031,7 @@ export default function EnhancedTable(props) {
                       {filterr ? (
                         filterr.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={6}>Record not found</TableCell>
+                            <TableCell colSpan={6} sx={{textAlign:'center'}}>Record not found</TableCell>
                           </TableRow>
                         ) : (
                           filterr &&
@@ -1134,7 +1130,7 @@ export default function EnhancedTable(props) {
                                           }
                                         >
                                           <img
-                                            src={require("./images/medical.png")}
+                                            src={require("./images/medical.png")} alt='Medical_Img'
                                           />
                                         </i>
                                       )}
@@ -1153,7 +1149,7 @@ export default function EnhancedTable(props) {
                                         >
                                           <i>
                                             <img
-                                              src={require("./images/emergency.png")}
+                                              src={require("./images/emergency.png")} alt='Emergency_Img'
                                             />
                                           </i>
                                         </Button>
@@ -1167,7 +1163,7 @@ export default function EnhancedTable(props) {
                                       <span>
                                         <Link to={`/editstudent/${row._id}`}>
                                           <img
-                                            src={require("./images/edit.png")}
+                                            src={require("./images/edit.png")} alt='edit icon'
                                           />
                                         </Link>
                                       </span>
@@ -1177,14 +1173,14 @@ export default function EnhancedTable(props) {
                                         {deleteId === row._id ? (
                                           !loading1 ? (
                                             <img
-                                              src={require("./images/delet.png")}
+                                              src={require("./images/delet.png")} alt='delete icon'
                                             />
                                           ) : (
                                             <Example1 />
                                           )
                                         ) : (
                                           <img
-                                            src={require("./images/delet.png")}
+                                            src={require("./images/delet.png")} alt='delete icon'
                                           />
                                         )}
                                       </span>
@@ -1194,19 +1190,19 @@ export default function EnhancedTable(props) {
                                         {dismissId === row._id ? (
                                           !loading1 ? (
                                             <img
-                                              src={require("./images/dismiss.png")}
+                                              src={require("./images/dismiss.png")} alt='dismiss icon'
                                             />
                                           ) : (
                                             <>
                                               <Example1 />{" "}
                                               <img
-                                                src={require("./images/dismiss.png")}
+                                                src={require("./images/dismiss.png")} alt='dismiss icon'
                                               />
                                             </>
                                           )
                                         ) : (
                                           <img
-                                            src={require("./images/dismiss.png")}
+                                            src={require("./images/dismiss.png")} alt='dismiss icon'
                                           />
                                         )}
                                       </span>
@@ -1336,9 +1332,10 @@ export default function EnhancedTable(props) {
             <div style={{textAlign:'center'}}>
               <PinInput
                 length={4}
-                initialValue="0000"
+                initialValue=""
                 type="numeric"
                 inputMode="number"
+                placeholder="0"
                 style={{ padding: "10px" }}
                 onComplete={(value, index) => {
                   setPin(value);
@@ -1352,7 +1349,7 @@ export default function EnhancedTable(props) {
             {!loading1 ? (
 			  <button type='submit' className="btn btn-primary pinButtonDesign" onClick={handleMedicalByPin}>SUBMIT</button>
             ) : (
-			  <button className="btn btn-secondary" disabled>SUBMIT</button>
+              <><Button variant="contained" className="btn pinButtonDesign" disabled>SUBMIT</Button><LoaderButton /></>
             )}</div>
           </Box>
         </Modal>

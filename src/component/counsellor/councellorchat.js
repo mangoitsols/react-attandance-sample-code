@@ -3,10 +3,10 @@ import Sidebar from "./sidebar";
 import ImageAvatars from "./header";
 import { authHeader } from "../../comman/authToken";
 import { API, BASE_URL, SOCKET_URL } from "../../config/config";
-import { Avatar, Button } from "@mui/material";
+import { Avatar, Button, Tooltip } from "@mui/material";
 import SearchBar from "material-ui-search-bar";
 import axios from "axios";
-import Example from "../../comman/loader";
+import Loader from "../../comman/loader";
 import InputField from "../../comman/inputField";
 import io from "socket.io-client";
 import Lottie from "react-lottie";
@@ -21,6 +21,7 @@ import {
   isSameSenderMargin,
   isSameUser,
 } from "../../config/chatLogics";
+import send from "../images/send.svg";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 toast.configure();
@@ -64,7 +65,7 @@ const CouncellorChat = () => {
     return () => {
       socket.disconnect();
     }
-  }, []);
+  }, [socket]);
 
   useEffect(()=>{
     handleGetCounsellorAndGroups();
@@ -92,7 +93,7 @@ const CouncellorChat = () => {
       toast.info("You have new message")
       handleGetCounsellorAndGroups();
     });
-  },[]);
+  },[socket]);
     
     const handleGetCounsellorAndGroups = async(data) => {
       if(!data){
@@ -159,6 +160,7 @@ const CouncellorChat = () => {
   };
 
   const handleSendMessage = async (e) => {
+    e.preventDefault();
     socket = io.connect(SOCKET_URL);
     socket.on("connected", () => {
       setSocketConnected(true);
@@ -399,7 +401,7 @@ const CouncellorChat = () => {
                             {
                               <Avatar
                                 alt={item.name ? item.name : item.chatName}
-                                src={`${BASE_URL}/${item.image}`}
+                                src={`${BASE_URL}/${item?.image}`}
                                 sx={{ width: 56, height: 56 }}
                               />
                             }{" "}
@@ -419,7 +421,7 @@ const CouncellorChat = () => {
                     <p>Record not found</p>
                   )
                 ) : (
-                  <Example />
+                  <Loader />
                 )}
               </ul>
             </div>
@@ -435,7 +437,7 @@ const CouncellorChat = () => {
                         <Avatar
                           alt={receivername ? receivername[0].name : "Demo"}
                           src={`${BASE_URL}/${
-                            receivername ? receivername[0].image : ""
+                            receivername ? receivername[0]?.image : ""
                           }`}
                           sx={{ width: 56, height: 56 }}
                         />
@@ -496,7 +498,9 @@ const CouncellorChat = () => {
                                         {m && m?.sender?._id !== userId 
                                             ?  <span onClick={() => handleOnClickId(m._id)}>{m.content}</span>
                                             : (toggle ===true || toggle === false)
-                                            ? toggle === true && m._id === index ? <span style={{color:"white"}}>Edit</span> :<span onClick={() => handleOnClickId(m._id,m.content)}>{ m.content}</span> 
+                                            ? toggle === true && m._id === index ?<Tooltip title="Click on the message" arrow>
+                                          <span style={{color:"white"}}>Edit</span>
+                                          </Tooltip>:<span onClick={() => handleOnClickId(m._id,m.content)}>{ m.content}</span> 
                                             : ""}
 
                                         {m && m._id === index && m.sender._id === userId && toggle? (
@@ -511,7 +515,7 @@ const CouncellorChat = () => {
                                             ""
                                         )}
                                         </span>
-                                        {loading ? <Example/> : ""}
+                                        {loading ? <Loader/> : ""}
                                         {m && m._id === index && m.sender._id === userId && toggle ? (
                                         <>
                                             <span className="mt-3 m-2" onClick={() => handleDelete(m._id)}>
@@ -552,6 +556,8 @@ const CouncellorChat = () => {
                       ) : (
                         ""
                       )}
+                      <form method="POST" onSubmit={(e) =>handleSendMessage(e)} style={{width: '100%', display: 'flex'}}>                     
+                      
                       <InputField
                         id="message"
                         name="message"
@@ -562,10 +568,11 @@ const CouncellorChat = () => {
                       />
                       <Button
                         type="submit"
-                        onClick={(e) => handleSendMessage(e)}
-                      >
-                        SEND
+                        >
+                       <img src={send} className="" alt="logo" />
                       </Button>
+                      </form>
+                      
                     </div>
                   </div>
                 </div>
@@ -577,7 +584,7 @@ const CouncellorChat = () => {
                       {
                         <Avatar
                           alt={chatId ? chatId.chatName.charAt(0).toUpperCase() + chatId.chatName.slice(1) : ""}
-                          src={`${BASE_URL}/${chatId ? chatId.image : ""}`}
+                          src={`${BASE_URL}/${chatId ? chatId?.image : ""}`}
                           sx={{ width: 56, height: 56 }}
                         />
                       }
@@ -659,7 +666,7 @@ const CouncellorChat = () => {
                                             ""
                                         )}
                                         </span>
-                                        {loading ? <Example/> : ""}
+                                        {loading ? <Loader /> : ""}
                                         {m && m._id === index && m.sender._id === userId && toggle ? (
                                         <>
                                             <span className="mt-3 m-2" onClick={() => handleDelete(m._id)}>
@@ -700,6 +707,8 @@ const CouncellorChat = () => {
                     ) : (
                       ""
                     )}
+                    <div>
+                    <form method='POST' onSubmit={(e) =>handleSendMessage(e)} style={{width: '100%', display: 'flex'}}>
                     <InputField
                       id="message"
                       name="message"
@@ -708,9 +717,11 @@ const CouncellorChat = () => {
                       value={newMessage}
                       onChange={(e) => typingHandler(e)}
                     />
-                    <Button type="submit" onClick={(e) => handleSendMessage(e)}>
-                      SEND
+                    <Button type="submit">
+                    <img src={send} className="" alt="logo" />
                     </Button>
+                    </form>
+                    </div>
                   </div>
                 </div>
               )

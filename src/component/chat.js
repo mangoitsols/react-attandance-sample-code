@@ -6,8 +6,8 @@ import { authHeader } from '../comman/authToken';
 import SearchBar from 'material-ui-search-bar';
 import axios from 'axios';
 import { InputLabel, MenuItem, FormControl, Select } from "@material-ui/core";
-import { Avatar, Box, Button, Chip, Modal, Typography } from '@mui/material';
-import Example from '../comman/loader';
+import { Avatar, Box, Button, Chip, Modal, Tooltip, Typography } from '@mui/material';
+import Loader from '../comman/loader';
 import { MenuProps, useStyles } from '../comman/utils';
 import { toast } from "react-toastify";
 import Lottie from "react-lottie";
@@ -116,7 +116,7 @@ const Chat = () => {
             toast.info("You have new message")  
             handleGetGruops();
         });
-    },[])
+    },[socket])
 
 
     const handleGetOnlyGroups = async() => {
@@ -289,7 +289,7 @@ const Chat = () => {
             userId:selected,
             chatId:chatId._id,
             chatName:groupName?groupName:chatId.chatName,
-            image:file?file:chatId.image,
+            image:file?file:chatId?.image,
         }
      
         if(reqData.userId.length >0){
@@ -649,7 +649,7 @@ const Chat = () => {
                                     return (
                                         <li key={item._id} >
                                             <p className={highlightId === item._id ? "avatar-image bg-secondary" :"avatar-image "} onClick={() => {handleSelectChatUser(item); handleSeenGroupMessage(item._id,localStorage.getItem('id'));}} >
-                                                {<Avatar alt={item.name ? item.name : item.chatName} src={`${BASE_URL}/${item ? item.image : ""}`} sx={{ width: 56, height: 56 }} />}
+                                                {<Avatar alt={item.name ? item.name : item.chatName} src={`${BASE_URL}/${item ? item?.image : ""}`} sx={{ width: 56, height: 56 }} />}
                                                 {item.name ? item.name : item.chatName} {" "} {item.lastname}
                                                 {(item.readBy === 0) ? "" :<span className='notfication'>{item.readBy}</span>}</p>
                                         </li>
@@ -665,7 +665,7 @@ const Chat = () => {
                     chatId && chatId.isGroupChat === false ?
                      <div className='row'>
                         <div className='profile-top'>
-                           <span className='avatar-image'>{<Avatar alt={receivername ? receivername[0].name : "Demo"} src={`${BASE_URL}/${receivername ?receivername[0].image: ""}`}  sx={{ width: 56, height: 56 }} />}</span>
+                           <span className='avatar-image'>{<Avatar alt={receivername ? receivername[0].name : "Demo"} src={`${BASE_URL}/${receivername ?receivername[0]?.image: ""}`}  sx={{ width: 56, height: 56 }} />}</span>
                            <h3>
                             {receivername ? receivername[0].name : ""}{" "}
                             {receivername ? receivername[0].lastname : ""}
@@ -717,7 +717,9 @@ const Chat = () => {
                                         {m && m?.sender?._id !== userId 
                                             ?  <span onClick={() => handleOnClickId(m._id,m.content)}>{m.content}</span>
                                             : (togglee ===true || togglee === false)
-                                            ? togglee === true && m._id === index ? <span style={{color:"white"}}>Edit</span> :<span onClick={() => handleOnClickId(m._id,m.content)}>{ m.content}</span> 
+                                            ? togglee === true && m._id === index ? <Tooltip title="Click on the message" arrow>
+                                            <span style={{color:"white"}}>Edit</span>
+                                            </Tooltip>:<span onClick={() => handleOnClickId(m._id,m.content)}>{ m.content}</span> 
                                             : ""}
 
                                         {m && m._id === index && m.sender._id === userId && togglee? (
@@ -736,7 +738,7 @@ const Chat = () => {
 
                                         {/* sender msg delete */}
 
-                                        {loading ? <Example/> : ""}
+                                        {loading ? <Loader/> : ""}
                                         {m && m._id === index && m.sender._id === userId && togglee ? (
                                         <>
                                             <span className="mt-3 m-2"  onClick={() => handleDelete(m._id,m.chat._id)}>
@@ -776,9 +778,9 @@ const Chat = () => {
                             ) : (
                                 ""
                             )} 
+                            <form method='POST' onSubmit={(e) =>handleSendMessage(e)} style={{width: '100%', display: 'flex'}}>
                             <InputField id="message" name="message" className="form-control" placeholder="type here..." value={newMessage} onChange={(e) => typingHandler(e)} />
-                            <Button type='submit' onClick={(e) =>handleSendMessage(e)}><img src={send} className="" alt="logo" /></Button>
-                         
+                            <Button type='submit'><img src={send} className="" alt="logo" /></Button></form>
                         </div></div>
                      </div>:
                       // group chat header{}
@@ -786,7 +788,7 @@ const Chat = () => {
                         <div className='profile-top'>
                            <span className='avatar-image'>
                             {<Avatar alt={chatId ? chatId.chatName.charAt(0).toUpperCase() + chatId.chatName.slice(1) : ""} 
-                                    src={`${BASE_URL}/${chatId ?chatId.image: ""}`}  
+                                    src={`${BASE_URL}/${chatId ? chatId?.image : ""}`}  
                                     sx={{ width: 56, height: 56 }} />}
                             </span>
                            <h3>{chatId ? chatId.chatName.charAt(0).toUpperCase() + chatId.chatName.slice(1) : ""}</h3>
@@ -862,7 +864,7 @@ const Chat = () => {
                                         </span>
 
                                         {/* sender msg delete */}
-                                        {loading ? <Example/> : ""}
+                                        {loading ? <Loader /> : ""}
                                         {m && m._id === index && m.sender._id === userId && togglee ? (
                                         <>
                                             <span className="mt-3 m-2" onClick={() => handleDelete(m._id,m.chat._id)}>
@@ -902,13 +904,14 @@ const Chat = () => {
                             ) : (
                                 ""
                             )} 
+                            <form method='POST' onSubmit={(e) =>handleSendMessage(e)} style={{width: '100%', display: 'flex'}}>
                             <InputField id="message" name="message" className="form-control" placeholder="type here..." value={newMessage} onChange={(e) => typingHandler(e)} />
-                            <Button type='submit' onClick={(e) =>handleSendMessage(e)}><img src={send} className="" alt="logo" /></Button>
-                         
+                            <Button type='submit' ><img src={send} className="" alt="logo" /></Button>
+                         </form>
                         </div>
                      </div>:""}
                      {loading===true?
-                     <div className='chat-loader'><Example /></div>
+                     <div className='chat-loader'><Loader /></div>
                      
                     :''}
 
@@ -1011,7 +1014,7 @@ const Chat = () => {
                                 {photo ? (
                                     $imagePreview = <Avatar alt="Gmy Sharp" src={`${photo}`} sx={{ width: 56, height: 56 }} />
                                 ) : (
-                                    $imagePreview = <div className="previewText"> <Avatar alt="Remy Sharp" src={`${BASE_URL}/${item.image}`} sx={{ width: 56, height: 56 }}  /> <i className="fa fa-camera" style={{ "fontSize": "35px" }}></i></div>
+                                    $imagePreview = <div className="previewText"> <Avatar alt="Remy Sharp" src={`${BASE_URL}/${item?.image}`} sx={{ width: 56, height: 56 }}  /> <i className="fa fa-camera" style={{ "fontSize": "35px" }}></i></div>
                                 )}
                             </label>
                             <input

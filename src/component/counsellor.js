@@ -14,7 +14,7 @@ import TablePagination from "@mui/material/TablePagination";
 import TableRow from "@mui/material/TableRow";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
-import Example from "../comman/loader";
+import Loader from "../comman/loader";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import SearchBar from "material-ui-search-bar";
@@ -258,7 +258,7 @@ export default function Counsellor() {
               </div>
             </React.Fragment>
           ) : (
-            <Example />
+            <Loader />
           )}
         </Container>
       </div>

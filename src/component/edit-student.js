@@ -24,7 +24,7 @@ import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import InputField from "../comman/inputField";
 import { API, BASE_URL } from "../config/config";
-import Example from "../comman/loader";
+import Loader from "../comman/loader";
 import axios from "axios";
 import { authHeader } from "../comman/authToken";
 import moment from "moment";
@@ -725,7 +725,7 @@ const EditStudent = () => {
               </form>
             </>
           ) : (
-            <Example />
+            <Loader />
           )}
         </Container>
       </div>

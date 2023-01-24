@@ -18,11 +18,13 @@ import { addStudent } from "../action/student";
 import { connect } from "react-redux";
 import $ from "jquery";
 import validate from "jquery-validation";
-import Example from "../comman/loader";
+import Loader from "../comman/loader";
 import { toast } from "react-toastify";
 import SimpleReactValidator from "simple-react-validator";
 import "react-toastify/dist/ReactToastify.css";
 import moment from "moment";
+import LoaderButton from "../comman/loader1";
+
 toast.configure();
 
 class AddStudent extends Component {
@@ -53,6 +55,7 @@ class AddStudent extends Component {
     checked: false,
     startDate: "",
     dateError: "",
+    loading: false,
   };
   handleChange = (event) => {
     let checkedbox = event.target.checked;
@@ -272,13 +275,16 @@ class AddStudent extends Component {
       for (var key in requestData) {
         formData.append(key, requestData[key]);
       }
+      this.setState({loading:true});
       this.props.addStudent(formData, (res) => {
         if (res.status === 200) {
+          this.setState({loading:false});
           toast.success("Student Added Successfully");
           setTimeout(() => {
             window.location.replace("/student");
-          }, 3000);
-        } else if (res.status === 400) {
+          }, 2000);
+        } else {
+            this.setState({loading:false});
           toast.error("Student Added Failed");
         }
       });
@@ -314,11 +320,14 @@ class AddStudent extends Component {
       const requestData = {
         className: nameC.slice(0, -1) + nameC.charAt(6).toUpperCase(),
       };
+      this.setState({loading:true})
       this.props.createClass(requestData, (res) => {
         if (res.status === 200) {
           toast.success(res.data.message);
+          this.setState({loading:false})
           this.setState({ openmodel: false });
         } else if (res.status === 400) {
+          this.setState({loading:false})
           toast.error(res.data.message);
         }
       });
@@ -529,11 +538,11 @@ class AddStudent extends Component {
                     >
                       CLOSE
                     </button>
-                    <input
+                   {!this.state.loading ? <input
                       type="submit"
                       className="btn btn-primary"
                       value="SAVE"
-                    />
+                    /> : <><button type="button" class="btn btn-secondary" disabled>SAVE</button><LoaderButton /></>} 
                   </div>
                 </form>
               </Box>
@@ -583,11 +592,11 @@ class AddStudent extends Component {
                     >
                       CLOSE
                     </button>
-                    <input
+                    {!this.state.loading ? <input
                       type="submit"
                       className="btn btn-primary"
                       value="SAVE"
-                    />
+                    /> : <button type="button" class="btn btn-secondary" disabled><LoaderButton />SAVE</button>}
                   </div>
                 </form>
               </Box>
@@ -920,11 +929,12 @@ class AddStudent extends Component {
                 >
                   CANCEL
                 </a>
-                <input
-                  type="submit"
-                  className="btn btn-primary btn-block mb-4"
-                  value="SAVE"
-                />
+                {!this.state.loading ? <input
+                      type="submit"
+                      className="btn btn-primary btn-block mb-4"
+                      value="SAVE"
+                    /> : <button type="button" class="btn btn-secondary" disabled><Loader />SAVE</button>} 
+                
               </div>
             </form>
           </Container>

@@ -1,11 +1,11 @@
 import React, {useState,useEffect} from 'react';
 import Sidebar from './sidebar';
 import ImageAvatars from './header';
-import {Container,TableBody,Table,TableCell,TableContainer,TableHead,TablePagination,TableRow,FormControlLabel,Switch,Modal,Backdrop,Fade,Box} from '@mui/material';
+import {Container,TableBody,Table,TableCell,TableContainer,TableHead,TablePagination,TableRow,FormControlLabel,Switch,Modal,Backdrop,Fade,Box, Typography} from '@mui/material';
 import { API } from '../config/config';
 import { Link } from "react-router-dom";
 import { toast } from 'react-toastify';
-import Example from '../comman/loader';
+import Loader from '../comman/loader';
 import SearchBar from 'material-ui-search-bar';
 import axios from 'axios';
 import { authHeader } from '../comman/authToken';
@@ -251,7 +251,7 @@ toast.configure();
                                                 </TableCell>
                                             </TableRow>
                                         )
-                                    }): <p>Record Not found</p>}
+                                    }):  <Typography> Record Not found </Typography>}
                                     {emptyRows > 0 && (
                                         <TableRow
                                             style={{
@@ -279,7 +279,7 @@ toast.configure();
                             label="Dense padding"
                         />
                     </div>
-                    </React.Fragment>:<Example/> }
+                    </React.Fragment>:<Loader /> }
                 </Container>
             </div>
             {/* ADD NEW CLASSES */}

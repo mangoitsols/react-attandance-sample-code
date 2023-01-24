@@ -29,7 +29,7 @@ import {
 } from "@mui/material";
 import { visuallyHidden } from "@mui/utils";
 import { API, BASE_URL } from "../../config/config";
-import Example from "../../comman/loader";
+import Loader from "../../comman/loader";
 import SearchBar from "material-ui-search-bar";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -41,7 +41,7 @@ import absent from "../../images/absent.svg";
 import { style1 } from "../css/style";
 import { authHeader } from "../../comman/authToken";
 import PushNotification from "./pushnotification";
-import Example1 from "../../comman/loader1";
+import LoaderButton from "../../comman/loader1";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -476,9 +476,17 @@ const CounsellorDashboard = (props) => {
 
    // Timer Functionality end
 
-
-  return (
-    <>
+   const filteroutofClass =
+   rows?.data?.length === 0
+     ? []
+     : rows?.data?.filter((vall) =>
+         vall && vall?.attaindence && vall?.attaindence === null
+           ? []
+           : vall?.attaindence && vall?.attaindence?.out_of_class !== "no" && vall?.dismiss === null &&  vall?.attaindence?.attendence !== "0" && vall?.attaindence?.inclassDateTime 
+       );
+   
+   return (
+     <>
       <div className="col-md-3 col-lg-3">
         <Sidebar />
       </div>
@@ -528,7 +536,7 @@ const CounsellorDashboard = (props) => {
 
                       {rows.totalcount
                         ? (rows.totalcount ?(rows.totalcount - rows.totalpresent) : 0)
-                        : ""}
+                        : "0"}
                     </span>
                     {/* })} */}
                   </div>
@@ -539,7 +547,7 @@ const CounsellorDashboard = (props) => {
                   <div>
                     {" "}
                     <h2>Out of Class</h2>
-                    <span className="count">{rows.totalout}</span>
+                    <span className="count">{filteroutofClass?.length}</span>
                   </div>
                 </Item>
               </Grid>
@@ -741,8 +749,8 @@ const CounsellorDashboard = (props) => {
                                             .out_of_class !== "No" ? (
                                               <Stack direction="row" spacing={1} margin="5px 14px">
          
-                                                    {!start ? (!loading1 ?  <button  onClick={() => toggleStart(row._id)}>start</button> : <Example1/>) :
-                                                     (!loading1 ?  <button onClick={() => toggleStop(row._id)}>stop</button>:<Example1/> )}
+                                                    {!start ? (!loading1 ?  <button  onClick={() => toggleStart(row._id)}>start</button> : <LoaderButton/>) :
+                                                     (!loading1 ?  <button onClick={() => toggleStop(row._id)}>stop</button>:<LoaderButton/> )}
                                               {" "}
                                                   <span style={{color:"red",margin:"7px 2px" }}>
                                                       {dispSecondsAsMins(timer)}
@@ -815,7 +823,7 @@ const CounsellorDashboard = (props) => {
                             );
                           })
                       : <TableRow>
-                      <TableCell>Record not found</TableCell>
+                      <TableCell colSpan={5}>Record not found</TableCell>
                     </TableRow>)}
                       {emptyRows > 0 && (
                         <TableRow
@@ -847,7 +855,7 @@ const CounsellorDashboard = (props) => {
               />
             </Box>
           ) : (
-            <Example />
+            <Loader />
           )}
           {/* <div className="student-box"><EnhancedTable data={searchData}/></div> */}
         </Container>
@@ -864,9 +872,10 @@ const CounsellorDashboard = (props) => {
             <div>
               <PinInput
                 length={4}
-                initialValue="0000"
+                initialValue=""
                 type="numeric"
                 inputMode="number"
+                placeholder="0"
                 style={{ padding: "10px" }}
                 onComplete={(value, index) => {
                   setPin(value);
@@ -876,7 +885,7 @@ const CounsellorDashboard = (props) => {
               />
             </div>
             <Button onClick={handleClose}>CANCEL</Button>
-            {!loading1 ? <Button onClick={handleMedicalByPin}>SUBMIT</Button> : <Example1/>}
+            {!loading1 ? <Button onClick={handleMedicalByPin}>SUBMIT</Button> : <><Button disabled>SUBMIT</Button><LoaderButton /></>}
           </Box>
         </Modal>
       </div>

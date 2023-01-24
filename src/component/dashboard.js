@@ -28,7 +28,7 @@ import moment from "moment";
 import attendance1 from "./images/attendance.svg";
 import { Link } from "react-router-dom";
 import { authHeader } from "../comman/authToken";
-import Example from "../comman/loader";
+import Loader from "../comman/loader";
 // import ChatNotify from "../comman/chatNotify";
 toast.configure();
 
@@ -48,18 +48,13 @@ const DashBoard1 = () => {
   const [classNameOnChange, setclassNameOnChange] = React.useState("");
   const [classNameIdOnChange, setclassNameIdOnChange] = React.useState("");
 
-var socket;
-
-
+  var socket;
 
   React.useEffect(() => {
-
     GetStudentData();
     GetClassData();
-        // <ChatNotify/>
+    // <ChatNotify/>
   }, []);
-  
- 
 
   const GetStudentData = async () => {
     const response = await axios
@@ -107,27 +102,35 @@ var socket;
     }
   };
 
-  const filterDataAbs = filterr.filter((vall) => vall && vall.attaindence &&  vall.attaindence.attendence === "0" );
+  const filterDataAbs = filterr.filter(
+    (vall) => vall && vall.attaindence && vall.attaindence.attendence === "0"
+  );
 
-  const filterDataNull = filterr.filter((vall) =>vall && vall.dismiss === null &&   vall.attaindence.attendence === null );
-  
-  const AbsConcatNull = filterDataAbs.concat(filterDataNull)
-  
-  const filterDataPre = filterr && filterr.filter((vall) =>  vall && vall.attaindence && vall.attaindence.attendence === "1" ) ;
-  
+  const filterDataNull = filterr.filter(
+    (vall) =>
+      vall && vall.dismiss === null && vall.attaindence.attendence === null
+  );
+
+  const AbsConcatNull = filterDataAbs.concat(filterDataNull);
+
+  const filterDataPre =
+    filterr &&
+    filterr.filter(
+      (vall) => vall && vall.attaindence && vall.attaindence.attendence === "1"
+    );
+
   const filteroutofClass =
     filterr.length === 0
       ? []
       : filterr.filter((vall) =>
           vall && vall.attaindence && vall.attaindence === null
             ? []
-            : vall.attaindence && vall.attaindence.out_of_class
+            : vall.attaindence && vall.attaindence.out_of_class !== "no" && vall?.dismiss === null &&  vall.attaindence.attendence !== "0" && vall.attaindence.inclassDateTime 
         );
-
   const absBySubs = filterr.length - filterDataPre.length;
 
-  let dismiss = filterr.filter((e)=>e.dismiss !== null);
-  let finalAbsRecord = filterDataAbs.filter((e)=>e.dismiss === null);
+  let dismiss = filterr.filter((e) => e.dismiss !== null);
+  let finalAbsRecord = filterDataAbs.filter((e) => e.dismiss === null);
 
   return (
     <React.Fragment>
@@ -136,13 +139,13 @@ var socket;
         <div className="header">
           {" "}
           <ImageAvatars />
-        </div> 
+        </div>
 
         <Container
           maxWidth="100%"
           style={{ padding: "0", display: "inline-block" }}
         >
-          {loading ? <Example/> : ""}
+          {loading ? <Loader /> : ""}
           <div className="heading">
             <h1>
               <span className="icon">
@@ -150,7 +153,7 @@ var socket;
               </span>
               Class Dashboard
             </h1>
-          <div>
+            <div>
               <label>Filter By:</label>
               <FormControl sx={{ m: 1, minWidth: 120 }} className="filter">
                 <NativeSelect
@@ -165,7 +168,8 @@ var socket;
                   <option value="all">All</option>
                   {classData.map((item) => {
                     const str = item?.className;
-                    const capitalizeFirstLetter = str.charAt(0).toUpperCase() + str.slice(1);
+                    const capitalizeFirstLetter =
+                      str.charAt(0).toUpperCase() + str.slice(1);
                     return (
                       <option key={item._id} value={item._id}>
                         {capitalizeFirstLetter}
@@ -208,7 +212,7 @@ var socket;
                     <span className="count">
                       {classNameOnChange === "all" || classNameOnChange === ""
                         ? rows.totalcount
-                        : filterr.length}
+                        : filterr?.length}
                     </span>
                   </div>
                 </Item>
@@ -221,8 +225,8 @@ var socket;
                     <span className="count">
                       {classNameOnChange === undefined ||
                       classNameOnChange === ""
-                        ? rows.totalpresent
-                        : filterDataPre.length}
+                        ? rows?.totalpresent
+                        : filterDataPre?.length}
                     </span>
                   </div>
                 </Item>
@@ -235,8 +239,8 @@ var socket;
                     <span className="count">
                       {classNameOnChange === undefined ||
                       classNameOnChange === ""
-                        ? AbsConcatNull.length ?  AbsConcatNull.length : "" 
-                        : AbsConcatNull.length}
+                        ? AbsConcatNull?.length
+                        : AbsConcatNull?.length}
                     </span>
                   </div>
                 </Item>
@@ -248,7 +252,7 @@ var socket;
                     <h2>Out of Class</h2>
                     <span className="count">
                       {classNameOnChange === "all" || classNameOnChange === ""
-                        ? rows.totalout
+                        ? filteroutofClass.length
                         : filteroutofClass.length}
                     </span>
                   </div>
@@ -266,7 +270,8 @@ var socket;
                   {AbsConcatNull && AbsConcatNull.length === 0 ? (
                     <p>No records found</p>
                   ) : (
-                    AbsConcatNull && AbsConcatNull.map((item) => {
+                    AbsConcatNull &&
+                    AbsConcatNull.map((item) => {
                       return (
                         <Stack direction="row" spacing={2} key={item._id}>
                           {item &&
@@ -331,8 +336,8 @@ var socket;
                           )
                         )
                         .format("mm:ss");
+						
                       return (
-                        item.attaindence.out_of_class === "No" || item.attaindence.out_of_class === "no" || item.attaindence.attendence === "0" ?  <p>No records found</p>:
                         <Stack direction="row" spacing={2} key={item._id}>
                           <Avatar
                             alt={item.name}
@@ -343,7 +348,7 @@ var socket;
                               <strong>{item.name}</strong>
                               <small>{item.attaindence.out_of_class}</small>
                             </span>
-                              <span className="timer">{timee} min</span>
+                            <span className="timer">{timee} min</span>
                           </div>
                         </Stack>
                       );

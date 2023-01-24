@@ -5,7 +5,7 @@ import Container from "@mui/material/Container";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import { API } from "../config/config";
 import { Link, useParams ,useNavigate} from "react-router-dom";
-import Example from "../comman/loader";
+import Loader from "../comman/loader";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
@@ -530,7 +530,7 @@ export default function AttandanceReport(props) {
 						</Container>
 					</div>
 				) : (
-					<Example />
+					<Loader />
 				)}
 			</div>
 		</>
