@@ -11,7 +11,7 @@ import { authHeader } from "../../comman/authToken";
 
 const PushNotification = () => {
   
-    // const socket = useRef(io(SOCKET_URL), { transports: ['websocket'] });
+    const socket = useRef(io(SOCKET_URL), { transports: ['websocket'] });
     const [red, setRed] = useState(false);
     const [yellow, setYellow] = useState(false);
     const [dismiss, setDismiss] = useState(false);
@@ -20,38 +20,38 @@ const PushNotification = () => {
     const [data, setData] = useState('');
     const [allData, setAllData] = useState([]);
 
-  //   useEffect(() =>
-  //  {
-  //   socket.current.on("noty", () => {
-  //     setRed(true);
-  //   });
-  //   socket.current.on("yellownoty", () => {
-  //     setYellow(true);
-  //   });
-  //   socket.current.on("blacknoty", () => {
-  //     setBlack(true);
-  //   });
-  //   socket.current.on("dismissNotication", (res) => {
-  //     setData(res);
-  //     setDismiss(true);
-  //   });
-  //   socket.current.on("dismissAllNotication", (ress) => {
+    useEffect(() =>
+   {
+    socket.current.on("noty", () => {
+      setRed(true);
+    });
+    socket.current.on("yellownoty", () => {
+      setYellow(true);
+    });
+    socket.current.on("blacknoty", () => {
+      setBlack(true);
+    });
+    socket.current.on("dismissNotication", (res) => {
+      setData(res);
+      setDismiss(true);
+    });
+    socket.current.on("dismissAllNotication", (ress) => {
       
-  //      axios.get(`${API.getStudent}`, { headers: authHeader() }).then((res)=>{
-  //       for(var i=0;i < (ress.selectedRow.length);i++){ 
-  //         res.data.data.filter((item)=>{ 
-  //           if(item._id === (ress.selectedRow[i])){ 
-  //             allData.push(item)
-  //               setAllDismiss(true);
-  //           }
-  //         }) 
-  //       }
-  //     }).catch((err) => {
-  //        console.log("err:",err)
-  //     });
-  //   });
+       axios.get(`${API.getStudent}`, { headers: authHeader() }).then((res)=>{
+        for(var i=0;i < (ress.selectedRow.length);i++){ 
+          res.data.data.filter((item)=>{ 
+            if(item._id === (ress.selectedRow[i])){ 
+              allData.push(item)
+                setAllDismiss(true);
+            }
+          }) 
+        }
+      }).catch((err) => {
+         console.log("err:",err)
+      });
+    });
     
-  // }, []);
+  }, []);
 
   const handleRed = () => {
     setRed(false);

@@ -19,7 +19,7 @@ export default function ImageAvatars() {
    
   const [newPass,setNewPass]=useState(""); 
 
-  // const socket = useRef(io(`${SOCKET_URL}`, { transports: ['websocket'] }));
+  const socket = useRef(io(`${SOCKET_URL}`, { transports: ['websocket'] }));
 
   const handleLogout = () => {
     localStorage.clear("token");
@@ -57,15 +57,15 @@ export default function ImageAvatars() {
     setActive(!isActive);
   };
   const handleRed = () => {
-    // socket.current.emit("sendNotification", {});
+    socket.current.emit("sendNotification", {});
     setOpenRed(false);
   };
   const handleYellow = () => {
-    // socket.current.emit("sendYellowNotification", {});
+    socket.current.emit("sendYellowNotification", {});
     setOpenYellow(false);
   };
   const handleBlack = () => {
-    // socket.current.emit("sendBlackNotification", {});
+    socket.current.emit("sendBlackNotification", {});
     setOpenBlack(false);  
   };
 
