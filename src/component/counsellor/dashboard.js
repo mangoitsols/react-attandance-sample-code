@@ -157,6 +157,7 @@ const CounsellorDashboard = (props) => {
   const [timer, setTimer] = useState(0);
   const [start, setStart] = useState(false);
   const firstStart = useRef(true);
+  const [studentIDForTimer,setStudentIDForTimer] = useState([])
   const tick = useRef();
 
   useEffect(() => {
@@ -340,6 +341,8 @@ const CounsellorDashboard = (props) => {
   };
 
   const handleOnChangeSelect = async (e, row) => {
+    console.log(e)
+    studentIDForTimer.push(row._id)
     if (row.attaindence === null) {
       toast.warning("First you have to mark attandance");
     } else if (row.attaindence && row.attaindence.attendence === "0") {
@@ -385,19 +388,21 @@ const CounsellorDashboard = (props) => {
 
 
   const toggleStart = async(id) => {
+  
+      setStart(true);
+      setLoading1(true);
+       await axios({
+        method: "put",
+        url: `${API.timerStart}/${id}`,
+        headers: authHeader(),
+      }).then((res)=>{
+      setLoading1(false); 
+      }).catch((err) => { 
+      setLoading1(false);
+      toast.error("Something went wrong during start timer")
+      });
+   
 
-    setStart(true);
-    setLoading1(true);
-     await axios({
-			method: "put",
-			url: `${API.timerStart}/${id}`,
-			headers: authHeader(),
-		}).then((res)=>{
-    setLoading1(false); 
-    }).catch((err) => { 
-    setLoading1(false);
-    toast.error("Something went wrong during start timer")
-    });
   };
 
  const toggleStop = async(id) => {
@@ -410,6 +415,7 @@ const CounsellorDashboard = (props) => {
 			headers: authHeader(),
 		}).then((res)=>{
     setLoading1(false);
+    setTimer(0)
       setSelectSubBox(false)
       GetCounsellorData();
     })
@@ -484,6 +490,8 @@ const CounsellorDashboard = (props) => {
            ? []
            : vall?.attaindence && vall?.attaindence?.out_of_class !== "no" && vall?.dismiss === null &&  vall?.attaindence?.attendence !== "0" && vall?.attaindence?.inclassDateTime 
        );
+
+       console.log(filteroutofClass,"filteroutofClass")
    
    return (
      <>
@@ -624,6 +632,7 @@ const CounsellorDashboard = (props) => {
                             const handleNoStatus = rows.data.find(
                               (ele) => ele._id === row._id
                             );
+                            console.log(selectCheck,"selectCheck",found)
 
                             return (
                               <React.Fragment key={row._id}>
@@ -720,15 +729,15 @@ const CounsellorDashboard = (props) => {
                                         } 
                                         value={row && row.attaindence && row.attaindence.out_of_class
                                           ? row.attaindence.out_of_class
-                                          : "No"}
+                                          : "no"}
                                         disabled = {row.attaindence && row.attaindence.attendence === null || row.attaindence && row.attaindence.attendence === "0" ||  row.dismiss ? true : false}
                                     
                                         inputProps={{
-                                          name: "No",
+                                          name: "no",
                                           id: "uncontrolled-native",
                                         }}
                                       >
-                                        <option value="No">No</option>
+                                        <option value="no">No</option>
                                         <option value="in Rest Room">
                                           In Rest Room
                                         </option>
@@ -738,29 +747,27 @@ const CounsellorDashboard = (props) => {
                                         <option value="in Camp">In camp</option>
                                       </NativeSelect>
 
-                                      {row &&
-                                      row.attaindence &&
-                                      row.attaindence.attendence === "1" ? (
-                                        selectSubBox === false ? (
-                                          ""
-                                        ) : found &&
+                                      {( row &&
+                                      row.attaindence && row.attaindence.out_of_class &&
+                                      row.attaindence.attendence === "1") ? 
                                           handleNoStatus.attaindence &&
                                           handleNoStatus.attaindence
-                                            .out_of_class !== "No" ? (
+                                            .out_of_class !== "no"? (
+
+                                              row.attaindence.out_of_class !== "no" && (
                                               <Stack direction="row" spacing={1} margin="5px 14px">
-         
-                                                    {!start ? (!loading1 ?  <button  onClick={() => toggleStart(row._id)}>start</button> : <LoaderButton/>) :
+                                                    {!start  ? (!loading1 ? <button  onClick={() => toggleStart(row._id)}>start</button> : <LoaderButton/>) :
                                                      (!loading1 ?  <button onClick={() => toggleStop(row._id)}>stop</button>:<LoaderButton/> )}
                                               {" "}
                                                   <span style={{color:"red",margin:"7px 2px" }}>
-                                                      {dispSecondsAsMins(timer)}
+                                                      {dispSecondsAsMins(timer) }
                                                   </span>
                                                 
-                                                </Stack>
+                                                </Stack>)
                                         ) : (
                                           ""
                                         )
-                                      ) : (
+                                       : (
                                         ""
                                       )}
                                     </FormControl>

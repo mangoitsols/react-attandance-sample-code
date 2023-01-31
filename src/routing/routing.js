@@ -22,6 +22,7 @@ import Chat from "../component/chat";
 import CouncellorChat from "../component/counsellor/councellorchat";
 import ManageClass from "../component/manageClass";
 import PageNotFound from "../comman/pageNotFound";
+import Cprofile from "../component/counsellor/cprofile";
 
 const Routing = () => {
     return ( 
@@ -42,6 +43,11 @@ const Routing = () => {
           exact 
           path="/profile" 
           element={<Profile/>} 
+          />
+          <Route history={history} 
+          exact 
+          path="/cprofile" 
+          element={<Cprofile/>} 
           />
           <Route history={history} 
           exact 
@@ -143,3 +149,4 @@ const Routing = () => {
          
 
 export default Routing;
+

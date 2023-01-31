@@ -259,7 +259,7 @@ const EnhancedTableToolbar = (props) => {
         headers: authHeader(),
       })
         .then((res) => {
-          toast.success("Classname created successfully");
+          toast.success("New classname created successfully");
           setButtonDisable(false);
           GetClassData();
           childClose();
@@ -267,10 +267,10 @@ const EnhancedTableToolbar = (props) => {
         .catch((err) => {
           if (err.response.data.message === "class already exists") {
             toast.error("Classname already exists");
-            setButtonDisable(true);
+            setButtonDisable(false);
           } else {
             toast.error("Failed to created class");
-            setButtonDisable(true);
+            setButtonDisable(false);
           }
         });
     }

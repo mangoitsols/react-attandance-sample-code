@@ -72,7 +72,7 @@ export default function ImageAvatars() {
                 <strong>{name.charAt(0).toUpperCase() + name.slice(1)}{" "}{lastname.charAt(0).toUpperCase() + lastname.slice(1)}</strong>
                 <small> {localStorage.getItem("role")} </small>
               </span>
-              <a href="/councellordash">Counsellor Profile</a>
+              <a href="/cprofile">Counsellor Profile</a>
               <Divider />
               <button onClick={handleLogout}>Logout</button>
             </div>

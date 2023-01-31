@@ -125,7 +125,7 @@ const DashBoard1 = () => {
       : filterr.filter((vall) =>
           vall && vall.attaindence && vall.attaindence === null
             ? []
-            : vall.attaindence && vall.attaindence.out_of_class !== "no" && vall?.dismiss === null &&  vall.attaindence.attendence !== "0" && vall.attaindence.inclassDateTime 
+            : vall.attaindence && vall.attaindence.out_of_class !== "no" && vall?.dismiss === null &&  vall.attaindence.attendence !== "0" && vall.attaindence.outclassDateTime
         );
   const absBySubs = filterr.length - filterDataPre.length;
 
@@ -318,6 +318,7 @@ const DashBoard1 = () => {
               <Grid item xs={6}>
                 <Item className="dashboaed-text">
                   <h2>Students Out of Class</h2>
+                
                   {filteroutofClass.length === 0 ? (
                     <p>No records found</p>
                   ) : (
@@ -329,14 +330,25 @@ const DashBoard1 = () => {
                       const outTime = moment(
                         item.attaindence.outclassDateTime
                       ).format("DD/MM/YYYY HH:mm:ss");
-                      const timee = moment
-                        .utc(
-                          moment(inTime, "DD/MM/YYYY HH:mm:ss").diff(
-                            moment(outTime, "DD/MM/YYYY HH:mm:ss")
-                          )
-                        )
-                        .format("mm:ss");
-						
+                      var timee ,timeetimer= false;
+                        if (inTime.toString() > outTime.toString()) {
+                          timee  = moment
+                          .utc(
+                            moment(inTime, "DD/MM/YYYY HH:mm:ss").diff(
+                              moment(outTime, "DD/MM/YYYY HH:mm:ss")
+                              )
+                              )
+                              .format("mm:ss");
+                              timeetimer= false
+                              console.log("true",timeetimer)
+
+                              // return false;
+                            }else{
+                              timeetimer = true
+                              
+                              console.log("false",timeetimer)
+                            }
+                 
                       return (
                         <Stack direction="row" spacing={2} key={item._id}>
                           <Avatar
@@ -348,7 +360,7 @@ const DashBoard1 = () => {
                               <strong>{item.name}</strong>
                               <small>{item.attaindence.out_of_class}</small>
                             </span>
-                            <span className="timer">{timee} min</span>
+                            <span className="timer">{item.attaindence.outclassDateTime && item.attaindence.inclassDateTime && !timeetimer? timee + 'min' :'00:00 min'} </span>
                           </div>
                         </Stack>
                       );
