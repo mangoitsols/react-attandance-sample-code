@@ -15,7 +15,6 @@ import {
   Container,
   Avatar,
   Stack,
-  Button,
 } from "@mui/material";
 
 import $ from "jquery";
@@ -27,7 +26,8 @@ import "font-awesome/css/font-awesome.css";
 import Loader from "../comman/loader";
 import SimpleReactValidator from "simple-react-validator";
 import { Link } from "react-router-dom";
-import ChatNotify from "../comman/chatNotify";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 toast.configure();
 
 class Profile extends Component {
@@ -60,6 +60,9 @@ class Profile extends Component {
     numberValid: true,
     cancel: false,
     profileName: "",
+    schoolLocation: localStorage.getItem("schoolLocation"),
+    currentLocation: localStorage.getItem("currentLocation"),
+	mobileNumberError:'',
   };
   componentDidMount() {
     this.props.getAllCountry((res) => {
@@ -87,15 +90,16 @@ class Profile extends Component {
       file,
       numberValid,
       imagePreviewUrl,
+	  mobileNumberError,
     } = this.state;
     const formData = new FormData();
 
-    if (this.validator.allValid() && numberValid === true) {
+    if (this.validator.allValid() && numberValid === true && mobileNumberError === '')  {
       const id = localStorage.getItem("id");
       const requestData = {
         role: role,
         street_Address: streetAddress,
-        mobileNumber: mobileNumber,
+        phone: mobileNumber,
         country: country,
         city: city,
         state: state,
@@ -112,7 +116,7 @@ class Profile extends Component {
           toast.success("Profile updated successfully");
           this.getDetailUser();
           localStorage.setItem("name", name);
-          localStorage.setItem("image", image);
+          //   localStorage.setItem("image", image);
         } else if (res.status === 400) {
           toast.error(res.data.message);
         }
@@ -171,6 +175,7 @@ class Profile extends Component {
         this.setState({ image: res.data.data[0].image });
         this.setState({ state: res.data.data[0].state });
         this.setState({ country: res.data.data[0].country });
+        localStorage.setItem("image", res.data.data[0].image);
       }
       this.handleState(res.data.data[0].country);
     });
@@ -206,6 +211,16 @@ class Profile extends Component {
     }
   }
 
+  setOnChangeForMobile(e) {
+
+    if (e !== '') {
+      this.setState({ mobileNumber: e });
+	  this.setState({ mobileNumberError: '' });
+    }else{
+		this.setState({ mobileNumberError: 'The mobile number field is required.' });
+	}
+  }
+
   render() {
     const {
       getCountry,
@@ -222,14 +237,21 @@ class Profile extends Component {
       email,
       mobileNumber,
       profileName,
+      file,
+      currentLocation,
+      schoolLocation,
+	  mobileNumberError,
     } = this.state;
     let $imagePreview = null;
-    
-    const roleStr = localStorage?.getItem("role");
-    const capitalizeFirstLetter = roleStr.charAt(0).toUpperCase() + roleStr.slice(1);
 
-    const capitalizeFirstLetterofName = name.charAt(0).toUpperCase() + name.slice(1);
-    const capitalizeFirstLetterofProfileName = profileName.charAt(0).toUpperCase() + profileName.slice(1);
+    const roleStr = localStorage?.getItem("role");
+    const capitalizeFirstLetter =
+      roleStr.charAt(0).toUpperCase() + roleStr.slice(1);
+
+    const capitalizeFirstLetterofName =
+      name.charAt(0).toUpperCase() + name.slice(1);
+    const capitalizeFirstLetterofProfileName =
+      profileName.charAt(0).toUpperCase() + profileName.slice(1);
 
     return (
       <>
@@ -250,15 +272,15 @@ class Profile extends Component {
                 <form onSubmit={this.handleSubmit}>
                   <Stack direction="row" spacing={2} className="profileAvtar">
                     <div>
-                    <Avatar
+                      <Avatar
                         alt={capitalizeFirstLetterofName}
-                        src={`${BASE_URL}/${image}` }
+                        src={`${BASE_URL}/${image}`}
                         sx={{ width: 56, height: 56 }}
                       />
                     </div>
                     <span>
                       <span className="editable">
-                       {capitalizeFirstLetterofProfileName}
+                        {capitalizeFirstLetterofProfileName}
                       </span>
                       <br />
                       <small> {capitalizeFirstLetter} </small>
@@ -267,37 +289,38 @@ class Profile extends Component {
                   <div className="profileBox">
                     <div className="row">
                       <div className="form-outline mb-4 col-md-6">
-                        <label htmlFor="upload-button">Profile Image</label>
-                        {imagePreviewUrl
-                          ? ($imagePreview = (
-                              <div className="previewText">
-                                {" "}
-                                <Avatar
-                                  alt={capitalizeFirstLetterofName}
-                                  src={imagePreviewUrl}
-                                  sx={{ width: 56, height: 56 }}
-                                />{" "}
-                                <i
-                                  className="fa fa-camera"
-                                  style={{ fontSize: "35px" }}
-                                ></i>
-                              </div>
-                            ))
-                          : ($imagePreview = (
-                              <div className="previewText">
-                                {" "}
-                                <Avatar
-                                  alt={capitalizeFirstLetterofName}
-                                  src={`${BASE_URL}/${image}`}
-                                  sx={{ width: 56, height: 56 }}
-                                />{" "}
-                                <i
-                                  className="fa fa-camera"
-                                  style={{ fontSize: "35px", right: "44px" }}
-                                ></i>
-                              </div>
-                            ))}
-
+                        <label htmlFor="upload-button">
+                          <label>Profile Image</label>
+                          {imagePreviewUrl
+                            ? ($imagePreview = (
+                                <div className="previewText">
+                                  {" "}
+                                  <Avatar
+                                    alt={capitalizeFirstLetterofName}
+                                    src={imagePreviewUrl}
+                                    sx={{ width: 56, height: 56 }}
+                                  />{" "}
+                                  <i
+                                    className="fa fa-camera"
+                                    style={{ fontSize: "35px" }}
+                                  ></i>
+                                </div>
+                              ))
+                            : ($imagePreview = (
+                                <div className="previewText">
+                                  {" "}
+                                  <Avatar
+                                    alt={capitalizeFirstLetterofName}
+                                    src={`${BASE_URL}/${image}`}
+                                    sx={{ width: 56, height: 56 }}
+                                  />{" "}
+                                  <i
+                                    className="fa fa-camera"
+                                    style={{ fontSize: "35px", right: "44px" }}
+                                  ></i>
+                                </div>
+                              ))}
+                        </label>
                         <input
                           type="file"
                           id="upload-button"
@@ -429,22 +452,23 @@ class Profile extends Component {
 
                       <div className="form-outline mb-4 col-md-6 addressProfileFields">
                         <label htmlFor="mobileNumber">Mobile Number</label>
-                        <input
-                          type="tel"
-                          id="mobileNumber"
-                          name="mobileNumber"
-                          className="form-control"
-                          placeholder="Please enter your mobile number"
-                          value={mobileNumber}
-                          onChange={(e) => this.setOnChange(e)}
+                        <PhoneInput
+                          country={`${
+                            schoolLocation !== ''
+                              ? schoolLocation.toLowerCase()
+                              : currentLocation.toLowerCase()
+                          }`}
+                          value={`${mobileNumber}`}
+                          enableAreaCodes
+                          countryCodeEditable={false}
+                          enableSearch="true"
+                          onChange={(phone) => this.setOnChangeForMobile(phone)}
+                          inputProps={{
+                            name: "mobileNumber",
+                          }}
                         />
-                        {numberValid === false ? (
-                          <p style={{ color: "red", fontSize: "12px" }}>
-                            Mobile number must be 10 digit
-                          </p>
-                        ) : (
-                          ""
-                        )}
+						{mobileNumberError !== '' ? <p style={{color:'red', fontSize: "12px" }}>{mobileNumberError}</p>: ''}
+                          
                       </div>
                     </div>
                     <div className="profileBtn">

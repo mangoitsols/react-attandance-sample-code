@@ -49,7 +49,7 @@ class CreatePin extends Component {
       });
     } else if (pint !== pintt) {
       this.setState({ loading: false });
-      toast.error("Both pin must be same");
+      toast.error("New Pin and Confirm Pin should match");
     }
   };
 
@@ -99,7 +99,7 @@ class CreatePin extends Component {
                   </div>
                 </div>
                 <div className="form-outline mb-4" name="rrr">
-                  <label for="createPin">Create a safe pin</label>
+                  <label for="createPin">New Pin</label>
                   <div className="createPin">
                     <div>
                       <PinInput

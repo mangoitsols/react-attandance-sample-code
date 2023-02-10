@@ -27,31 +27,7 @@ export const Timerest = (props) => {
     return () => clearInterval(tick.current);
   }, [start]);
 
-  const toggleStart = async() => {
-    setStart(true);
-     await axios({
-			method: "put",
-			url: `${API.timerStart}/${props.idd}`,
-			headers: authHeader(),
-		}).catch((err) => { });
 
-    // setTimeout(() => {
-    //     alert("3 min voer")
-    //     }, 180000);
-  };
-
- const toggleStop = async() => {
-    setStart(false);
-    await axios({
-			method: "put",
-			url: `${API.timerStop}/${props.idd}`,
-			headers: authHeader(),
-		}).then((res)=>{
-      // window.location.reload();
-    })
-    .catch((err) => { });
-    
-  };
 
 
 
@@ -115,8 +91,8 @@ export const Timerest = (props) => {
     <div className="pomView">
     
         <Stack direction="row" spacing={1} margin="5px 14px">
-          {!start ? <button  onClick={toggleStart}>start</button> :
-            <button onClick={toggleStop}>stop</button>}
+          {/* {!start ? <button  onClick={toggleStart}>start</button> :
+            <button onClick={toggleStop}>stop</button>} */}
     {" "}
         <span style={{color:"red",margin:"7px 2px" }}>
             {dispSecondsAsMins(timer)}

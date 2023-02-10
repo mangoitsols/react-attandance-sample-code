@@ -8,6 +8,7 @@ import { stylePopup } from "../css/style";
 import { setDefaultLocale } from "react-datepicker";
 import axios from "axios";
 import { authHeader } from "../../comman/authToken";
+import { handleLogout } from "../header";
 
 const PushNotification = () => {
   
@@ -47,7 +48,9 @@ const PushNotification = () => {
           }) 
         }
       }).catch((err) => {
-         console.log("err:",err)
+        if (err.response.status === 401) {
+          handleLogout()
+        }
       });
     });
     

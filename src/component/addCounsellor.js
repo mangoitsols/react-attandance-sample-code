@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import ImageAvatars from "./header";
+import ImageAvatars, { handleLogout } from "./header";
 import Sidebar from "./sidebar";
 import { FormControl, MenuItem, Select, Container } from "@mui/material";
 import {
@@ -12,6 +12,13 @@ import $ from "jquery";
 import validate from "jquery-validation";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
+import PasswordChecklist from "react-password-checklist"
+import Example1 from "../comman/loader1";
+import { API } from "../config/config";
+import { authHeader } from "../comman/authToken";
+
 toast.configure();
 
 class AddCounsellor extends Component {
@@ -24,14 +31,14 @@ class AddCounsellor extends Component {
     name: "",
     getclasses: [],
     classSelect: "",
+    loading: false,
+    passwordVerification: false,
+    setCounsellorDetail:[],
+    schoolLocation: localStorage.getItem("schoolLocation"),
+    currentLocation: localStorage.getItem("currentLocation"),
   };
 
   componentDidMount() {
-    $('input[name="mobile"]').keyup(function (e) {
-      if (/\D/g.test(this.value)) {
-        this.value = this.value.replace(/\D/g, "");
-      }
-    });
     $('input[name="name"]').keyup(function (e) {
       if (/[^a-zA-Z]/g.test(this.value)) {
         this.value = this.value.replace(/[^a-zA-Z]/g, "");
@@ -47,7 +54,7 @@ class AddCounsellor extends Component {
         this.value = this.value.replace(/[^a-z0-9_\.]+$/g, "");
       }
     });
-    
+
     $(document).ready(function () {
       $("#regvalidation").validate({
         rules: {
@@ -66,12 +73,6 @@ class AddCounsellor extends Component {
             required: true,
             minlength: 3,
           },
-          mobile: {
-            required: true,
-            digits: true,
-            minlength: 10,
-            maxlength: 10,
-          },
 
           email: {
             required: true,
@@ -79,7 +80,6 @@ class AddCounsellor extends Component {
           },
           password: {
             required: true,
-            minlength: 5,
           },
         },
         messages: {
@@ -101,69 +101,100 @@ class AddCounsellor extends Component {
           assignclass: {
             required: "<p style='color:red'>Please select a classname</P>",
           },
-          mobile: {
-            required: "<p style='color:red'>Please provide your mobile number</p>",
-            digits: "<p style='color:red'>Please enter valid mobile number</p>",
-            minlength:
-              "<p style='color:red'>Mobile number field accept only 10 digits</p>",
-            maxlength:
-              "<p style='color:red'>Mobile number field accept only 10 digits</p>",
-          },
 
           password: {
             required: "<p style='color:red'>Please provide your password</p>",
-            minlength:
-              "<p style='color:red'>Your password must be at least 5 characters long</p>",
           },
         },
       });
     });
     this.getClassData();
+    this.handleGetUser();
   }
 
+ handleGetUser = () => {
+  this.setState({loading:true})
+  fetch(API.getAllUser, { headers: authHeader() })
+    .then((a) => {
+      if (a.status === 200) {
+        this.setState({loading:false})
+
+        return a.json();
+      } else {
+        this.setState({loading:false})
+
+      }
+    })
+    .then((data) => {
+    this.setState({loading:false})
+    this.setState({setCounsellorDetail:data.filter((e) => e.role.name === "counsellor")})
+    }).catch((err) => {
+      if (err.response.status === 401) {
+        handleLogout()
+      }
+    })
+};
+
   getClassData = () => {
+    this.setState({loading:true})
     this.props.getClass((res) => {
       this.setState({ getclasses: res.data.data });
+    this.setState({loading:false})
+
     });
   };
 
   handleSubmit = (e) => {
-    e.preventDefault();
-    const { classSelect, mobile, name, lastname, password, uname } = this.state;
-    if (classSelect && mobile && name && lastname && password && uname === "") {
-      toast.error("All fields are required");
-    } else {
-      const requestData = {
-        role: "counsellor",
-        name: name,
-        phone: mobile,
-        username: uname,
-        password: password,
-        classId: classSelect,
-        lastname: lastname,
-      };
-      this.props.createCounsellorandManager(requestData, (res) => {
-        if (res.status === 200) {
-          toast.success("New Counsellor Added");
-          this.setState({
-            uname: "",
-            password: "",
-            mobile: "",
-            lastname: "",
-            name: "",
-            classSelect: "",
+    e.preventDefault()
+
+    const { classSelect, mobile, name, lastname, password, uname,passwordVerification,setCounsellorDetail,getclasses } = this.state;
+
+    const DuplicateClassFinder = setCounsellorDetail.filter((fil)=> {return fil.classId._id === classSelect})
+    const GettingClassName = getclasses.find((filClassName)=> {return filClassName._id === classSelect})
+
+    if(DuplicateClassFinder.length > 0){
+      toast.error(`Another counsellor was assigned to the ${GettingClassName.className}`)
+    }else{
+        if (classSelect === "" || mobile === "" || name === "" || lastname === "" || password === "" || uname === "" ) {
+          toast.error("All fields are required");
+        }else if(passwordVerification === false){
+          toast.error("Please provide valid password");
+        } else {
+          const requestData = {
+            role: "counsellor",
+            name: name,
+            phone: mobile,
+            username: uname,
+            password: password,
+            classId: classSelect,
+            lastname: lastname,
+          };
+          this.setState({ loading: true });
+          this.props.createCounsellorandManager(requestData, (res,err) => {
+            if (res.status === 200) {
+              toast.success("Counsellor Added");
+              this.setState({
+                uname: "",
+                password: "",
+                mobile: "",
+                lastname: "",
+                name: "",
+                classSelect: "",
+              });
+              setTimeout(() => {
+                window.location.replace("/counsellor");
+              }, 500);
+              this.setState({ loading: false });
+            } else {
+              this.setState({ loading: false });
+            }
           });
-          setTimeout(() => {
-            window.location.replace("/counsellor");
-          }, 3000);
-        } else if (res.status === 400) {
-          toast.error("Failed to add councellor");
         }
-      });
-    }
+      }
   };
 
   render() {
+    const { schoolLocation,currentLocation} = this.state;
     return (
       <>
         <Sidebar />
@@ -175,7 +206,7 @@ class AddCounsellor extends Component {
           <Container
             maxWidth="100%"
             style={{ padding: "0", display: "inline-block" }}
-          >
+            >
             <div className="heading1 mb-5">
               <h1>Add Counsellor</h1>
             </div>
@@ -211,17 +242,20 @@ class AddCounsellor extends Component {
               <div className="row">
                 <div className="form-outline mb-4 col-md-6">
                   <label for="mobile">Mobile Number</label>
-                  <input
-                    type="tel"
-                    id="mobile"
-                    name="mobile"
-                    className="form-control"
-                    placeholder="Please enter your mobile number"
+                  
+                  <PhoneInput
+                    country={`${schoolLocation && schoolLocation.toLowerCase() === 'usa' 
+                    ? 'us'
+                    : currentLocation.toLowerCase()}`}
                     value={this.state.mobile}
-                    onChange={(e) => this.setState({ mobile: e.target.value })}
+                    enableAreaCodes
+                    enableSearch="true"
+                    onChange={(phone) => this.setState({ mobile: phone })}
+                    inputProps={{
+                      name: "mobile",
+                      required: true,
+                    }}
                   />
-
-                  {/* <input type="text" id="mobile" name="mobile" className="form-control"  value={this.state.mobile} onChange={(e) => this.setState({ mobile: e.target.value }) } /> */}
                 </div>
                 <div className="form-outline mb-4 col-md-6">
                   <label for="assign" className="w-100">
@@ -280,6 +314,13 @@ class AddCounsellor extends Component {
                       this.setState({ password: e.target.value })
                     }
                   />
+				  {this.state.password !== '' &&
+				  <PasswordChecklist
+				rules={["minLength","specialChar","number","capital"]}
+				minLength={6}
+				value={this.state.password}
+				onChange={(isValid) => { this.setState({passwordVerification:isValid})}}
+			/>}
                 </div>
               </div>
               <a
@@ -288,11 +329,23 @@ class AddCounsellor extends Component {
               >
                 CANCEL
               </a>
-              <input
-                type="submit"
-                className="btn btn-primary btn-block mb-4"
-                value="SAVE"
-              />
+              {!this.state.loading ? (
+                <input
+                  type="submit"
+                  className="btn btn-primary btn-block mb-4"
+                  value="SAVE"
+                />
+              ) : (
+                <>
+                  <input
+                    type="submit"
+                    className="btn btn-primary btn-block mb-4"
+                    disabled
+                    value="SAVE"
+                  />{" "}
+                  <Example1 />{" "}
+                </>
+              )}
             </form>
           </Container>
         </div>

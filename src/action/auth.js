@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { authHeader } from "../comman/authToken";
+import { handleLogout } from "../component/header";
 toast.configure();
 
 export function login(data, callback) {
@@ -60,8 +61,10 @@ export function changePassword(data, callback) {
       })
       .catch(function (error) {
         if (error.response.status === 400) {
-          if(error.response.data.message === "OLdpassword is incorrect")
-          toast.error("Old password was incorrect");
+          if(error.response.data.message === "OLdpassword is incorrect"){
+          toast.error("Old password was incorrect");}
+          else if(error.response.data.message === "confirm password is not match"){
+          toast.error("Confirm password must be same as new password.");}
         }
         callback(error);
       });
@@ -83,6 +86,9 @@ export function createPin(data, callback) {
       .catch(function (error) {
         if (error.response.status === 400) {
           toast.error(error.response.data.message);
+        }
+        else if (error.response.status === 401) {
+          handleLogout()
         }
         callback(error);
       });
@@ -109,6 +115,9 @@ export function updatePin(data,id, callback) {
           else if(error.response.data.message === "oldPin and new Pin both are not same"){
             toast.error("Old pin and New pin must be different");
           }
+        }
+        else if (error.response.status === 401) {
+          handleLogout()
         }
         callback(error);
       });

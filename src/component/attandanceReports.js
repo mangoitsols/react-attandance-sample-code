@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "./sidebar";
-import ImageAvatars from "./header";
+import ImageAvatars, { handleLogout } from "./header";
 import Container from "@mui/material/Container";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import { API } from "../config/config";
@@ -305,13 +305,19 @@ export default function AttandanceReport(props) {
 		)};
 
 	const GetClassData = async () => {
-		const response = await axios.get(`${API.getClass}`).catch((err) => { });
-		if (response.status === 200) {
-			setLoading(false);
-		} else {
-			setLoading(true);
-		}
-		setClassData(response.data.data);
+		await axios.get(`${API.getClass}`).then((response)=>{
+			if (response.status === 200) {
+				setLoading(false);
+				setClassData(response.data.data);
+			} else {
+				setLoading(true);
+			}
+
+		}).catch((err) => {
+			if (err.response.status === 401) {
+				handleLogout()
+			  }
+		 });
 	};
 
 	const handleAttandanceReport = async (idd, byWhich,strd,endd,data) => {
@@ -334,6 +340,9 @@ export default function AttandanceReport(props) {
 				setLoading(false);
 				setattandanceData(res.data);
 			}).catch((err) => {
+				if (err.response.status === 401) {
+					handleLogout()
+				  }
 				toast.error("Failed to fetch week of data")
 			 });
 
@@ -351,6 +360,9 @@ export default function AttandanceReport(props) {
 				setLoading(false);
 				setattandanceData(res.data);
 			}).catch((err) => {
+				if (err.response.status === 401) {
+					handleLogout()
+				  }
 				toast.error("Failed to fetch month of data")
 			 });
 		}
@@ -377,12 +389,16 @@ export default function AttandanceReport(props) {
 	};
 
 	const handleCounsellorNameByClassId = async (idd) => {
-		const response = await axios
+		await axios
 			.get(`${API.getCounsellorNameByClassId}/${idd}`, {
 				headers: authHeader(),
+			}).then((response) =>{
+				setCounsellorName(response.data.data[0]);
 			})
-			.catch((err) => { });
-		setCounsellorName(response.data.data[0]);
+			.catch((err) => {
+				if (err.response.status === 401) {
+				handleLogout()
+			  } });
 	};
 
 	const classNaam = classData.find((item) => {

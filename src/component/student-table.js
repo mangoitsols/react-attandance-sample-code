@@ -4,7 +4,7 @@ import { alpha } from "@mui/material/styles";
 import { Link } from "react-router-dom";
 import { CSVLink } from "react-csv";
 import { csvData } from "../comman/test";
-
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import {
   Box,
   Fade,
@@ -37,7 +37,7 @@ import { API, BASE_URL, SOCKET_URL } from "../config/config";
 import Example from "../comman/loader";
 import { getStudentData } from "../action/functional";
 import axios from "axios";
-import ImageAvatars from "./header";
+import ImageAvatars, { handleLogout } from "./header";
 import Sidebar from "./sidebar";
 import SearchBar from "material-ui-search-bar";
 import { useDispatch } from "react-redux";
@@ -193,6 +193,10 @@ const EnhancedTableToolbar = (props) => {
   const [selectBox, setSelectBox] = useState("");
   const [nameC, setNameC] = useState("");
   const [buttonDisable, setButtonDisable] = useState(false);
+  const [openModelAllDelete, setOpenModelAllDelete] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const handleCloseAllStudentDeleteModal = () =>
+    setOpenModelAllDelete(!openModelAllDelete);
 
   const handleOpen = () => {
     setOpen(true);
@@ -222,8 +226,10 @@ const EnhancedTableToolbar = (props) => {
       })
       .catch((err) => {
         setButtonDisable(true);
-
         toast.error("Students assigned class failed");
+        if (err.response.status === 401) {
+          handleLogout();
+        }
       });
   };
 
@@ -268,6 +274,8 @@ const EnhancedTableToolbar = (props) => {
           if (err.response.data.message === "class already exists") {
             toast.error("Classname already exists");
             setButtonDisable(false);
+          } else if (err.response.status === 401) {
+            handleLogout();
           } else {
             toast.error("Failed to created class");
             setButtonDisable(false);
@@ -277,6 +285,7 @@ const EnhancedTableToolbar = (props) => {
   };
 
   const handleAllStuDelete = () => {
+    setLoading(true);
     axios
       .delete(`${API.studentDelete}`, {
         data: { id: selectedRow },
@@ -286,9 +295,16 @@ const EnhancedTableToolbar = (props) => {
         toast.success("Students Deleted");
         allData();
         setSelected([]);
+        setLoading(false);
+		handleCloseAllStudentDeleteModal()
       })
       .catch((err) => {
+        setLoading(false);
         toast.error("Students deleted failed");
+        if (err.response.status === 401) {
+          handleLogout();
+        }
+		handleCloseAllStudentDeleteModal()
       });
   };
 
@@ -351,6 +367,9 @@ const EnhancedTableToolbar = (props) => {
                 setSelected([]);
               })
               .catch((err) => {
+                if (err.response.status === 401) {
+                  handleLogout();
+                }
                 toast.error("Students dismissed failed");
               });
           }
@@ -434,7 +453,12 @@ const EnhancedTableToolbar = (props) => {
                     value="SAVE"
                   />
                 ) : (
-                  <><Button type="button" disabled>SAVE</Button><LoaderButton /></>
+                  <>
+                    <Button type="button" disabled>
+                      SAVE
+                    </Button>
+                    <LoaderButton />
+                  </>
                 )}
               </div>
             </form>
@@ -512,6 +536,61 @@ const EnhancedTableToolbar = (props) => {
           </Box>
         </Fade>
       </Modal>
+
+      {/* Delete all student modal */}
+      {
+        <Modal
+          open={openModelAllDelete}
+          onClose={handleCloseAllStudentDeleteModal}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <Box sx={{ ...style, width: 500, textAlign: "center" }}>
+            <Box>
+              <CancelOutlinedIcon
+                sx={{ fontSize: "4.5rem !important", fill: "red" }}
+              />
+            </Box>
+            <Typography id="modal-modal-title" component="h1">
+              Are you sure?
+            </Typography>
+            <Typography id="modal-modal-description" component={"subtitle2"}>
+              Do you really want to delete the selected student
+            </Typography>
+            <Box marginTop={"30px"}>
+              {!loading ? (
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={handleAllStuDelete}
+                >
+                  Delete
+                </Button>
+              ) : (
+                <>
+                  <Button variant="contained" size="large" disabled>
+                    Delete
+                  </Button>
+                  <Example1 />
+                </>
+              )}
+
+              <Button
+                variant="outlined"
+                size="large"
+                onClick={handleCloseAllStudentDeleteModal}
+                sx={{
+                  marginLeft: "15px",
+                  borderColor: "text.primary",
+                  color: "text.primary",
+                }}
+              >
+                Cancel
+              </Button>
+            </Box>
+          </Box>
+        </Modal>
+      }
       <Toolbar
         className="delete-outer-box"
         sx={{
@@ -546,7 +625,7 @@ const EnhancedTableToolbar = (props) => {
 
         {numSelected > 0 ? (
           <span className="delete-box">
-            <span title="Delete" onClick={handleAllStuDelete}>
+            <span title="Delete" onClick={handleCloseAllStudentDeleteModal}>
               Delete
             </span>
             |
@@ -584,6 +663,7 @@ export default function EnhancedTable(props) {
   const [loading, setLoading] = React.useState(false);
   const [loading1, setLoading1] = React.useState(false);
   const [openmodel, setOpenmodel] = useState(false);
+  const [openModelDelete, setOpenModelDelete] = useState(false);
   const [search, setSearch] = useState("");
   const [filterr, setFilter] = useState([]);
   const [emergencyVal, setEmergencyVal] = useState([]);
@@ -602,6 +682,7 @@ export default function EnhancedTable(props) {
 
   const handleClose1 = () => setOpenmodel(false);
   const handleOpen1 = () => setOpenmodel(true);
+  const handleCloseDeleteModal = () => setOpenModelDelete(!openModelDelete);
 
   const fileReader = new FileReader();
 
@@ -642,6 +723,9 @@ export default function EnhancedTable(props) {
             }, 8500);
           })
           .catch((err) => {
+            if (err.response.status === 401) {
+              handleLogout();
+            }
             toast.error("Failed to uploading csv file");
           });
 
@@ -667,9 +751,14 @@ export default function EnhancedTable(props) {
         GetStudentData();
         setLoading1(false);
         setSelected([]);
+		handleCloseDeleteModal(false)
       })
       .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
         setLoading1(false);
+		handleCloseDeleteModal(false)
         toast.error("Student Deleted Failed");
       });
   };
@@ -712,6 +801,9 @@ export default function EnhancedTable(props) {
           GetStudentData();
         })
         .catch((err) => {
+          if (err.response.status === 401) {
+            handleLogout();
+          }
           setLoading1(false);
           toast.error("Student Dismissed Failed");
         });
@@ -746,6 +838,9 @@ export default function EnhancedTable(props) {
           setFilter(res.data.data);
         })
         .catch((err) => {
+          if (err.response.status === 401) {
+            handleLogout();
+          }
           // setLoading(false)
           setFilter([]);
         });
@@ -780,7 +875,11 @@ export default function EnhancedTable(props) {
 
   const GetClassData = async () => {
     setLoading(true);
-    const response = await axios.get(`${API.getClass}`).catch((err) => {});
+    const response = await axios.get(`${API.getClass}`).catch((err) => {
+      if (err.response.status === 401) {
+        handleLogout();
+      }
+    });
     if (response.status === 200) {
       setLoading(false);
       setLoading1(false);
@@ -801,6 +900,9 @@ export default function EnhancedTable(props) {
         setLoading(false);
       })
       .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
         setLoading(false);
       });
 
@@ -886,6 +988,9 @@ export default function EnhancedTable(props) {
         handleCloseMedical();
       })
       .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
         setLoading1(false);
         toast.error("Pin Verification Failed");
       });
@@ -1031,7 +1136,9 @@ export default function EnhancedTable(props) {
                       {filterr ? (
                         filterr.length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={6} sx={{textAlign:'center'}}>Record not found</TableCell>
+                            <TableCell colSpan={6} sx={{ textAlign: "center" }}>
+                              Record not found
+                            </TableCell>
                           </TableRow>
                         ) : (
                           filterr &&
@@ -1130,7 +1237,8 @@ export default function EnhancedTable(props) {
                                           }
                                         >
                                           <img
-                                            src={require("./images/medical.png")} alt='Medical_Img'
+                                            src={require("./images/medical.png")}
+                                            alt="Medical_Img"
                                           />
                                         </i>
                                       )}
@@ -1149,7 +1257,8 @@ export default function EnhancedTable(props) {
                                         >
                                           <i>
                                             <img
-                                              src={require("./images/emergency.png")} alt='Emergency_Img'
+                                              src={require("./images/emergency.png")}
+                                              alt="Emergency_Img"
                                             />
                                           </i>
                                         </Button>
@@ -1163,26 +1272,16 @@ export default function EnhancedTable(props) {
                                       <span>
                                         <Link to={`/editstudent/${row._id}`}>
                                           <img
-                                            src={require("./images/edit.png")} alt='edit icon'
+                                            src={require("./images/edit.png")}
+                                            alt="edit icon"
                                           />
                                         </Link>
                                       </span>
-                                      <span
-                                        onClick={() => handleStuDelete(row._id)}
-                                      >
-                                        {deleteId === row._id ? (
-                                          !loading1 ? (
-                                            <img
-                                              src={require("./images/delet.png")} alt='delete icon'
-                                            />
-                                          ) : (
-                                            <Example1 />
-                                          )
-                                        ) : (
-                                          <img
-                                            src={require("./images/delet.png")} alt='delete icon'
-                                          />
-                                        )}
+                                      <span onClick={handleCloseDeleteModal}>
+                                        <img
+                                          src={require("./images/delet.png")}
+                                          alt="delete icon"
+                                        />
                                       </span>
                                       <span
                                         onClick={() => handleStuDismiss(row)}
@@ -1190,24 +1289,28 @@ export default function EnhancedTable(props) {
                                         {dismissId === row._id ? (
                                           !loading1 ? (
                                             <img
-                                              src={require("./images/dismiss.png")} alt='dismiss icon'
+                                              src={require("./images/dismiss.png")}
+                                              alt="dismiss icon"
                                             />
                                           ) : (
                                             <>
                                               <Example1 />{" "}
                                               <img
-                                                src={require("./images/dismiss.png")} alt='dismiss icon'
+                                                src={require("./images/dismiss.png")}
+                                                alt="dismiss icon"
                                               />
                                             </>
                                           )
                                         ) : (
                                           <img
-                                            src={require("./images/dismiss.png")} alt='dismiss icon'
+                                            src={require("./images/dismiss.png")}
+                                            alt="dismiss icon"
                                           />
                                         )}
                                       </span>
                                     </TableCell>
                                   </TableRow>
+                                  {/* Medical message modal */}
                                   {
                                     <Modal
                                       open={openModel}
@@ -1216,6 +1319,7 @@ export default function EnhancedTable(props) {
                                       aria-describedby="modal-modal-description"
                                     >
                                       <Box sx={{ ...style1, width: 400 }}>
+                                        <Box onClick={closeModel}><CancelOutlinedIcon/></Box>
                                         <Typography
                                           id="modal-modal-title"
                                           variant="h6"
@@ -1238,6 +1342,90 @@ export default function EnhancedTable(props) {
                                             {row.medical}
                                           </div>
                                         </Typography>
+                                      </Box>
+                                    </Modal>
+                                  }
+                                  {/* Delete student modal */}
+                                  {
+                                    <Modal
+                                      open={openModelDelete}
+                                      onClose={handleCloseDeleteModal}
+                                      aria-labelledby="modal-modal-title"
+                                      aria-describedby="modal-modal-description"
+                                    >
+                                      <Box
+                                        sx={{
+                                          ...style1,
+                                          width: 500,
+                                          textAlign: "center",
+                                        }}
+                                      >
+                                        <Box>
+                                          <CancelOutlinedIcon
+                                            sx={{
+                                              fontSize: "4.5rem !important",
+                                              fill: "red",
+                                            }}
+                                          />
+                                        </Box>
+                                        <Typography
+                                          id="modal-modal-title"
+                                          component="h1"
+                                        >
+                                          Are you sure?
+                                        </Typography>
+                                        <Typography
+                                          id="modal-modal-description"
+                                          component={"subtitle2"}
+                                        >
+                                          Do you really want to delete the
+                                          student{" "}
+                                          <strong>
+                                            {row.name?.charAt(0).toUpperCase() +
+                                              row.name?.slice(1)}{" "}
+                                            {row.lastName
+                                              ?.charAt(0)
+                                              .toUpperCase() +
+                                              row.lastName?.slice(1)}
+                                          </strong>
+                                        </Typography>
+                                        <Box marginTop={"30px"}>
+                                          {!loading1 ? (
+                                            <Button
+                                              variant="contained"
+                                              size="large"
+                                              onClick={() =>
+                                                handleStuDelete(row._id)
+                                              }
+                                            >
+                                              Delete
+                                            </Button>
+                                          ) : (
+                                            <>
+                                              <Button
+                                                variant="contained"
+                                                size="large"
+                                                disabled
+                                              >
+                                                Delete
+                                              </Button>
+                                              <Example1 />
+                                            </>
+                                          )}
+
+                                          <Button
+                                            variant="outlined"
+                                            size="large"
+                                            onClick={handleCloseDeleteModal}
+                                            sx={{
+                                              marginLeft: "15px",
+                                              borderColor: "text.primary",
+                                              color: "text.primary",
+                                            }}
+                                          >
+                                            Cancel
+                                          </Button>
+                                        </Box>
                                       </Box>
                                     </Modal>
                                   }
@@ -1327,9 +1515,11 @@ export default function EnhancedTable(props) {
           aria-labelledby="parent-modal-title"
           aria-describedby="parent-modal-description"
         >
-          <Box sx={{ ...style1, width: 500,padding:'55px' }}>
-            <h2 id="parent-modal-title" style={{textAlign:'center'}} >Enter Your Pin</h2>
-            <div style={{textAlign:'center'}}>
+          <Box sx={{ ...style1, width: 500, padding: "55px" }}>
+            <h2 id="parent-modal-title" style={{ textAlign: "center" }}>
+              Enter Your Pin
+            </h2>
+            <div style={{ textAlign: "center" }}>
               <PinInput
                 length={4}
                 initialValue=""
@@ -1344,13 +1534,35 @@ export default function EnhancedTable(props) {
                 regexCriteria={/^[ A-Za-z0-9_@./#&+-]*$/}
               />
             </div>
-			<div className="pinDivDesign">
-            <button type="button" className="btn btn-transparent pinButtonDesign" onClick={handleCloseMedical}>CANCEL</button>
-            {!loading1 ? (
-			  <button type='submit' className="btn btn-primary pinButtonDesign" onClick={handleMedicalByPin}>SUBMIT</button>
-            ) : (
-              <><Button variant="contained" className="btn pinButtonDesign" disabled>SUBMIT</Button><LoaderButton /></>
-            )}</div>
+            <div className="pinDivDesign">
+              <button
+                type="button"
+                className="btn btn-transparent pinButtonDesign"
+                onClick={handleCloseMedical}
+              >
+                CANCEL
+              </button>
+              {!loading1 ? (
+                <button
+                  type="submit"
+                  className="btn btn-primary pinButtonDesign"
+                  onClick={handleMedicalByPin}
+                >
+                  SUBMIT
+                </button>
+              ) : (
+                <>
+                  <Button
+                    variant="contained"
+                    className="btn pinButtonDesign"
+                    disabled
+                  >
+                    SUBMIT
+                  </Button>
+                  <LoaderButton />
+                </>
+              )}
+            </div>
           </Box>
         </Modal>
       </div>

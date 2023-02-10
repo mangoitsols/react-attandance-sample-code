@@ -3,6 +3,7 @@ import axios from "axios";
 import { authHeader } from "../comman/authToken";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { handleLogout } from "../component/header";
 toast.configure();
 
 export function createClass(data, callback) {
@@ -15,6 +16,9 @@ export function createClass(data, callback) {
         .catch(function (error) {
           if(error.response.data.message === "class already exists"){
           toast.error("Class already exists");
+          }
+          else if (error.response.status === 401) {
+            handleLogout()
           }
           callback(error);
         });
@@ -29,6 +33,9 @@ export function createClass(data, callback) {
           callback(res);
         })
         .catch(function (error) {
+          if (error.response.status === 401) {
+            handleLogout()
+          }
           callback(error);
         });
     };
@@ -47,6 +54,16 @@ export function createClass(data, callback) {
           callback(res);
         })
         .catch(function (error) {
+          if(error.response.data.message === 'please Insert Unique Username '){
+            toast.error('Please provide unique username')
+          }
+          else if (error.response.status === 401) {
+            handleLogout()
+          }
+          else{
+            toast.error("Failed to add councellor");
+          }
+          
           callback(error);
         });
     };
@@ -60,6 +77,9 @@ export function createClass(data, callback) {
           callback(res);
         })
         .catch(function (error) {
+          if (error.response.status === 401) {
+            handleLogout()
+          }
           callback(error);
         });
     };
@@ -76,35 +96,43 @@ export function createClass(data, callback) {
       request
         .then((res) => {
           callback(res);
-          
         })
         .catch(function (error) {
+          if (error.response.status === 401) {
+            handleLogout()
+          }
           callback(error);
         });
     };
   }
 
   export function getAllCountry(callback) {
-    const request = axios.get(`${API.getAllCountry}`);
+    const request = axios.get(`${API.getAllCountry}`, { headers: authHeader() });
     return (dispatch) => {
       request
         .then((res) => {
           callback(res);
         })
         .catch(function (error) {
+          if (error.response.status === 401) {
+            handleLogout()
+          }
           callback(error);
         });
     };
   } 
 
   export function getStateBYCountryId(id,callback) {
-    const request = axios.get(`${API.getStateBYCountryId}/${id}`);
+    const request = axios.get(`${API.getStateBYCountryId}/${id}`, { headers: authHeader() });
     return (dispatch) => {
       request
         .then((res) => {
           callback(res);
         })
         .catch(function (error) {
+          if (error.response.status === 401) {
+            handleLogout()
+          }
           callback(error);
         });
     };

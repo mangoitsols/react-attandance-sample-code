@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { authHeader } from "../comman/authToken";
+import { handleLogout } from "../component/header";
 toast.configure();
 
 export function addStudent(data, callback) {
@@ -21,6 +22,9 @@ export function addStudent(data, callback) {
         if(error.response.status === 400){
           toast.error(error.response.data.message);
         }
+        else if (error.response.status === 401) {
+          handleLogout()
+        }
           callback(error);
         });
     };
@@ -34,6 +38,9 @@ export function addStudent(data, callback) {
           callback(res);
         })
         .catch(function (error) {
+          if (error.response.status === 401) {
+            handleLogout()
+          }
           callback(error);
         });
     };

@@ -9,8 +9,64 @@ import { API, BASE_URL, SOCKET_URL } from '../config/config';
 import areshow from '../images/aresure.svg';
 import { styleAlertPopup } from "./css/style";
 import { authHeader } from "../comman/authToken";
+import axios from "axios";
+
 
 toast.configure();
+
+const handleGetLoginStatus = async() =>{
+
+  var socket = io.connect(SOCKET_URL);
+  socket.on("connected", () => {});
+
+  await axios
+    .get(`${API.getLoginStatus}`, { headers: authHeader() })
+    .then((res) => {
+      socket.emit("checkUserStatus", res.data);
+    })
+    .catch((err) => {
+      if (err.response.status === 401) {
+        handleLogout()
+      }
+    });
+}
+
+const handleUpdateLoginStatus = async() =>{
+
+    const payload = {
+      status: "offline",
+  }
+
+    await axios
+      .patch(`${API.updateLoginStatus}/${localStorage.getItem('loginStatusId')}`,payload, { headers: authHeader() })
+      .then((res) => {
+        if(res){
+        handleGetLoginStatus()
+        }
+
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout()
+        }
+      });
+  }
+
+
+export const handleLogout = () => {
+
+  handleUpdateLoginStatus()
+
+  localStorage.clear("token");
+  localStorage.clear("name");
+  localStorage.clear("role");
+  localStorage.clear()
+  //toast.success("Logout Successfully"); 
+  setTimeout(() => {
+    window.location = "/";
+  }, 1000);
+};
+ 
 
 export default function ImageAvatars() {
   useEffect(()=>{
@@ -21,16 +77,6 @@ export default function ImageAvatars() {
 
   const socket = useRef(io(`${SOCKET_URL}`, { transports: ['websocket'] }));
 
-  const handleLogout = () => {
-    localStorage.clear("token");
-    localStorage.clear("name");
-    localStorage.clear("role");
-    //toast.success("Logout Successfully"); 
-    setTimeout(() => {
-      window.location = "/";
-    }, 1000);
-  };
-   
   const getUser = () => {
     const id = localStorage.getItem("id")
    fetch(`${API.getUser}/${id}`, { headers: authHeader() }
@@ -38,7 +84,10 @@ export default function ImageAvatars() {
                 .then((res) => res.json())
                 .then((json) => {
                   setNewPass(json)
-                  
+                }).catch((err) => {
+                  if (err.response.status === 401) {
+                    handleLogout()
+                  }
                 })
   }
 
@@ -70,10 +119,10 @@ export default function ImageAvatars() {
   };
 
   const roleStr = localStorage?.getItem("role");
-  const capitalizeRoleFirstLetter = roleStr.charAt(0).toUpperCase() + roleStr.slice(1);
+  const capitalizeRoleFirstLetter = roleStr?.charAt(0)?.toUpperCase() + roleStr?.slice(1);
 
   const nameStr = localStorage?.getItem("name");
-  const capitalizeNameFirstLetter = nameStr.charAt(0).toUpperCase() + nameStr.slice(1);
+  const capitalizeNameFirstLetter = nameStr?.charAt(0)?.toUpperCase() + nameStr?.slice(1);
   
   return (
     <React.Fragment>
@@ -199,7 +248,8 @@ export default function ImageAvatars() {
       <Stack direction="row" spacing={2}>
         <Avatar
           alt={capitalizeNameFirstLetter}
-          src={newPass.data && newPass.data[0].image ? `${BASE_URL}/${newPass.data[0].image}` : localStorage.getItem("image") ? localStorage.getItem("image").startsWith('uploads/') ? `${BASE_URL}/${localStorage.getItem("image")}` : localStorage.getItem("image"): ""}
+          src={localStorage.getItem('image') && localStorage.getItem("image").startsWith('uploads/') ? `${BASE_URL}/${localStorage.getItem("image")}` :  newPass.data &&  `${BASE_URL}/${newPass.data[0].image}` }
+
           sx={{ width: 56, height: 56 }}
         />
         <span>
@@ -214,7 +264,7 @@ export default function ImageAvatars() {
             <div className="myprofileToggle">
               <Avatar
                 alt={capitalizeNameFirstLetter}
-                src={newPass.data && newPass.data[0].image ? `${BASE_URL}/${newPass.data[0].image}` : localStorage.getItem("image") ? localStorage.getItem("image").startsWith('uploads/') ? `${BASE_URL}/${localStorage.getItem("image")}` : localStorage.getItem("image"): ""}
+                src={localStorage.getItem('image') && localStorage.getItem("image").startsWith('uploads/') ? `${BASE_URL}/${localStorage.getItem("image")}` :  newPass.data &&  `${BASE_URL}/${newPass.data[0].image}` }
                 sx={{ width: 56, height: 56 }}
               />
               <span>

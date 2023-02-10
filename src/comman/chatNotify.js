@@ -1,6 +1,6 @@
-import { API, BASE_URL, SOCKET_URL } from "../config/config";
+import {  SOCKET_URL } from "../config/config";
 import { io } from "socket.io-client";
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 toast.configure();

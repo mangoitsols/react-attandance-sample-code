@@ -26,6 +26,7 @@ import Loader from "../../comman/loader";
 import SimpleReactValidator from "simple-react-validator";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { handleLogout } from "../header";
 
 toast.configure();
 
@@ -122,6 +123,9 @@ class CProfile extends Component {
         this.setState({getclasses:res.data.data});
       })
       .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout()
+        }
         this.setState({loading:false});
       });
   };

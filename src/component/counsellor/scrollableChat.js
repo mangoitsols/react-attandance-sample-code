@@ -15,6 +15,7 @@ import { authHeader } from "../../comman/authToken";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import LoaderButton from "../../comman/loader1";
+import { handleLogout } from "../header";
 toast.configure();
 
 const ScrollableChat = ({ messages }) => {
@@ -53,6 +54,9 @@ const ScrollableChat = ({ messages }) => {
       toast.success("Message updated");
     })
     .catch((err) => {
+      if (err.response.status === 401) {
+        handleLogout()
+      }
       toast.error("Something went wrong!");
     });
   };
@@ -68,7 +72,9 @@ const ScrollableChat = ({ messages }) => {
         })
     }
     catch (error) {
-
+      if (error.response.status === 401) {
+        handleLogout()
+      }
     };
 }
   
@@ -76,7 +82,11 @@ const ScrollableChat = ({ messages }) => {
     setLoading(true)
     const del = await axios.delete(`${API.deleteMessage}/${id}`, {
       headers: authHeader(),
-    });
+    }).catch((error)=>{
+      if (error.response.status === 401) {
+        handleLogout()
+      }
+    })
     
     if (del) {
       toast.success("Message deleted");

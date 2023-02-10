@@ -1,7 +1,7 @@
 import React,{useState} from 'react';
 import { Container } from "@mui/material";
 import { useEffect } from "react";
-import ImageAvatars from "./header";
+import ImageAvatars, { handleLogout } from "./header";
 import Sidebar from "./sidebar";
 import $ from "jquery";
 import { toast } from 'react-toastify';
@@ -55,7 +55,9 @@ const ResetPassword = () => {
 
         const response = await axios
         .post(`${API.changePassword}`,requestData)
-        .catch((err) => {});
+        .catch((err) => {if (err.response.status === 401) {
+          handleLogout()
+        }});
         if(response.status === 200){
             toast.success("Password update successfully")
             setTimeout(() => {

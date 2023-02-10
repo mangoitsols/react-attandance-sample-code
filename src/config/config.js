@@ -3,8 +3,12 @@
 // export const SOCKET_URL = "https://api-aelix.mangoitsol.com/"; 
 
 // mangoit server
-export const BASE_URL = "http://103.127.29.85:6020";
-export const SOCKET_URL = "http://103.127.29.85:6020/"; 
+// export const BASE_URL = "http://103.127.29.85:6020";
+// export const SOCKET_URL = "http://103.127.29.85:6020/"; 
+
+// local server
+export const BASE_URL = "http://localhost:6020";
+export const SOCKET_URL = "http://localhost:6020/"; 
 
 export const API = {
   login: `${BASE_URL}/api/login`,
@@ -62,5 +66,16 @@ export const API = {
 
   searchClass: `${BASE_URL}/api/searchClass`,
   updateClass: `${BASE_URL}/api/updateClass`, 
+  deleteClass: `${BASE_URL}/api/deleteClass`,
+
+  addSchoolInfo: `${BASE_URL}/api/addSchoolInfo`,
+  updateSchoolInfo: `${BASE_URL}/api/updateSchoolInfo`,
+  getSchoolInfo: `${BASE_URL}/api/getSchoolInfo`,
+
+  getCurrentLocation:'https://ipinfo.io/json?token=5c5585f95b146b',
+
+  getLoginStatus :`${BASE_URL}/api/getStatusInfo`,
+  addLoginStatus :`${BASE_URL}/api/addStatusInfo`,
+  updateLoginStatus :`${BASE_URL}/api/updateStatusInfo`,
   
 };

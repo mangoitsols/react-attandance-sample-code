@@ -24,6 +24,8 @@ import SimpleReactValidator from "simple-react-validator";
 import "react-toastify/dist/ReactToastify.css";
 import moment from "moment";
 import LoaderButton from "../comman/loader1";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 toast.configure();
 
@@ -41,7 +43,7 @@ class AddStudent extends Component {
     phonename3: "",
     phone: "",
     phone1: "",
-    phone2: "",
+    // phone2: "",
     photo: "",
     file: "",
     medical: "",
@@ -56,6 +58,10 @@ class AddStudent extends Component {
     startDate: "",
     dateError: "",
     loading: false,
+    schoolLocation: localStorage.getItem("schoolLocation"),
+    currentLocation: localStorage.getItem("currentLocation"),
+    phoneError: "",
+    phone1Error: "",
   };
   handleChange = (event) => {
     let checkedbox = event.target.checked;
@@ -95,21 +101,6 @@ class AddStudent extends Component {
         this.value = this.value.replace(/[^a-zA-Z]/g, "");
       }
     });
-    $('input[name="phone"]').keyup(function (e) {
-      if (/\D/g.test(this.value)) {
-        this.value = this.value.replace(/\D/g, "");
-      }
-    });
-    $('input[name="phone1"]').keyup(function (e) {
-      if (/\D/g.test(this.value)) {
-        this.value = this.value.replace(/\D/g, "");
-      }
-    });
-    $('input[name="phone2"]').keyup(function (e) {
-      if (/\D/g.test(this.value)) {
-        this.value = this.value.replace(/\D/g, "");
-      }
-    });
     $(document).ready(function () {
       $("#myform").validate({
         rules: {
@@ -139,13 +130,8 @@ class AddStudent extends Component {
             required: true,
             minlength: 3,
           },
-          phonename3: {
-            required: true,
-            minlength: 3,
-          },
-          phone: { required: true, minlength: 10, maxlength: 10 },
-          phone1: { required: true, minlength: 10, maxlength: 10 },
-          phone2: { required: true, minlength: 10, maxlength: 10 },
+          phone: { required: true },
+
           demoselect: { required: true },
         },
         messages: {
@@ -170,6 +156,9 @@ class AddStudent extends Component {
           address: {
             required: "<p style='color:red'>Address is required</P>",
           },
+          phone: {
+            required: "<p style='color:red'>phone is required</P>",
+          },
           phonename1: {
             required: "<p style='color:red'>Please enter name</P>",
             minlength:
@@ -180,32 +169,6 @@ class AddStudent extends Component {
             minlength:
               "<p style='color:red'>Your phone name must consist of at least 3 characters</p>",
           },
-          phonename3: {
-            required: "<p style='color:red'>Please enter name</P>",
-            minlength:
-              "<p style='color:red'>Your phone name must consist of at least 3 characters</p>",
-          },
-          phone: {
-            required: "<p style='color:red'> Mobile number is required</p>",
-            minlength:
-              "<p style='color:red'>Mobile number must be 10 digit</p>",
-            maxlength:
-              "<p style='color:red'>Mobile number must be 10 digit</p>",
-          },
-          phone1: {
-            required: "<p style='color:red'> Mobile number is required</p>",
-            minlength:
-              "<p style='color:red'>Mobile number must be 10 digit</p>",
-            maxlength:
-              "<p style='color:red'>Mobile number must be 10 digit</p>",
-          },
-          phone2: {
-            required: "<p style='color:red'> Mobile number is required</p>",
-            minlength:
-              "<p style='color:red'>Mobile number must be 10 digit</p>",
-            maxlength:
-              "<p style='color:red'>Mobile number must be 10 digit</p>",
-          },
 
           demoselect: {
             required:
@@ -215,12 +178,17 @@ class AddStudent extends Component {
       });
     });
 
-    $('input[name="phone"]').keyup(function (e) {
-      if (/\D/g.test(this.value)) {
-        // Filter non-digits from input value.
-        this.value = this.value.replace(/\D/g, "");
-      }
-    });
+    // $('input[name="phone"]').keyup(function (e) {
+    //   if ((this.value === '')) {
+    //     // Filter non-digits from input value.
+    // this.setState({ phoneError: 'The mobile number field is required.' });
+
+    //   }
+    //   else{
+    // this.setState({ phoneError: '' });
+
+    //   }
+    // });
     this.getClassData();
   }
 
@@ -240,26 +208,33 @@ class AddStudent extends Component {
       phonename1,
       phone,
       phone1,
-      phone2,
+      // phone2,
       phonename2,
       phonename3,
       emergency,
       medical,
       address,
       classSelect,
+      phone1Error,
+      phoneError,
       file,
     } = this.state;
     emergency.push(
       { Ename: phonename1, number: phone },
-      { Ename: phonename2, number: phone1 },
-      { Ename: phonename3, number: phone2 }
+      { Ename: phonename2, number: phone1 }
+      // { Ename: phonename3, number: phone2 }
     );
 
     const formData = new FormData();
     // if ( this.state.dateError ==="") {
     //   // toast.warn("Please assign a class");
     // } else {
-
+    if (
+      phoneError === "" ||
+      phone1Error === "" ||
+      phone !== "" ||
+      phone1 !== ""
+    ) {
       const requestData = {
         name: name,
         lastName: lastname,
@@ -271,24 +246,24 @@ class AddStudent extends Component {
         medical: medical,
         emergency: JSON.stringify(emergency),
       };
-    
+
       for (var key in requestData) {
         formData.append(key, requestData[key]);
       }
-      this.setState({loading:true});
+      this.setState({ loading: true });
       this.props.addStudent(formData, (res) => {
         if (res.status === 200) {
-          this.setState({loading:false});
+          this.setState({ loading: false });
           toast.success("Student Added Successfully");
           setTimeout(() => {
             window.location.replace("/student");
           }, 2000);
         } else {
-            this.setState({loading:false});
+          this.setState({ loading: false });
           toast.error("Student Added Failed");
         }
       });
-    // }
+    }
   };
 
   handleClose = () => this.setState({ openmodel: false });
@@ -296,13 +271,13 @@ class AddStudent extends Component {
   handleAddNumber = () => this.setState({ openmodelNumber: true });
   handleCloseNumber = () => this.setState({ openmodelNumber: false });
   modelEmergency = (e) => {
-    this.setState({ addNumber: e.target.value });
-    $('input[name="phone"]').keyup(function (e) {
-      if (/\D/g.test(this.value)) {
-        // Filter non-digits from input value.
-        this.value = this.value.replace(/\D/g, "");
-      }
-    });
+    this.setState({ addNumber: e });
+    // $('input[name="phone"]').keyup(function (e) {
+    //   if (/\D/g.test(this.value)) {
+    //     // Filter non-digits from input value.
+    //     this.value = this.value.replace(/\D/g, "");
+    //   }
+    // });
   };
 
   handleCreateClass = (e) => {
@@ -320,14 +295,14 @@ class AddStudent extends Component {
       const requestData = {
         className: nameC.slice(0, -1) + nameC.charAt(6).toUpperCase(),
       };
-      this.setState({loading:true})
+      this.setState({ loading: true });
       this.props.createClass(requestData, (res) => {
         if (res.status === 200) {
           toast.success(res.data.message);
-          this.setState({loading:false})
+          this.setState({ loading: false });
           this.setState({ openmodel: false });
         } else if (res.status === 400) {
-          this.setState({loading:false})
+          this.setState({ loading: false });
           toast.error(res.data.message);
         }
       });
@@ -377,6 +352,24 @@ class AddStudent extends Component {
     this.setState({ [e.target.name]: e.target.value });
   }
 
+  setOnChangeForPhone(e) {
+    if (e !== "") {
+      this.setState({ phone: e });
+      this.setState({ phoneError: "" });
+    } else {
+      this.setState({ phoneError: "The mobile number field is required." });
+    }
+  }
+
+  setOnChangeForPhone1(e) {
+    if (e !== "") {
+      this.setState({ phone1: e });
+      this.setState({ phone1Error: "" });
+    } else {
+      this.setState({ phone1Error: "The mobile number field is required." });
+    }
+  }
+
   addClassOnChange(e) {
     this.setState({ nameC: e.target.value });
 
@@ -408,13 +401,15 @@ class AddStudent extends Component {
     });
   }
   HandleDate(e) {
-    var now = new Date();
-    var a = now.getFullYear();
-    var yyyy = e.getFullYear();
-    
-    var date = a - 2;
-    if (yyyy > date) {
-      this.setState({ dateError: "Student age must be greater than 2 year" });
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const yyyy = e.getFullYear();
+
+    const date = currentYear - 2;
+    if (yyyy > currentYear) {
+      this.setState({ dateError: "Date of birth cannot be a future date" });
+    } else if (yyyy > date) {
+      this.setState({ dateError: "Student should be over 2 years old" });
     } else {
       this.setState({ startDate: e });
       this.setState({ dateError: "" });
@@ -430,7 +425,7 @@ class AddStudent extends Component {
       photo,
       phone,
       phone1,
-      phone2,
+      // phone2,
       phonename1,
       phonename2,
       phonename3,
@@ -441,6 +436,10 @@ class AddStudent extends Component {
       fatherName,
       dob,
       database,
+      schoolLocation,
+      currentLocation,
+      phone1Error,
+      phoneError,
     } = this.state;
     let $imagePreview = null;
     const style = {
@@ -452,6 +451,7 @@ class AddStudent extends Component {
       borderRadius: "15px",
       p: 4,
     };
+
     const current = new Date().toISOString().split("T")[0];
 
     const content =
@@ -538,11 +538,24 @@ class AddStudent extends Component {
                     >
                       CLOSE
                     </button>
-                   {!this.state.loading ? <input
-                      type="submit"
-                      className="btn btn-primary"
-                      value="SAVE"
-                    /> : <><button type="button" class="btn btn-secondary" disabled>SAVE</button><LoaderButton /></>} 
+                    {!this.state.loading ? (
+                      <input
+                        type="submit"
+                        className="btn btn-primary"
+                        value="SAVE"
+                      />
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          class="btn btn-secondary"
+                          disabled
+                        >
+                          SAVE
+                        </button>
+                        <LoaderButton />
+                      </>
+                    )}
                   </div>
                 </form>
               </Box>
@@ -576,12 +589,23 @@ class AddStudent extends Component {
                       placeholder="Please enter your name"
                       onChange={(e) => addFillName(e)}
                     />
-                    <input
-                      type="tel"
-                      name="phone"
-                      id="phone"
-                      placeholder="Please enter your mobile no."
+                    <PhoneInput
+                      country={`${
+                        schoolLocation && schoolLocation.toLowerCase() === "usa"
+                          ? "us"
+                          : currentLocation.toLowerCase()
+                      }`}
+                      value={`${this.state.addNumber}`}
+                      enableAreaCodes
+                      enableSearch="true"
+                      countryCodeEditable={false}
                       onChange={(e) => this.modelEmergency(e)}
+                      inputProps={{
+                        name: "addphone",
+                        required: true,
+                        // autoFocus: true,
+                        copyNumbersOnly: true,
+                      }}
                     />
                   </div>
                   <div className="btndesign text-right">
@@ -592,11 +616,18 @@ class AddStudent extends Component {
                     >
                       CLOSE
                     </button>
-                    {!this.state.loading ? <input
-                      type="submit"
-                      className="btn btn-primary"
-                      value="SAVE"
-                    /> : <button type="button" class="btn btn-secondary" disabled><LoaderButton />SAVE</button>}
+                    {!this.state.loading ? (
+                      <input
+                        type="submit"
+                        className="btn btn-primary"
+                        value="SAVE"
+                      />
+                    ) : (
+                      <button type="button" class="btn btn-secondary" disabled>
+                        <LoaderButton />
+                        SAVE
+                      </button>
+                    )}
                   </div>
                 </form>
               </Box>
@@ -655,15 +686,21 @@ class AddStudent extends Component {
                 <div className="form-outline mb-4 col-md-6">
                   <label htmlFor="dob">Date of Birth</label>
                   <div>
-                  <DatePicker
-                    placeholderText="Please select date of birth"
-                    name="dob"
-                    selected={this.state.startDate}
-                    onChange={(date) => this.HandleDate(date)}
-                  />
+                    <DatePicker
+                      placeholderText="Please select date of birth"
+                      name="dob"
+                      selected={this.state.startDate}
+                      onChange={(date) => this.HandleDate(date)}
+                      peekNextMonth
+                      showMonthDropdown
+                      showYearDropdown
+                      dropdownMode="select"
+                    />
                   </div>
                 </div>
-                  <p style={{ color: "red" ,fontSize: "12px" }}>{this.state.dateError}</p>
+                <p style={{ color: "red", fontSize: "12px" }}>
+                  {this.state.dateError}
+                </p>
               </div>
 
               <div className="row">
@@ -746,17 +783,31 @@ class AddStudent extends Component {
                       {/* {this.validator.message('name',phonename1,'required|min:3' )} */}
                     </span>
                     <span className="col-md-8 p-0">
-                      <input
-                        type="tel"
-                        id="phone"
-                        name="phone"
-                        className="form-control mb-3  "
-                        value={phone}
-                        onChange={(e) => this.setOnChange(e)}
-                        // maxLength={10}
-                        placeholder="Mobile number"
+                      <PhoneInput
+                        country={`${
+                          schoolLocation &&
+                          schoolLocation.toLowerCase() === "usa"
+                            ? "us"
+                            : currentLocation.toLowerCase()
+                        }`}
+                        value={`${phone}`}
+                        enableAreaCodes
+                        enableSearch="true"
+                        countryCodeEditable={false}
+                        onChange={(phone) => this.setOnChangeForPhone(phone)}
+                        inputProps={{
+                          name: "phone",
+                          required: true,
+                          autoFocus: true,
+                        }}
                       />
-                      {/* {this.validator.message('mobile number',phone,'required|min:10' )} */}
+                      {phoneError !== "" ? (
+                        <p style={{ color: "red", fontSize: "12px" }}>
+                          {phoneError}
+                        </p>
+                      ) : (
+                        ""
+                      )}
                     </span>
                   </div>
                   <div className="phoneNo">
@@ -770,23 +821,36 @@ class AddStudent extends Component {
                         value={phonename2}
                         onChange={(e) => this.setOnChange(e)}
                       />
+
                       {/* {this.validator.message('name',phonename1,'required|min:3' )} */}
                     </span>
                     <span className="col-md-8 p-0">
-                      <input
-                        type="tel"
-                        id="phone1"
-                        name="phone1"
-                        className="form-control mb-3 "
-                        value={phone1}
-                        onChange={(e) => this.setOnChange(e)}
-                        // maxLength={10}
-                        placeholder="Mobile number"
+                      <PhoneInput
+                        country={`${
+                          schoolLocation &&
+                          schoolLocation.toLowerCase() === "usa"
+                            ? "us"
+                            : currentLocation.toLowerCase()
+                        }`}
+                        value={`${phone1}`}
+                        countryCodeEditable={false}
+                        enableAreaCodes
+                        enableSearch="true"
+                        onChange={(phone) => this.setOnChangeForPhone1(phone)}
+                        inputProps={{
+                          name: "phone1",
+                        }}
                       />
-                      {/* {this.validator.message('mobile number',phone,'required|min:10' )} */}
+                      {phone1Error !== "" ? (
+                        <p style={{ color: "red", fontSize: "12px" }}>
+                          {phone1Error}
+                        </p>
+                      ) : (
+                        ""
+                      )}
                     </span>
                   </div>
-                  <div className="phoneNo">
+                  {/* <div className="phoneNo">
                     <span className="col-md-4 mr-2 p-0">
                       <input
                         type="text"
@@ -798,22 +862,27 @@ class AddStudent extends Component {
                         onChange={(e) => this.setOnChange(e)}
                       />
                       {/* {this.validator.message('name',phonename1,'required|min:3' )} */}
-                    </span>
+                  {/* </span>
                     <span className="col-md-8 p-0">
                       {" "}
-                      <input
-                        type="tel"
-                        id="phone2"
-                        name="phone2"
-                        className="form-control mb-3 "
-                        value={phone2}
-                        onChange={(e) => this.setOnChange(e)}
-                        // maxLength={10}
-                        placeholder="Mobile number"
-                      />
-                      {/* {this.validator.message('mobile number',phone,'required|min:10' )} */}
+                       <PhoneInput
+                          country={`${
+                            schoolLocation
+                              ? schoolLocation.toLowerCase()
+                              : currentLocation.toLowerCase()
+                          }`}
+                          value={`${phone2}`}
+                          enableAreaCodes
+                          enableSearch="true"
+                          // countryCodeEditable={false}
+                          onChange={(phone) => this.setState({phone2:phone})}
+                          inputProps={{
+                            name: "phone2",
+                          }}
+                        />
+                      
                     </span>
-                  </div>
+                  </div> */}
                   {database ? (
                     <>
                       {database.map((data) => {
@@ -824,10 +893,20 @@ class AddStudent extends Component {
                               className="form-control mb-3 col-md-4 mr-2"
                               value={data.Ename}
                             />
-                            <input
-                              type="tel"
-                              className="form-control mb-3 col-md-8"
-                              value={data.number}
+                            <PhoneInput
+                              country={`${
+                                schoolLocation &&
+                                schoolLocation.toLowerCase() === "usa"
+                                  ? "us"
+                                  : currentLocation.toLowerCase()
+                              }`}
+                              placeholder={`${data.number}`}
+                              disableAreaCodes
+                              disableCountryCode
+                              disableDropdown
+                              countryCodeEditable={false}
+                              enableAreaCodes
+                              enableSearch="true"
                             />
                           </div>
                         );
@@ -837,21 +916,22 @@ class AddStudent extends Component {
                     ""
                   )}
 
-                  {phone === "" ||
+                  {/* {phone === "" ||
                   phone1 === "" ||
-                  phone2.length !== 10 ||
+                  // phone2 === "" ||
                   phonename1 === "" ||
-                  phonename2 === "" ||
-                  phonename3 === "" ? (
+                  phonename2 === ""
+                  // phonename3 === "" 
+                  ? (
                     ""
-                  ) : (
-                    <a
-                      className="float-right pointer blue"
-                      onClick={this.handleAddNumber}
-                    >
-                      Add new
-                    </a>
-                  )}
+                  ) : ( */}
+                  <a
+                    className="float-right pointer blue"
+                    onClick={this.handleAddNumber}
+                  >
+                    Add new
+                  </a>
+                  {/* )} */}
                 </div>
               </div>
 
@@ -876,7 +956,7 @@ class AddStudent extends Component {
                               <strong>Upload image</strong>
                             </div>
                             <p style={{ fontSize: "13px" }}>
-                            Student image must be less than 6kb
+                              Student image must be less than 6kb
                             </p>
                           </>
                         ))}
@@ -889,12 +969,10 @@ class AddStudent extends Component {
                     style={{ display: "none" }}
                     onChange={(e) => this._handleImageChange(e)}
                   />
-        
                 </div>
               </div>
               <div className="row">
                 <div className="form-outline mb-4 col-md-6 medicalCheckbox">
-     
                   <input
                     type="checkbox"
                     className="checkbox"
@@ -929,12 +1007,18 @@ class AddStudent extends Component {
                 >
                   CANCEL
                 </a>
-                {!this.state.loading ? <input
-                      type="submit"
-                      className="btn btn-primary btn-block mb-4"
-                      value="SAVE"
-                    /> : <button type="button" class="btn btn-secondary" disabled><Loader />SAVE</button>} 
-                
+                {!this.state.loading ? (
+                  <input
+                    type="submit"
+                    className="btn btn-primary btn-block mb-4"
+                    value="SAVE"
+                  />
+                ) : (
+                  <button type="button" class="btn btn-secondary" disabled>
+                    <Loader />
+                    SAVE
+                  </button>
+                )}
               </div>
             </form>
           </Container>

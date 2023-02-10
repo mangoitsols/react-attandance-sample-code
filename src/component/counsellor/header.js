@@ -4,19 +4,10 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ArrowBackIosOutlinedIcon from "@mui/icons-material/ArrowBackIosOutlined";
 import Divider from "@mui/material/Divider";
+import { handleLogout } from "../header";
 toast.configure();
 
 export default function ImageAvatars() {
-
-  const handleLogout = () => {
-    localStorage.clear("token");
-    localStorage.clear("name");
-    localStorage.clear("role");
-    toast.success("Logout Successfully");
-    setTimeout(() => {
-      window.location = "/";
-    }, 1000);
-  };
 
   const [isActive, setActive] = useState("true");
   const [name, setName] = useState(localStorage.getItem("name"));
@@ -55,7 +46,7 @@ export default function ImageAvatars() {
         />
         <span>
           <div onClick={ToggleClass}>
-          <strong>{name.charAt(0).toUpperCase() + name.slice(1)}{" "}{lastname.charAt(0).toUpperCase() + lastname.slice(1)}</strong>
+          <strong>{name?.charAt(0)?.toUpperCase() + name?.slice(1)}{" "}{lastname?.charAt(0)?.toUpperCase() + lastname?.slice(1)}</strong>
           <small> {localStorage.getItem("role")} </small>
           <span className="arrow" >
             <ArrowBackIosOutlinedIcon />
@@ -69,7 +60,7 @@ export default function ImageAvatars() {
                 sx={{ width: 56, height: 56 }}
               />
               <span>
-                <strong>{name.charAt(0).toUpperCase() + name.slice(1)}{" "}{lastname.charAt(0).toUpperCase() + lastname.slice(1)}</strong>
+                <strong>{name?.charAt(0)?.toUpperCase() + name?.slice(1)}{" "}{lastname?.charAt(0)?.toUpperCase() + lastname?.slice(1)}</strong>
                 <small> {localStorage.getItem("role")} </small>
               </span>
               <a href="/cprofile">Counsellor Profile</a>

@@ -24,6 +24,7 @@ import {
 import send from "../images/send.svg";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { handleLogout } from "../header";
 toast.configure();
 
 const CouncellorChat = () => {
@@ -118,7 +119,11 @@ const CouncellorChat = () => {
         );
         Array.prototype.push.apply(dat1, dat2);
         setCounsellorDet(dat1);
-      });
+      }).catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout()
+        }
+      })
   };
 
   const handleSelectChatUser = async (recieverId) => {
@@ -154,6 +159,9 @@ const CouncellorChat = () => {
 
         })
         .catch((err) => {
+          if (err.response.status === 401) {
+            handleLogout()
+          }
           toast.error("Something went wrong");
         });
     }
@@ -186,6 +194,9 @@ const CouncellorChat = () => {
         socket.emit("message", request.data);
         setMessage(request.data);
       } catch (error) {
+        if (error.response.status === 401) {
+          handleLogout()
+        }
         toast.error("Message not send");
       }
     }
@@ -207,7 +218,11 @@ const CouncellorChat = () => {
           setMessage(data.data);
           setLoading(false);
           socket.emit("join chat", chatId.data._id);
-        } catch (error) {}
+        } catch (error) {
+          if (error.response.status === 401) {
+            handleLogout()
+          }
+        }
       } else if (chatId.data.isGroupChat === false) {
         setMessage([]);
         try {
@@ -226,7 +241,11 @@ const CouncellorChat = () => {
           setMessage(finalArrayCompare);
           setLoading(false);
           socket.emit("join chat", chatId.data._id);
-        } catch (error) {}
+        } catch (error) {
+          if (error.response.status === 401) {
+            handleLogout()
+          }
+        }
       }
     }
   };
@@ -268,7 +287,11 @@ const CouncellorChat = () => {
           url: `${API.seenGroupMessage}`,
           data: reqData,
           headers: authHeader(),
-        }).then((res)=>{})
+        }).then((res)=>{}).catch(err => {
+          if (err.response.status === 401) {
+            handleLogout()
+          }
+        })
   }
    
   // Scrollable feed functionality start
@@ -305,6 +328,9 @@ const CouncellorChat = () => {
       toast.success("Message updated");
     })
     .catch((err) => {
+      if (err.response.status === 401) {
+        handleLogout()
+      }
       toast.error("Message can't update");
     });
   }
@@ -314,16 +340,19 @@ const CouncellorChat = () => {
     setLoading(true)
     const del = await axios.delete(`${API.deleteMessage}/${id}`, {
       headers: authHeader(),
-    });
-    
-    if (del) {
+    }).then(response => {
       toast.success("Message deleted");
       setToggle(false);
       setLoading(false)
       fetchMessages()
-    } else {
+
+    }).catch((err) => {
+      if (err.response.status === 401) {
+        handleLogout()
+      }
       toast.error("Something went wrong");
-    }
+    });
+   
   };
 
   const handleOnClickId =(id,oldMsg) => {
@@ -337,18 +366,20 @@ const CouncellorChat = () => {
 
     setLoading(true)
     const del = await axios.put(`${API.deleteMessageReceiver}/${id}`, {
-      deleteUsers : localStorage.getItem("id")},{headers: authHeader()});
-    
-    if (del) {
-      toast.success("Message deleted");
-      fetchMessages()
-      setToggle(false);
-      setLoading(false)
-    } else {
-      setToggle(false);
-      setLoading(false)
-      toast.error("Something went wrong");
-    }
+      deleteUsers : localStorage.getItem("id")},{headers: authHeader()}).then(() => {
+        toast.success("Message deleted");
+        fetchMessages()
+        setToggle(false);
+        setLoading(false)
+
+      }).catch((error) =>{
+        if (error.response.status === 401) {
+          handleLogout()
+        }
+        setToggle(false);
+        setLoading(false)
+        toast.error("Something went wrong");
+      })
 }
 
   // Scrollable feed functionality end
@@ -453,7 +484,7 @@ const CouncellorChat = () => {
                   <div className="chat-section">
                     {message.length === 0 ? (
                       <div className="not-found">
-                        <p>Message not found</p>
+                        <p></p>
                       </div>
                     ) : (
                       <div>
@@ -589,25 +620,29 @@ const CouncellorChat = () => {
                         />
                       }
                     </span>
-                    <h3>{chatId ? chatId.chatName.charAt(0).toUpperCase() + chatId.chatName.slice(1) : ""}</h3>
-                    {chatId.users.map((member,index) => {
+                    <div className='group-name'><h3>{chatId ? chatId.chatName.charAt(0).toUpperCase() + chatId.chatName.slice(1) : ""}</h3></div>
+                    <div className='group-member-name'>{chatId.users.map((member,index) => {
           
                       return (
-                        <div key={index} >
-                          
-                        {member.name === localStorage.getItem("name")
-                            ? 'you'  
-                            : "," + member.name }
-                      </div>
+
+                        <p key={index} >{
+                          (index ? ', ' : '') + 
+                        (member.name === localStorage.getItem("name")
+                            ? 'You'  
+                            : member.name.charAt(0).toUpperCase() + member.name.slice(1))}
+                      </p>
                           
                       
                       );
-                    })}
+                    })}</div>
                   </div>
 
                   {/* Group chat Scrollable feed */}
+                  <div className="chat-section">
                   {message.length === 0 ? (
-                    <p>Message not found</p>
+                   <div className="not-found">
+                   <p></p>
+                 </div>
                   ) : (
                     <div>
                        <ScrollableFeed>
@@ -694,7 +729,7 @@ const CouncellorChat = () => {
                                 ) )}
                                 </ScrollableFeed>
                     </div>
-                  )}
+                  )}</div>
                   <div className="chatmessage">
                     {isTyping ? (
                       <div>
@@ -707,7 +742,7 @@ const CouncellorChat = () => {
                     ) : (
                       ""
                     )}
-                    <div>
+                   
                     <form method='POST' onSubmit={(e) =>handleSendMessage(e)} style={{width: '100%', display: 'flex'}}>
                     <InputField
                       id="message"
@@ -721,7 +756,7 @@ const CouncellorChat = () => {
                     <img src={send} className="" alt="logo" />
                     </Button>
                     </form>
-                    </div>
+                    
                   </div>
                 </div>
               )

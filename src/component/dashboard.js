@@ -1,21 +1,14 @@
-import React, { useEffect, useState } from "react";
-import ImageAvatars from "./header";
+import React, { useState } from "react";
+import ImageAvatars, { handleLogout } from "./header";
 import {
   Container,
   Box,
-  Select,
-  Backdrop,
-  MenuItem,
   FormControl,
   styled,
   Paper,
   Grid,
   Avatar,
   Stack,
-  Typography,
-  Button,
-  Fade,
-  Modal,
   NativeSelect,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -23,13 +16,13 @@ import Sidebar from "./sidebar";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
-import { API, BASE_URL, SOCKET_URL } from "../config/config";
+import { API, BASE_URL } from "../config/config";
 import moment from "moment";
 import attendance1 from "./images/attendance.svg";
 import { Link } from "react-router-dom";
 import { authHeader } from "../comman/authToken";
 import Loader from "../comman/loader";
-// import ChatNotify from "../comman/chatNotify";
+
 toast.configure();
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -53,30 +46,37 @@ const DashBoard1 = () => {
   React.useEffect(() => {
     GetStudentData();
     GetClassData();
-    // <ChatNotify/>
   }, []);
 
   const GetStudentData = async () => {
-    const response = await axios
+    await axios
       .get(`${API.getStudent}`, { headers: authHeader() })
-      .catch((err) => {});
-    if (response.status === 200) {
-      setLoading(false);
-    } else {
-      setLoading(true);
-    }
-    setStudentDetail(response.data);
-    setFilter(response.data.data);
+      .then((response) => {
+        setLoading(false);
+        setStudentDetail(response.data);
+        setFilter(response.data.data);
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
+        setLoading(false);
+      });
   };
 
   const GetClassData = async () => {
-    const response = await axios.get(`${API.getClass}`).catch((err) => {});
-    if (response.status === 200) {
-      setLoading(false);
-    } else {
-      setLoading(true);
-    }
-    setClassData(response.data.data);
+    await axios
+      .get(`${API.getClass}`)
+      .then((res) => {
+        setLoading(false);
+        setClassData(res.data.data);
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
+        setLoading(true);
+      });
   };
 
   const SelectOnChange = (ele) => {
@@ -125,7 +125,11 @@ const DashBoard1 = () => {
       : filterr.filter((vall) =>
           vall && vall.attaindence && vall.attaindence === null
             ? []
-            : vall.attaindence && vall.attaindence.out_of_class !== "no" && vall?.dismiss === null &&  vall.attaindence.attendence !== "0" && vall.attaindence.outclassDateTime
+            : vall.attaindence &&
+              vall.attaindence.out_of_class !== "no" &&
+              vall?.dismiss === null &&
+              vall.attaindence.attendence !== "0" &&
+              vall.attaindence.outclassDateTime
         );
   const absBySubs = filterr.length - filterDataPre.length;
 
@@ -151,7 +155,7 @@ const DashBoard1 = () => {
               <span className="icon">
                 <DashboardIcon fontSize="35px" />
               </span>
-              Class Dashboard
+              Dashboard
             </h1>
             <div>
               <label>Filter By:</label>
@@ -169,7 +173,7 @@ const DashBoard1 = () => {
                   {classData.map((item) => {
                     const str = item?.className;
                     const capitalizeFirstLetter =
-                      str.charAt(0).toUpperCase() + str.slice(1);
+                      str?.charAt(0)?.toUpperCase() + str?.slice(1);
                     return (
                       <option key={item._id} value={item._id}>
                         {capitalizeFirstLetter}
@@ -318,7 +322,7 @@ const DashBoard1 = () => {
               <Grid item xs={6}>
                 <Item className="dashboaed-text">
                   <h2>Students Out of Class</h2>
-                
+
                   {filteroutofClass.length === 0 ? (
                     <p>No records found</p>
                   ) : (
@@ -330,25 +334,21 @@ const DashBoard1 = () => {
                       const outTime = moment(
                         item.attaindence.outclassDateTime
                       ).format("DD/MM/YYYY HH:mm:ss");
-                      var timee ,timeetimer= false;
-                        if (inTime.toString() > outTime.toString()) {
-                          timee  = moment
+                      var timee,
+                        timeetimer = false;
+                      if (inTime.toString() > outTime.toString()) {
+                        timee = moment
                           .utc(
                             moment(inTime, "DD/MM/YYYY HH:mm:ss").diff(
                               moment(outTime, "DD/MM/YYYY HH:mm:ss")
-                              )
-                              )
-                              .format("mm:ss");
-                              timeetimer= false
-                              console.log("true",timeetimer)
+                            )
+                          )
+                          .format("mm:ss");
+                        timeetimer = false;
+                      } else {
+                        timeetimer = true;
+                      }
 
-                              // return false;
-                            }else{
-                              timeetimer = true
-                              
-                              console.log("false",timeetimer)
-                            }
-                 
                       return (
                         <Stack direction="row" spacing={2} key={item._id}>
                           <Avatar
@@ -360,7 +360,13 @@ const DashBoard1 = () => {
                               <strong>{item.name}</strong>
                               <small>{item.attaindence.out_of_class}</small>
                             </span>
-                            <span className="timer">{item.attaindence.outclassDateTime && item.attaindence.inclassDateTime && !timeetimer? timee + 'min' :'00:00 min'} </span>
+                            <span className="timer">
+                              {item.attaindence.outclassDateTime &&
+                              item.attaindence.inclassDateTime &&
+                              !timeetimer
+                                ? timee + "min"
+                                : "00:00 min"}{" "}
+                            </span>
                           </div>
                         </Stack>
                       );

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import ImageAvatars from "./header";
+import ImageAvatars, { handleLogout } from "./header";
 import Sidebar from "./sidebar";
 import { FormControl, MenuItem, Select, Container } from "@mui/material";
 import { API } from "../config/config";
@@ -12,6 +12,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { authHeader } from "../comman/authToken";
 import Loader from "../comman/loader";
 import $ from "jquery";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 toast.configure();
 
 const EditCounsellor = () => {
@@ -26,13 +28,16 @@ const EditCounsellor = () => {
   const [item, setItem] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const schoolLocation = localStorage.getItem("schoolLocation");
+  const currentLocation = localStorage.getItem("currentLocation");
+
   const dispatch = useDispatch();
 
-  $('input[name="mobile"]').keyup(function (e) {
-    if (/\D/g.test(this.value)) {
-      this.value = this.value.replace(/\D/g, "");
-    }
-  });
+  // $('input[name="mobile"]').keyup(function (e) {
+  //   if (/\D/g.test(this.value)) {
+  //     this.value = this.value.replace(/\D/g, "");
+  //   }
+  // });
 
   $('input[name="name"]').keyup(function (e) {
     if (/[^a-zA-Z]/g.test(this.value)) {
@@ -68,12 +73,12 @@ const EditCounsellor = () => {
           required: true,
           minlength: 3,
         },
-        mobile: {
-          required: true,
-          digits: true,
-          minlength: 10,
-          maxlength: 10,
-        },
+        // mobile: {
+        //   required: true,
+        //   digits: true,
+        //   minlength: 10,
+        //   maxlength: 10,
+        // },
 
         email: {
           required: true,
@@ -101,14 +106,14 @@ const EditCounsellor = () => {
             "<p style='color:red'>Your username must consist of at least 3 characters</p>",
         },
 
-        mobile: {
-          required: "<p style='color:red'>Please enter your mobile number</p>",
-          digits: "<p style='color:red'>Please enter valid mobile number</p>",
-          minlength:
-            "<p style='color:red'>Mobile number field accept only 10 digits</p>",
-          maxlength:
-            "<p style='color:red'>Mobile number field accept only 10 digits</p>",
-        },
+        // mobile: {
+        //   required: "<p style='color:red'>Please enter your mobile number</p>",
+        //   digits: "<p style='color:red'>Please enter valid mobile number</p>",
+        //   minlength:
+        //     "<p style='color:red'>Mobile number field accept only 10 digits</p>",
+        //   maxlength:
+        //     "<p style='color:red'>Mobile number field accept only 10 digits</p>",
+        // },
 
         password: {
           required: "<p style='color:red'>Please provide a password</p>",
@@ -128,6 +133,9 @@ const EditCounsellor = () => {
         setGetclasses(res.data.data);
       })
       .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
         setLoading(false);
       });
 
@@ -149,6 +157,9 @@ const EditCounsellor = () => {
         setClassSelect(res.data.data[0].classId);
       })
       .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
         setLoading(false);
       });
   };
@@ -179,6 +190,8 @@ const EditCounsellor = () => {
       .catch(function (error) {
         if (error.response.status === 400) {
           toast.error("Failed to update councellor");
+        } else if (error.response.status === 401) {
+          handleLogout();
         }
       });
   };
@@ -227,14 +240,19 @@ const EditCounsellor = () => {
             <div className="row">
               <div className="form-outline mb-4 col-md-6">
                 <label htmlFor="mobile">Mobile No.</label>
-                <input
-                  type="tel"
-                  id="mobile"
-                  name="mobile"
-                  className="form-control"
-                  placeholder="Please enter your mobile number"
-                  value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
+
+                <PhoneInput
+                  country={`${
+                    schoolLocation && schoolLocation.toLowerCase() === "usa"
+                      ? "us"
+                      : currentLocation.toLowerCase()
+                  }`}
+                  enaableAreaCodes
+                  countryCodeEditable={false}
+                  onChange={(phone) => setMobile(phone)}
+                  value={`${mobile}`}
+                  enableAreaCodes
+                  enableSearch="true"
                 />
               </div>
               <div className="form-outline mb-4 col-md-6">

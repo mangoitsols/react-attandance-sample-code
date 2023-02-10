@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Sidebar from "./sidebar";
-import ImageAvatars from "./header";
+import ImageAvatars, { handleLogout } from "./header";
 import Container from "@mui/material/Container";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import { API } from "../config/config";
@@ -21,8 +21,11 @@ import SearchBar from "material-ui-search-bar";
 import axios from "axios";
 import { authHeader } from "../comman/authToken";
 import counsellor from "../images/counsellor.svg";
-import { Avatar } from "@mui/material";
+import { Avatar, Box, Button, Modal, Typography } from "@mui/material";
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+
 import "./css/student.css";
+import Example1 from "../comman/loader1";
 
 toast.configure();
 
@@ -36,7 +39,9 @@ export default function Counsellor() {
   const [dense, setDense] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-
+  const [openModelDelete, setOpenModelDelete] = useState(false);
+  const [selectedCouncellorDetail, setSelectedCouncellorDetail] = useState('false');
+  
   useEffect(() => {
     handleGetUser();
     setSearch("");
@@ -54,7 +59,11 @@ export default function Counsellor() {
       })
       .then((data) => {
         setCounsellorDetail(data.filter((e) => e.role.name === "counsellor"));
-      });
+      }).catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout()
+        }
+      })
   };
 
   const handleChangeRowsPerPage = (event) => {
@@ -79,11 +88,16 @@ export default function Counsellor() {
       if (a.status === 200 || a.status === 201) {
         setLoading(false);
         handleGetUser();
-        toast.success("Councellor deleted successfully");
+        toast.success("Deleted successfully");
+        handleCloseDeleteModal('')
       } else {
         setLoading(true);
       }
-    });
+    }).catch(err => {
+      if (err.response.status === 401) {
+        handleLogout()
+      }
+    })
   };
 
   const handleSearch = async (data) => {
@@ -98,6 +112,9 @@ export default function Counsellor() {
           setCounsellorDetail(dataCouncellor);
         })
         .catch((err) => {
+          if (err.response.status === 401) {
+            handleLogout()
+          }
           setCounsellorDetail([]);
         });
     } else {
@@ -105,10 +122,27 @@ export default function Counsellor() {
     }
   };
 
+  const handleCloseDeleteModal = (data) => {setOpenModelDelete(!openModelDelete)
+  setSelectedCouncellorDetail(data)}
+
+
   const emptyRows =
     page > 0
       ? Math.max(0, (1 + page) * rowsPerPage - counsellorDetail.length)
       : 0;
+
+      const style = {
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        bgcolor: "background.paper",
+        borderRadius: "15px",
+        p: 4,
+      };
+    
+
+
   return (
     <>
       <Sidebar />
@@ -152,15 +186,13 @@ export default function Counsellor() {
                     <TableHead>
                       <TableRow>
                         <TableCell>Name</TableCell>
-                        <TableCell style={{ textAlign: "center" }}>
+                        <TableCell style={{ textAlign: "left" }}>
                           Class
-                        </TableCell>
-                        <TableCell style={{ textAlign: "center" }}>
-                          Assign Students
                         </TableCell>
                         <TableCell style={{ textAlign: "center" }}>
                           Action
                         </TableCell>
+                        
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -177,25 +209,20 @@ export default function Counsellor() {
                                   {" "}
                                   {item &&
                                     item.name.charAt(0).toUpperCase() +
-                                      item.name.slice(1)}{" "}
+                                      item.name.slice(1)}{" "} 
                                   {item &&
                                     item.lastname.charAt(0).toUpperCase() +
                                       item.lastname.slice(1)}
                                 </TableCell>
                                 <TableCell
-                                  align="center"
+                                  align="left"
                                   style={{ width: "100px" }}
                                 >
                                   {item &&
                                     item.classId &&
                                     item.classId.className}
                                 </TableCell>
-                                <TableCell
-                                  align="center"
-                                  style={{ width: "200px" }}
-                                >
-                                  {item && item.studentCount}
-                                </TableCell>
+
                                 <TableCell
                                   align="center"
                                   className="action"
@@ -215,29 +242,36 @@ export default function Counsellor() {
                                     <img
                                       src={require("./images/delet.png")}
                                       alt="Delete icon"
-                                      onClick={() =>
-                                        handleDelete(item && item._id)
+                                      onClick={() => 
+                                        handleCloseDeleteModal (item)
                                       }
                                     />
                                   </span>
+
                                 </TableCell>
                               </TableRow>
-                            );
+                                   
+                                   );
+
+                                 
                           })
+
                       ) : (
-                        <p>Record Not found</p>
-                      )}
+                        <TableCell colSpan={3} style={{ textAlign: "center" }}>Record Not found</TableCell>
+                        )}
                       {emptyRows > 0 && (
                         <TableRow
                           style={{
                             height: (dense ? 33 : 53) * emptyRows,
                           }}
-                        >
+                          >
                           <TableCell colSpan={6} />
                         </TableRow>
                       )}
                     </TableBody>
+                    
                   </Table>
+                  
                 </TableContainer>
                 <TablePagination
                   rowsPerPageOptions={[5, 10, 15]}
@@ -256,11 +290,62 @@ export default function Counsellor() {
                   label="Dense padding"
                 />
               </div>
+             
             </React.Fragment>
           ) : (
             <Loader />
           )}
         </Container>
+        {
+                                   <Modal
+                                         open={openModelDelete}
+                                         onClose={() => handleCloseDeleteModal('')}
+                                         aria-labelledby="modal-modal-title"
+                                         aria-describedby="modal-modal-description"
+                                       >
+                                         <Box sx={{ ...style,width: 600, textAlign:'center' }}>
+                                           <Box>
+                                                   <CancelOutlinedIcon sx={{fontSize:'4.5rem !important', fill:'red !important'}}/>
+                                           </Box>
+                                           <Typography
+                                             id="modal-modal-title"
+                                             component="h1"
+                                             
+                                           >
+                                             Are you sure? 
+                                           </Typography>
+                                           <Typography
+                                             id="modal-modal-description"
+                                             component={'subtitle2'}>
+                                               Do you really want to delete the counsellor  
+                                               <strong> { selectedCouncellorDetail &&
+                                       selectedCouncellorDetail?.name?.charAt(0).toUpperCase() +
+                                         selectedCouncellorDetail?.name?.slice(1) }{' '} 
+                                     { selectedCouncellorDetail &&
+                                       selectedCouncellorDetail?.lastname?.charAt(0).toUpperCase() +
+                                         selectedCouncellorDetail?.lastname?.slice(1)}</strong>
+                                             </Typography>
+                                           <Box marginTop={'30px'}>
+                                          
+                                          
+                                             {!loading ? (
+                                               <Button variant="contained" size="large" onClick={() => handleDelete(selectedCouncellorDetail && selectedCouncellorDetail?._id)}>Delete</Button>
+                                             ) : (
+                                               <>
+                                             <Button variant="contained" size="large" disabled>Delete</Button> 
+                                             <Example1 />
+                                               </>
+                                             )}
+                                          
+                                       
+                                              <Button variant='outlined' size="large"  onClick={() => handleCloseDeleteModal('')} sx={{marginLeft:'15px',borderColor:'text.primary',color:'text.primary'}}>
+                                               Cancel
+                                             </Button>
+                                            
+                                           </Box>
+                                         </Box>
+                                       </Modal>
+                                        }
       </div>
     </>
   );

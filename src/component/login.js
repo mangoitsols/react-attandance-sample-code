@@ -4,15 +4,19 @@ import $ from "jquery";
 import validate from "jquery-validation";
 import { connect } from "react-redux";
 import { login } from "../action/auth";
-import { makeStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
 import Checkbox from "@material-ui/core/Checkbox";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./css/login.css";
 import LoaderButton from "../comman/loader1";
+import { API, SOCKET_URL } from "../config/config";
+import axios from "axios";
 import { authHeader } from "../comman/authToken";
-import { API, BASE_URL } from "../config/config";
+import { handleLogout } from "./header";
+import io from "socket.io-client";
+
+
 
 toast.configure();
 
@@ -26,10 +30,35 @@ class Login extends Component {
     email: "",
     password: "",
     loading: false,
-    isChecked:false
+    isChecked:false,
   };
 
+  
+  
+  handleGetLoginStatus = async() =>{
+
+    var socket = io.connect(SOCKET_URL);
+    socket.on("connected", () => {});
+
+    await axios
+      .get(`${API.getLoginStatus}`, { headers: authHeader() })
+      .then((res) => {
+        socket.emit("checkUserStatus", res.data);
+
+        socket?.on("sendUserStatus",(data) => {
+          console.log(data);
+      })
+ 
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout()
+        }
+      });
+  }
+
   componentDidMount() {
+
     $(document).ready(function () {
       $("#regvalidation").validate({
         rules: {
@@ -60,6 +89,13 @@ class Login extends Component {
     }
   }
 
+  getCurrentLocation = async() => {
+    await axios.get(API.getCurrentLocation).then((response) => {
+      localStorage.setItem('currentLocation', response.data.country)
+    }).catch((error) => {
+    })
+  }
+
 
   he = () => {
     {
@@ -81,19 +117,45 @@ class Login extends Component {
     }
   };
 
-  getUser = (id) => {
-   fetch(`${API.getUser}/${id}`, { headers: authHeader() }
-    )
-                .then((res) => res.json())
-                .then((json) => {
-                  localStorage.setItem('image',(json.data && json.data[0].image) ?? `${BASE_URL}/${json.data[0].image}`)
-                })
+  handleAddLoginStatus = async(id) =>{
+
+    const payload = {
+      status: "online",
+      userId: id
+    }
+
+    await axios
+      .post(`${API.addLoginStatus}`,payload, { headers: authHeader() })
+      .then((res) => {
+        localStorage.setItem("loginStatusId",res.data.data._id)
+          this.handleGetLoginStatus()
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout()
+        }
+      });
+  }
+
+  handleGetSchoolInfo = async() =>{
+
+    const Manager_ID = localStorage.getItem("id");
+    await axios
+      .get(`${API.getSchoolInfo}/${Manager_ID}`, { headers: authHeader() })
+      .then((res) => {
+        localStorage.setItem("schoolLocation", res.data.country);
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout()
+        }
+        localStorage.setItem("schoolLocation",'');
+      });
   }
 
   handleSubmit = (e) => {
     e.preventDefault();
     const { email, password ,isChecked} = this.state;
-
     const requestData = {
       password: password,
       username: email,
@@ -104,8 +166,9 @@ class Login extends Component {
       localStorage.password = password;
       localStorage.checkbox = isChecked;
     }
-
+    this.setState({ loading: true });
     this.props.login(requestData, (res) => {
+
       
       if (res.status === 200) {
 
@@ -115,11 +178,20 @@ class Login extends Component {
         localStorage.setItem("role", res.data.role);
         localStorage.setItem("id", res.data._id);
         this.he();
-        this.getUser(res.data._id);
-        this.setState({ loading: true });
+        this.getCurrentLocation();
+        if(res.data.role === 'manager'){
+        this.handleGetSchoolInfo();
+        }      
+        this.handleAddLoginStatus(res.data._id)
+
+        this.setState({ loading: false });
         setTimeout(() => {
           window.location = "/welcome";
         }, 500);
+      }
+      else{
+        this.setState({ loading: false });
+
       }
     });
   };
@@ -131,6 +203,7 @@ class Login extends Component {
   }
 
   render() {
+
     return (
       <React.Fragment>
         <div className="loginBox">

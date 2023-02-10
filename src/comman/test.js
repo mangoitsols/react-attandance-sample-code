@@ -1,6 +1,6 @@
 export const csvData = [
     {   
-        assignClass:"class A",
+        assignClass:"class B",
         name:"Jhon",
         lastName:"Hyler",
         fatherName:"Jimmy",
@@ -16,7 +16,7 @@ export const csvData = [
         image:"https://cdn.pixabay.com/photo/2013/07/18/20/26/sea-164989_640.jpg"
     },
     { 
-        assignClass:"unassign",
+        assignClass:"class C",
         name:"Max",
         lastName:"Proton",  
         fatherName:"Jason",

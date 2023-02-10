@@ -22,10 +22,10 @@ import {
   TableSortLabel,
   Typography,
   Paper,
-  Switch,
+  
   NativeSelect,
   Avatar,
-  Stack
+  Stack,
 } from "@mui/material";
 import { visuallyHidden } from "@mui/utils";
 import { API, BASE_URL } from "../../config/config";
@@ -36,12 +36,16 @@ import "react-toastify/dist/ReactToastify.css";
 import "../css/student.css";
 import PinInput from "react-pin-input";
 import student from "../../images/student-black.svg";
-import present from "../../images/present.svg";
-import absent from "../../images/absent.svg";
 import { style1 } from "../css/style";
 import { authHeader } from "../../comman/authToken";
 import PushNotification from "./pushnotification";
 import LoaderButton from "../../comman/loader1";
+import '../../style/toggle.css';
+import Switch from '@mui/material/Switch';
+import { handleLogout } from "../header";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+
+
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -76,12 +80,7 @@ const headCells = [
     disablePadding: false,
     label: "Medical",
   },
-  {
-    id: "Action",
-    numeric: true,
-    disablePadding: false,
-    label: "Action",
-  },
+
 ];
 export function EnhancedTableHead(props) {
   const { onRequestSort, order, orderBy } = props;
@@ -146,18 +145,17 @@ const CounsellorDashboard = (props) => {
   const [loading, setLoading] = React.useState(true);
   const [openModel, setOpenModel] = useState(false);
   const [search, setSearch] = useState("");
-  const [toggle, setToggle] = useState(false);
-  const [selectSubBox, setSelectSubBox] = useState(false);
   const [pin, setPin] = useState("");
   const [selectCheck, setSelectCheck] = useState([]);
   const [preAbs, setPreAbs] = useState(false);
-  const [preAbsId, setPreAbsId] = useState(false);
   const [className, setClassName] = useState([]);
   const [loading1, setLoading1] = React.useState(false);
   const [timer, setTimer] = useState(0);
   const [start, setStart] = useState(false);
   const firstStart = useRef(true);
-  const [studentIDForTimer,setStudentIDForTimer] = useState([])
+  const [toggleChecked, setToggleChecked] = React.useState(false);
+  const [toggleColor, setToggleColor] = React.useState('default');
+  const [checkToggleStartOrStop,setCheckToggleStartOrStop] = useState(false)
   const tick = useRef();
 
   useEffect(() => {
@@ -209,6 +207,9 @@ const CounsellorDashboard = (props) => {
         setCounsellorDetail({...response.data,data:filteredPersons});
         setClassName(response.data.data[0]);
       }).catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout()
+        }
         setLoading(true);
       });
       
@@ -275,11 +276,12 @@ const CounsellorDashboard = (props) => {
         .then((res) => {
           toast.success("Attendance Saved");
           GetCounsellorData();
-          // setToggle(true);
         })
         .catch((err) => {
           if(err.response.data.message === "attaindence already save"){
             toast.error("Attaindance alredy save");
+          }else if (err.response.status === 401) {
+            handleLogout()
           }
           toast.error("Failed to save attendance");
 
@@ -307,6 +309,9 @@ const CounsellorDashboard = (props) => {
           setPreAbs(!preAbs)
         })
         .catch((err) => {
+          if (err.response.status === 401) {
+            handleLogout()
+          }
           toast.error("Failed to save attendance");
         });
     }
@@ -322,7 +327,9 @@ const CounsellorDashboard = (props) => {
       url: `${API.varifyPin}`,
       data: requestData,
       headers: authHeader(),
-    }).catch((err) => {});
+    }).catch((err) => {if (err.response.status === 401) {
+      handleLogout()
+    }});
     if (res) {
       setLoading1(false)
       toast.success("Pin Verification Confirm");
@@ -341,8 +348,7 @@ const CounsellorDashboard = (props) => {
   };
 
   const handleOnChangeSelect = async (e, row) => {
-    console.log(e)
-    studentIDForTimer.push(row._id)
+   
     if (row.attaindence === null) {
       toast.warning("First you have to mark attandance");
     } else if (row.attaindence && row.attaindence.attendence === "0") {
@@ -361,9 +367,18 @@ const CounsellorDashboard = (props) => {
         url: `${API.studentStatusUpdate}/${row._id}`,
         data: requestData,
         headers: authHeader(),
-      }).catch((err) => {});
+      }).catch((err) => {if (err.response.status === 401) {
+        handleLogout()
+      }});
       if (res) {
-        setSelectSubBox(true);
+        if(e.target.value !== 'no'){
+            toggleStart(row._id)
+            setCheckToggleStartOrStop(true)
+        }
+        else{
+          toggleStop(row._id)
+          setCheckToggleStartOrStop(false)
+        }
         setSelectCheck([...selectCheck, row._id]);
         GetCounsellorData();
        } else {
@@ -372,21 +387,7 @@ const CounsellorDashboard = (props) => {
     }
   };
 
-  const handleEditPreAbs = (id, attandance) => {
-    if (attandance.attendence === null) {
-      toast.warning("First you have to mark attandance");
-    } else {
-      setPreAbsId(id);
-      setPreAbs(!preAbs);
-    }
-  };
-  const handleDismiss = () => {
-    toast.warning("This student is dismiss by manager");
-  };
-
   // Timer Functionality start
-
-
   const toggleStart = async(id) => {
   
       setStart(true);
@@ -396,8 +397,12 @@ const CounsellorDashboard = (props) => {
         url: `${API.timerStart}/${id}`,
         headers: authHeader(),
       }).then((res)=>{
-      setLoading1(false); 
+        setTimer(0)
+        setLoading1(false); 
       }).catch((err) => { 
+        if (err.response.status === 401) {
+          handleLogout()
+        }
       setLoading1(false);
       toast.error("Something went wrong during start timer")
       });
@@ -416,10 +421,12 @@ const CounsellorDashboard = (props) => {
 		}).then((res)=>{
     setLoading1(false);
     setTimer(0)
-      setSelectSubBox(false)
       GetCounsellorData();
     })
     .catch((err) => {
+      if (err.response.status === 401) {
+        handleLogout()
+      }
       setLoading1(false);
       toast.error("Something went wrong during stop timer")
      });
@@ -480,6 +487,16 @@ const CounsellorDashboard = (props) => {
     );
   };
 
+  const handleChangeToggleChecked = (event) => {
+    setToggleChecked(event.target.checked);
+    if(event.target.checked === true) {
+    setToggleColor('success')
+    } else {
+    setToggleColor('danger')
+    }
+  };
+  
+
    // Timer Functionality end
 
    const filteroutofClass =
@@ -490,8 +507,6 @@ const CounsellorDashboard = (props) => {
            ? []
            : vall?.attaindence && vall?.attaindence?.out_of_class !== "no" && vall?.dismiss === null &&  vall?.attaindence?.attendence !== "0" && vall?.attaindence?.inclassDateTime 
        );
-
-       console.log(filteroutofClass,"filteroutofClass")
    
    return (
      <>
@@ -546,7 +561,6 @@ const CounsellorDashboard = (props) => {
                         ? (rows.totalcount ?(rows.totalcount - rows.totalpresent) : 0)
                         : "0"}
                     </span>
-                    {/* })} */}
                   </div>
                 </Item>
               </Grid>
@@ -632,7 +646,7 @@ const CounsellorDashboard = (props) => {
                             const handleNoStatus = rows.data.find(
                               (ele) => ele._id === row._id
                             );
-                            console.log(selectCheck,"selectCheck",found)
+                          
 
                             return (
                               <React.Fragment key={row._id}>
@@ -643,6 +657,7 @@ const CounsellorDashboard = (props) => {
                                   aria-describedby="modal-modal-description"
                                 >
                                   <Box sx={{ ...style1, width: 400 }}>
+                                    <Box onClick={closeModel}><CancelOutlinedIcon/> </Box>
                                     <Typography
                                       id="modal-modal-title"
                                       variant="h6"
@@ -702,17 +717,30 @@ const CounsellorDashboard = (props) => {
                                     padding="none"
                                     style={{ width: "150px" }}
                                   >
-  
-                            {preAbs && preAbsId === row._id ? (
-                              <div className="display form-outline mb-4 col-md-12 medicaltextarea attendance" >
-																<button onClick={() => handleAttendanceUpdate("1", row )} className="present-button"><span className=''> <img src={present} className="" alt="icon" /></span></button>
-																<button onClick={() => handleAttendanceUpdate("0", row)} className="absent-button"><span className=''> <img src={absent} className="" alt="" /></span></button>
-															</div>
-                                    ) : row && row.dismiss?"Dismissed" : row && row.attaindence && row.attaindence.attendence === "1" ? "Present" : row && row.attaindence && row.attaindence.attendence === "0" ? "Absent" :
-                                  <div className="display form-outline mb-4 col-md-12 medicaltextarea attendance" >
-                                    <button onClick={() => handleAttendance(row, "1")} className="present-button"><span className=''> <img src={present} className="" alt="icon" /></span></button>
-                                    <button onClick={() => handleAttendance(row, "0")} className="absent-button"><span className=''> <img src={absent} className="" alt="" /></span></button>
-                                  </div>   }
+                             
+                                  {row && row.dismiss? "Dismissed" :  row && row.attaindence && row.attaindence.attendence === "1" ? <Switch 
+                                      checked={true}
+                                      onChange={handleChangeToggleChecked}
+                                      onClick={() => {handleAttendanceUpdate("0", row )}}
+                                      color={'success'}
+                                      size="large"
+                                      inputProps={{ 'aria-label': 'controlled' }}
+                                  />:row && row.attaindence && row.attaindence.attendence === "0" ? <Switch 
+                                      checked={false}
+                                      onChange={handleChangeToggleChecked}
+                                      onClick={() => {handleAttendanceUpdate("1", row )}}
+                                      color={'default'}
+                                      size="large"
+                                      inputProps={{ 'aria-label': 'controlled' }}
+                                  /> :<Switch 
+                                      checked={toggleChecked}
+                                      onChange={handleChangeToggleChecked}
+                                      onClick={() => {toggleChecked === false ? handleAttendance(row, "1") : handleAttendance(row, "0")}}
+                                      color={toggleColor}
+                                      size="large"
+                                      inputProps={{ 'aria-label': 'controlled' }}
+                                  />}
+
                                   </TableCell>
                                   <TableCell
                                     align="center"
@@ -747,7 +775,18 @@ const CounsellorDashboard = (props) => {
                                         <option value="in Camp">In camp</option>
                                       </NativeSelect>
 
-                                      {( row &&
+                                      {row &&
+                                      row.attaindence && row.attaindence.out_of_class &&
+                                      row.attaindence.attendence === "1" ? 
+                                          handleNoStatus.attaindence &&
+                                          handleNoStatus.attaindence
+                                            .out_of_class !== "no"?
+
+                                              row.attaindence.out_of_class !== "no" ?  <span style={{color:"red",margin:"7px 2px" }}>
+                                                      {dispSecondsAsMins(timer) }
+                                                  </span> : '': '':''}
+
+                                      {/* {( row &&
                                       row.attaindence && row.attaindence.out_of_class &&
                                       row.attaindence.attendence === "1") ? 
                                           handleNoStatus.attaindence &&
@@ -769,7 +808,7 @@ const CounsellorDashboard = (props) => {
                                         )
                                        : (
                                         ""
-                                      )}
+                                      )} */}
                                     </FormControl>
                                   </TableCell>
                                   <TableCell
@@ -791,7 +830,7 @@ const CounsellorDashboard = (props) => {
                                       </Button>
                                     )}
                                   </TableCell>
-                                  {row.dismiss ? (
+                                  {/* {row.dismiss ? (
                                     <TableCell
                                       align="center"
                                       className="action"
@@ -823,8 +862,8 @@ const CounsellorDashboard = (props) => {
                                           alt="emer"
                                         />
                                       </span>
-                                    </TableCell>
-                                  )}
+                                    </TableCell> */}
+                                  {/* )} */}
                                 </TableRow>
                               </React.Fragment>
                             );

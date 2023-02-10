@@ -21,10 +21,30 @@ import AttandanceReport from "../component/attandanceReports";
 import Chat from "../component/chat";
 import CouncellorChat from "../component/counsellor/councellorchat";
 import ManageClass from "../component/manageClass";
-import PageNotFound from "../comman/pageNotFound";
+import PageNotFound from "../comman/404";
 import Cprofile from "../component/counsellor/cprofile";
+import SchoolDetails from "../component/schoolDetails";
 
 const Routing = () => {
+
+  if(localStorage.getItem('token') === null){
+    return ( 
+      
+      <Routes>
+      
+        <Route history={history} 
+        exact 
+        path="/" 
+        element={< Login/>} 
+        />
+        <Route history={history}
+        exact
+        path="*"
+        element={<PageNotFound/>}
+        />
+      </Routes>
+  )
+    }else{
     return ( 
       
         <Routes>
@@ -134,6 +154,12 @@ const Routing = () => {
           path="/class"
           element={<ManageClass/>}
           />
+           <Route history={history}
+          exact
+          path="/school"
+          element={<SchoolDetails/>}
+          />
+          
           <Route history={history}
           exact
           path="*"
@@ -143,7 +169,8 @@ const Routing = () => {
         
           
         </Routes>
-    );
+    )
+  }
 }
 
          

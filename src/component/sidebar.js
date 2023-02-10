@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component,useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../images/logo-2.png";
 import student from "../images/student.svg";
@@ -10,14 +10,55 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import { createClass, getClass } from "../action/index";
+import MapsHomeWorkIcon from '@mui/icons-material/MapsHomeWork';
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { connect } from "react-redux";
+import { handleLogout } from "./header";
+import { authHeader } from "../comman/authToken";
+import axios from "axios";
+import { API, BASE_URL } from "../config/config";
+
 toast.configure();
 
 class Sidebar extends Component {
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      data:'',
+      loading:false,
+    }
+  }
+
+  
+  handleGetSchoolInfo = async() =>{
+
+    const Manager_ID = localStorage.getItem('id');
+
+    this.setState({loading:true});
+    await axios
+    .get(`${API.getSchoolInfo}/${Manager_ID}`, { headers: authHeader() })
+    .then((res) => {
+      this.setState({loading:false});
+      this.setState({data:res.data});
+    })
+    .catch((err) => {
+      if (err.response.status === 401) {
+        handleLogout()
+      }
+      this.setState({data:''});
+      this.setState({loading:false});
+    });
+  }
+  
+  componentDidMount() {
+    this.handleGetSchoolInfo()
+  }
+  
   render() {
+    const {data} = this.state
+    const localData = localStorage.getItem('logoImage')
     return (
       <React.Fragment>
         
@@ -31,7 +72,7 @@ class Sidebar extends Component {
                 href="#"
                 className="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none logo"
               >
-                <img src={logo} className="" alt="logo" />
+                {localData ? <img src={BASE_URL+'/'+localData} className="" alt="logo" width={'270px'} height={'58px'}/> : !data ? <img src={logo} className="" alt="logo" width={'270px'} height={'58px'}/> :  <img src={BASE_URL+'/'+data.logo} className="" alt="logo" width={'270px'} height={'58px'}/> }
               </a>
 
               <ul className="nav nav-pills flex-column mb-auto">
@@ -103,6 +144,18 @@ class Sidebar extends Component {
                       <img src={manageclass} className="" alt="mangeclass" />
                     </span>
                     Manage Classes
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/school"
+                    className="nav-link link-dark"
+                  >
+                    <span className="icon">
+                      <MapsHomeWorkIcon/>
+                     
+                    </span>
+                    School Info
                   </Link>
                 </li>
               </ul>

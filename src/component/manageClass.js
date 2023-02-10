@@ -1,11 +1,12 @@
 import React, {useState,useEffect} from 'react';
 import Sidebar from './sidebar';
-import ImageAvatars from './header';
-import {Container,TableBody,Table,TableCell,TableContainer,TableHead,TablePagination,TableRow,FormControlLabel,Switch,Modal,Backdrop,Fade,Box, Typography} from '@mui/material';
+import ImageAvatars, { handleLogout } from './header';
+import {Container,TableBody,Table,TableCell,TableContainer,TableHead,TablePagination,TableRow,FormControlLabel,Switch,Modal,Backdrop,Fade,Box, Typography, Button} from '@mui/material';
 import { API } from '../config/config';
 import { Link } from "react-router-dom";
 import { toast } from 'react-toastify';
 import Loader from '../comman/loader';
+import Loader1 from '../comman/loader1';
 import SearchBar from 'material-ui-search-bar';
 import axios from 'axios';
 import { authHeader } from '../comman/authToken';
@@ -13,6 +14,7 @@ import manageclass from "./images/manage-class.svg";
 import $ from "jquery";
 import "./css/student.css";
 import "react-toastify/dist/ReactToastify.css";
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 toast.configure();
  
     const ManageClass = () => {
@@ -27,19 +29,53 @@ toast.configure();
         const [openmodel,setOpenmodel]=useState(false);
         const [openModelEdit,setOpenmodelEdit]=useState(false);
         const [getClassNameId,setClassNameId]=useState('');
-        
+        const [counsellorDetail,setCounsellorDetail]=useState([]);
+        const [openModelClassDelete, setOpenModelClassDelete] = useState(false);
+        const [selectedClassDetail, setSelectedClassDetail] = useState('');
 
-    
+        const handleCloseClassDeleteModal = (classDetail,councellorDetail) => { 
+           
+            if(councellorDetail.length > 0) {
+                toast.error(`Students/Counsellor are assigned to this "${classDetail?.className?.charAt(0)?.toUpperCase() + classDetail?.className?.slice(1)}" To delete the "${classDetail?.className?.charAt(0)?.toUpperCase() + classDetail?.className?.slice(1)}", it should be empty.`);
+            }else{
+            setOpenModelClassDelete(!openModelClassDelete)
+            setSelectedClassDetail(classDetail)
+        }
+    }
+
         useEffect(() => {
             handleGetClass();
+            handleGetUser();
             setSearch('');
         }, [])
+
+      const handleGetUser = () => {
+        fetch(API.getAllUser, { headers: authHeader() })
+          .then((a) => {
+            if (a.status === 200) {
+              setLoading(false);
+              return a.json();
+            } else {
+              setLoading(true);
+            }
+          })
+          .then((data) => {
+            setCounsellorDetail(data.filter((e) => e.role.name === "counsellor"));
+          }).catch((error) => {
+            if (error.response.status === 401) {
+                handleLogout()
+              }
+          })
+      };
         
         const handleGetClass = async() =>{
             await axios.get(`${API.getClass}`).then((res) => {
                     setLoading(false);
                     setClassDetail(res.data.data)
                 }).catch((err) => {
+                    if (err.response.status === 401) {
+                        handleLogout()
+                      }
                 })
             }
             
@@ -65,6 +101,9 @@ toast.configure();
                     setClassDetail(data.data.data)	
                 })
                 .catch((err) => {
+                    if (err.response.status === 401) {
+                        handleLogout()
+                      }
                     setClassDetail([])	
                 });
             }
@@ -110,7 +149,9 @@ toast.configure();
                   }).catch((err) => {
                     if(err.response.data.message === "class already exists"){
                     toast.error("Classname already exists");
-                    }
+                    }else if (err.response.status === 401) {
+                        handleLogout()
+                      }
                     else{
                     toast.error("Failed to created class");
                     }
@@ -149,7 +190,9 @@ toast.configure();
                   }).catch((err) => {
                     if(err.response.data.message === "class already exists"){
                     toast.error("Classname already exists");
-                    }
+                    }else if (err.response.status === 401) {
+                        handleLogout()
+                      }
                     else{
                     toast.error("Failed to created class");
                     }
@@ -185,6 +228,29 @@ toast.configure();
             }
           });
         }
+
+        const handleDeleteClass = async() => {
+
+                setLoading(true);
+                fetch(`${API.deleteClass}/${selectedClassDetail?._id}`, {
+                  method: "DELETE",
+                  headers: authHeader(),
+                }).then((a) => {
+                  if (a.status === 200 || a.status === 201) {
+                    setLoading(false);
+                    handleCloseClassDeleteModal('',[])
+                    toast.success(`${selectedClassDetail?.className?.charAt(0)?.toUpperCase() + selectedClassDetail?.className?.slice(1)} deleted successfully`);
+                    handleGetClass();
+                  } else {
+                    setLoading(false);
+                    toast.success("Failed to delete class");
+                  }
+                }).catch((err) => {
+                    if (err.response.status === 401) {
+                        handleLogout()
+                      }
+                })
+         }
 
          const style = {
               position: "absolute",
@@ -232,23 +298,80 @@ toast.configure();
                                         <TableCell >
                                             Classname
                                         </TableCell>
+                                        <TableCell align="center" >
+                                                Counsellor
+                                                 
+                                                </TableCell>
+                                                <TableCell align="center" >
+                                                   Students
+                                                 
+                                                </TableCell>
                                         <TableCell style={{ textAlign: "center" }}>
 										Action
 									</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {classDetail.length > 0 ? classDetail.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((item) => {
+                                    {classDetail.length > 0 ? classDetail.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((item,index) => {
+                                       const counDetail = counsellorDetail.filter((ccitem) => {return ccitem.classId._id === item._id})
                                     
                                         return (
                                             <TableRow key={item && item._id}>
                                                 
                                                  <TableCell  > {" "}{item && item.className.charAt(0).toUpperCase() + item.className.slice(1)}</TableCell>
+                                                 <TableCell  > {" "}{counDetail.length > 0 ? counDetail[0]?.name?.charAt(0)?.toUpperCase() + counDetail[0]?.name?.slice(1) :''}  {counDetail.length > 0 ? counDetail[0]?.lastname?.charAt(0)?.toUpperCase() + counDetail[0]?.lastname?.slice(1): ''}</TableCell>
+                                                 <TableCell  > {" "}{counDetail[0]?.studentCount}</TableCell>
                                                 
                                                 <TableCell align="center" className='action' style={{ width: "150px", }}>
-                                                    <span onClick={() => handleOpenEdit(item)}><img src={require('./images/edit.png')} alt="Edit icon" /></span>
+                                                <span onClick={() => handleOpenEdit(item)}><img src={require('./images/edit.png')} alt="Edit icon" /></span>
+                                                
+                                                    <span onClick={() => handleCloseClassDeleteModal(item,counDetail)}><img src={require('./images/delet.png')} alt="Delete icon" /></span>
                                                  
                                                 </TableCell>
+                                                {
+                                   <Modal
+                                         open={openModelClassDelete}
+                                         onClose={() => handleCloseClassDeleteModal('',[])}
+                                         aria-labelledby="modal-modal-title"
+                                         aria-describedby="modal-modal-description"
+                                       >
+                                         <Box sx={{ ...style,width: 600, textAlign:'center' }}>
+                                           <Box>
+                                                   <CancelOutlinedIcon sx={{fontSize:'4.5rem !important', fill:'red !important'}}/>
+                                           </Box>
+                                           <Typography
+                                             id="modal-modal-title"
+                                             component="h1"
+
+                                           >
+                                             Are you sure? 
+                                           </Typography>
+                                           <Typography
+                                             id="modal-modal-description"
+                                             component={'subtitle2'}>
+                                               Do you really want to delete the counsellor  
+                                               <strong> { selectedClassDetail && selectedClassDetail?.className?.charAt(0)?.toUpperCase() + selectedClassDetail?.className?.slice(1) }</strong>
+                                             </Typography>
+                                           <Box marginTop={'30px'}>
+                                          
+                                          
+                                             {!loading ? (
+                                               <Button variant="contained" size="large" onClick={handleDeleteClass}>Delete</Button>
+                                             ) : (
+                                               <>
+                                             <Button variant="contained" size="large" disabled>Delete</Button> 
+                                             <Loader1 />
+                                               </>
+                                             )}                                       
+                                              <Button variant='outlined' size="large"  onClick={() => handleCloseClassDeleteModal('',[])} sx={{marginLeft:'15px',borderColor:'text.primary',color:'text.primary'}}>
+                                               Cancel
+                                             </Button>
+                                            
+                                           </Box>
+                                         </Box>
+                                       </Modal>
+                                        }
+            
                                             </TableRow>
                                         )
                                     }):  <Typography> Record Not found </Typography>}

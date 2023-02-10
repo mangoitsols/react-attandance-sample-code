@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import ImageAvatars from "./header";
+import ImageAvatars, { handleLogout } from "./header";
 import $ from "jquery";
 import validate from "jquery-validation";
 import DatePicker from "react-datepicker";
@@ -28,6 +28,8 @@ import Loader from "../comman/loader";
 import axios from "axios";
 import { authHeader } from "../comman/authToken";
 import moment from "moment";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 toast.configure();
 
@@ -55,7 +57,9 @@ const EditStudent = () => {
   const [checked, setChecked] = useState(false);
   const [item, setItem] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
+  const schoolLocation = localStorage.getItem("schoolLocation");
+  const currentLocation = localStorage.getItem("currentLocation");
 
   $('input[name="name"]').keyup(function (e) {
     if (/[^a-zA-Z]/g.test(this.value)) {
@@ -159,7 +163,11 @@ const EditStudent = () => {
   const getStudentDataById = async () => {
     const response = await axios
       .get(`${API.getStudent}/${id}`, { headers: authHeader() })
-      .catch((err) => {});
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
+      });
     if (response.status === 200) {
       setLoading(false);
       setItem(response.data);
@@ -249,7 +257,11 @@ const EditStudent = () => {
       };
       const res = await axios
         .post(`${API.createClass}`, requestData)
-        .catch((err) => {});
+        .catch((err) => {
+          if (err.response.status === 401) {
+            handleLogout();
+          }
+        });
       if (res.status === 200) {
         toast.success(res.data.message);
         setOpenmodel(false);
@@ -265,7 +277,11 @@ const EditStudent = () => {
   };
   const handleOpen = () => setOpenmodel(true);
   const handleAddNumber = () => setOpenModelNumber(true);
-  const handleCloseNumber = () => setOpenModelNumber(false);
+  const handleCloseNumber = () => {
+    setOpenModelNumber(false);
+    setAddName("");
+    setAddNumber("");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -293,11 +309,14 @@ const EditStudent = () => {
         url: `${API.studentUpdate}/${id}`,
         data: formData,
         headers: authHeader(),
-      }).catch((err) => {});
+      }).catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
+      });
       if (request.status === 200) {
         toast.success("Student Updated Successfully");
         setTimeout(() => {
-          
           window.location.replace("/student");
         }, 3000);
       } else {
@@ -311,6 +330,11 @@ const EditStudent = () => {
       .then((res) => res.json())
       .then((ress) => {
         setGetClasses(ress.data);
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
       });
   };
 
@@ -329,11 +353,11 @@ const EditStudent = () => {
     p: 4,
   };
 
-  const handleDate =(e)=> {
+  const handleDate = (e) => {
     var now = new Date();
     var a = now.getFullYear();
     var yyyy = e.getFullYear();
-    
+
     var date = a - 2;
     if (yyyy > date) {
       setDateError("Student age must be greater than 2 year");
@@ -341,7 +365,7 @@ const EditStudent = () => {
       setDob(e);
       setDateError("");
     }
-  }
+  };
 
   return (
     <>
@@ -421,12 +445,33 @@ const EditStudent = () => {
 
                     // onChange={(e) => setAddName(e.target.value)}
                   />
-                  <input
+                  {/* <input
                     type="tel"
                     placeholder="Please enter your number"
                     id="mobile"
                     name="mobile"
                     onChange={(e) => setAddNumber(e.target.value)}
+                  /> */}
+
+                  <PhoneInput
+                    country={`${
+                      schoolLocation && schoolLocation.toLowerCase() === "usa"
+                        ? "us"
+                        : currentLocation.toLowerCase()
+                    }`}
+                    placeholder="Please enter your number"
+                    enaableAreaCodes
+                    value={addNumber}
+                    countryCodeEditable={false}
+                    onChange={(phone) => setAddNumber(phone)}
+                    enableAreaCodes
+                    enableSearch="true"
+                    inputProps={{
+                      name: "morbile",
+                      // required: true,
+                      // autoFocus: true,
+                      copyNumbersOnly: true,
+                    }}
                   />
                 </div>
                 <div className="btndesign text-right">
@@ -500,15 +545,17 @@ const EditStudent = () => {
                           />
                         </div>
                         <div className="form-outline mb-4 col-md-6">
-                        <label htmlFor="dob">Date of Birth</label>
-                      
-                        <DatePicker
-                          placeholderText="Please select date of birth"
-                          name="dob"
-                          selected={new Date(dob)}
-                          onChange={(date) => handleDate(date)}
-                        />
-                         <p style={{ color: "red" ,fontSize: "12px" }}>{dateError}</p>
+                          <label htmlFor="dob">Date of Birth</label>
+
+                          <DatePicker
+                            placeholderText="Please select date of birth"
+                            name="dob"
+                            selected={new Date(dob)}
+                            onChange={(date) => handleDate(date)}
+                          />
+                          <p style={{ color: "red", fontSize: "12px" }}>
+                            {dateError}
+                          </p>
                         </div>
                       </div>
                       <div className="row">
@@ -526,7 +573,7 @@ const EditStudent = () => {
                             />
                           </div>
                           <div className="col-md-12 pl-0 pr-0">
-                            <div className="form-outline mb-4">  
+                            <div className="form-outline mb-4">
                               <label className="w-100" htmlFor="assign">
                                 Assign
                               </label>
@@ -579,13 +626,16 @@ const EditStudent = () => {
                                       setClassSelect(e.target.value)
                                     }
                                   />
-                                  <InputField
-                                    type="tel"
-                                    id="phone"
-                                    name="phone"
-                                    disabled={true}
-                                    className="form-control mb-3 col-md-8"
-                                    value={i.number}
+
+                                  <PhoneInput
+                                    country={`${
+                                      schoolLocation &&
+                                      schoolLocation.toLowerCase() === "usa"
+                                        ? "us"
+                                        : currentLocation.toLowerCase()
+                                    }`}
+                                    value={`${i.number}`}
+                                    disabled
                                   />
                                 </div>
                               </>
@@ -606,43 +656,41 @@ const EditStudent = () => {
                         <label htmlFor="photo">
                           {photo
                             ? ($imagePreview = (
-                              <div>
-                                <img
-                                  alt="Remy Sharp"
-                                  src={photo}
-                                  style={{ width: "100px", height: "100px" }}
-                                />
-                                <i
-                                className="fa fa-camera"
-                                style={{ fontSize: "35px" }}
-                              ></i>
-                              </div>
+                                <div>
+                                  <Avatar
+                                    alt={name}
+                                    src={photo}
+                                    style={{ width: "100px", height: "100px" }}
+                                  />
+                                  <i
+                                    className="fa fa-camera"
+                                    style={{ fontSize: "35px" }}
+                                  ></i>
+                                </div>
                               ))
                             : image && image.match("uploads/")
                             ? ($imagePreview = (
                                 <div className="previewText">
-                                  <img
+                                  <Avatar
                                     src={`${BASE_URL}/${image}`}
-                                    alt="No image"
-                                    width="80px"
-                                    height="80px"
+                                    alt={name}
+                                    style={{ width: "100px", height: "100px" }}
                                   />
-                                   <i
-                                  className="fa fa-camera"
-                                  style={{ fontSize: "35px" }}
-                                ></i>
+                                  <i
+                                    className="fa fa-camera"
+                                    style={{ fontSize: "35px" }}
+                                  ></i>
                                 </div>
                               ))
                             : image && image.match("http")
                             ? ($imagePreview = (
                                 <div className="previewText">
-                                   <Avatar
+                                  <Avatar
                                     alt="Remy Sharp"
                                     src={image}
-                                    sx={{ width: 56, height: 56}}
-                                   
+                                    sx={{ width: 56, height: 56 }}
                                   />
-                                 
+
                                   <i
                                     className="fa fa-camera"
                                     style={{ fontSize: "35px" }}
@@ -654,8 +702,7 @@ const EditStudent = () => {
                                   <Avatar
                                     alt="Remy Sharp"
                                     src={photo}
-                                    sx={{ width: 56, height: 56}}
-                                   
+                                    sx={{ width: 56, height: 56 }}
                                   />
                                   <i
                                     className="fa fa-camera"
@@ -664,7 +711,11 @@ const EditStudent = () => {
                                 </div>
                               ))}
                         </label>
-                             {<p style={{fontSize:"13px"}}>Student image must be less than 6kb</p>}
+                        {
+                          <p style={{ fontSize: "13px" }}>
+                            Student image must be less than 6kb
+                          </p>
+                        }
                         <InputField
                           type="file"
                           id="photo"
