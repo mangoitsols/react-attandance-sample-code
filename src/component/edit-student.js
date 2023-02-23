@@ -550,9 +550,14 @@ const EditStudent = () => {
                           <DatePicker
                             placeholderText="Please select date of birth"
                             name="dob"
+                            dateFormat="dd/MM/yyyy"
                             selected={new Date(dob)}
                             onChange={(date) => handleDate(date)}
-                          />
+                            peekNextMonth
+                            showMonthDropdown
+                            showYearDropdown
+                            dropdownMode="select"
+                         />
                           <p style={{ color: "red", fontSize: "12px" }}>
                             {dateError}
                           </p>

@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import ImageAvatars, { handleLogout } from "./header";
 import Sidebar from "./sidebar";
-import { FormControl, MenuItem, Select, Container } from "@mui/material";
+import { FormControl, Container } from "@mui/material";
 import {
   createClass,
   getClass,
@@ -14,7 +14,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import PasswordChecklist from "react-password-checklist"
+import PasswordChecklist from "react-password-checklist";
 import Example1 from "../comman/loader1";
 import { API } from "../config/config";
 import { authHeader } from "../comman/authToken";
@@ -33,7 +33,7 @@ class AddCounsellor extends Component {
     classSelect: "",
     loading: false,
     passwordVerification: false,
-    setCounsellorDetail:[],
+    setCounsellorDetail: [],
     schoolLocation: localStorage.getItem("schoolLocation"),
     currentLocation: localStorage.getItem("currentLocation"),
   };
@@ -112,89 +112,113 @@ class AddCounsellor extends Component {
     this.handleGetUser();
   }
 
- handleGetUser = () => {
-  this.setState({loading:true})
-  fetch(API.getAllUser, { headers: authHeader() })
-    .then((a) => {
-      if (a.status === 200) {
-        this.setState({loading:false})
+  handleGetUser = () => {
+    this.setState({ loading: true });
+    fetch(API.getAllUser, { headers: authHeader() })
+      .then((a) => {
+        if (a.status === 200) {
+          this.setState({ loading: false });
 
-        return a.json();
-      } else {
-        this.setState({loading:false})
-
-      }
-    })
-    .then((data) => {
-    this.setState({loading:false})
-    this.setState({setCounsellorDetail:data.filter((e) => e.role.name === "counsellor")})
-    }).catch((err) => {
-      if (err.response.status === 401) {
-        handleLogout()
-      }
-    })
-};
+          return a.json();
+        } else {
+          this.setState({ loading: false });
+        }
+      })
+      .then((data) => {
+        this.setState({ loading: false });
+        this.setState({
+          setCounsellorDetail: data.filter((e) => e.role.name === "counsellor"),
+        });
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
+      });
+  };
 
   getClassData = () => {
-    this.setState({loading:true})
+    this.setState({ loading: true });
     this.props.getClass((res) => {
       this.setState({ getclasses: res.data.data });
-    this.setState({loading:false})
-
+      this.setState({ loading: false });
     });
   };
 
   handleSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const { classSelect, mobile, name, lastname, password, uname,passwordVerification,setCounsellorDetail,getclasses } = this.state;
+    const {
+      classSelect,
+      mobile,
+      name,
+      lastname,
+      password,
+      uname,
+      passwordVerification,
+      setCounsellorDetail,
+      getclasses,
+    } = this.state;
 
-    const DuplicateClassFinder = setCounsellorDetail.filter((fil)=> {return fil.classId._id === classSelect})
-    const GettingClassName = getclasses.find((filClassName)=> {return filClassName._id === classSelect})
+    const DuplicateClassFinder = setCounsellorDetail.filter((fil) => {
+      return fil.classId._id === classSelect;
+    });
+    const GettingClassName = getclasses.find((filClassName) => {
+      return filClassName._id === classSelect;
+    });
 
-    if(DuplicateClassFinder.length > 0){
-      toast.error(`Another counsellor was assigned to the ${GettingClassName.className}`)
-    }else{
-        if (classSelect === "" || mobile === "" || name === "" || lastname === "" || password === "" || uname === "" ) {
-          toast.error("All fields are required");
-        }else if(passwordVerification === false){
-          toast.error("Please provide valid password");
-        } else {
-          const requestData = {
-            role: "counsellor",
-            name: name,
-            phone: mobile,
-            username: uname,
-            password: password,
-            classId: classSelect,
-            lastname: lastname,
-          };
-          this.setState({ loading: true });
-          this.props.createCounsellorandManager(requestData, (res,err) => {
-            if (res.status === 200) {
-              toast.success("Counsellor Added");
-              this.setState({
-                uname: "",
-                password: "",
-                mobile: "",
-                lastname: "",
-                name: "",
-                classSelect: "",
-              });
-              setTimeout(() => {
-                window.location.replace("/counsellor");
-              }, 500);
-              this.setState({ loading: false });
-            } else {
-              this.setState({ loading: false });
-            }
-          });
-        }
+    if (DuplicateClassFinder.length > 0) {
+      toast.error(
+        `Another counsellor was assigned to the ${GettingClassName.className}`
+      );
+    } else {
+      if (
+        classSelect === "" ||
+        mobile === "" ||
+        name === "" ||
+        lastname === "" ||
+        password === "" ||
+        uname === ""
+      ) {
+        toast.error("All fields are required");
+      } else if (passwordVerification === false) {
+        toast.error("Please provide valid password");
+      } else {
+        const requestData = {
+          role: "counsellor",
+          name: name,
+          phone: mobile,
+          username: uname,
+          password: password,
+          classId: classSelect,
+          lastname: lastname,
+        };
+        this.setState({ loading: true });
+        this.props.createCounsellorandManager(requestData, (res, err) => {
+          if (res.status === 200) {
+            toast.success("Counsellor Added");
+            this.setState({
+              uname: "",
+              password: "",
+              mobile: "",
+              lastname: "",
+              name: "",
+              classSelect: "",
+            });
+            setTimeout(() => {
+              window.location.replace("/counsellor");
+            }, 500);
+            this.setState({ loading: false });
+          } else {
+            this.setState({ loading: false });
+          }
+        });
       }
+    }
   };
 
   render() {
-    const { schoolLocation,currentLocation} = this.state;
+    const { schoolLocation, currentLocation } = this.state;
     return (
       <>
         <Sidebar />
@@ -206,7 +230,7 @@ class AddCounsellor extends Component {
           <Container
             maxWidth="100%"
             style={{ padding: "0", display: "inline-block" }}
-            >
+          >
             <div className="heading1 mb-5">
               <h1>Add Counsellor</h1>
             </div>
@@ -242,11 +266,13 @@ class AddCounsellor extends Component {
               <div className="row">
                 <div className="form-outline mb-4 col-md-6">
                   <label for="mobile">Mobile Number</label>
-                  
+
                   <PhoneInput
-                    country={`${schoolLocation && schoolLocation.toLowerCase() === 'usa' 
-                    ? 'us'
-                    : currentLocation.toLowerCase()}`}
+                    country={`${
+                      schoolLocation && schoolLocation.toLowerCase() === "usa"
+                        ? "us"
+                        : currentLocation.toLowerCase()
+                    }`}
                     value={this.state.mobile}
                     enableAreaCodes
                     enableSearch="true"
@@ -314,13 +340,16 @@ class AddCounsellor extends Component {
                       this.setState({ password: e.target.value })
                     }
                   />
-				  {this.state.password !== '' &&
-				  <PasswordChecklist
-				rules={["minLength","specialChar","number","capital"]}
-				minLength={6}
-				value={this.state.password}
-				onChange={(isValid) => { this.setState({passwordVerification:isValid})}}
-			/>}
+                  {this.state.password !== "" && (
+                    <PasswordChecklist
+                      rules={["minLength", "specialChar", "number", "capital"]}
+                      minLength={6}
+                      value={this.state.password}
+                      onChange={(isValid) => {
+                        this.setState({ passwordVerification: isValid });
+                      }}
+                    />
+                  )}
                 </div>
               </div>
               <a

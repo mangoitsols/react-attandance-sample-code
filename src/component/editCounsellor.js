@@ -14,6 +14,7 @@ import Loader from "../comman/loader";
 import $ from "jquery";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import PasswordChecklist from "react-password-checklist";
 toast.configure();
 
 const EditCounsellor = () => {
@@ -25,19 +26,15 @@ const EditCounsellor = () => {
   const [classSelect, setClassSelect] = useState("");
   const [getclasses, setGetclasses] = useState([]);
   const [getUserDataById, setUserData] = useState([]);
+  const [counsellorDetail, setCounsellorDetail] = useState([]);
   const [item, setItem] = useState("");
   const [loading, setLoading] = useState(false);
+  const [passwordValid, setPasswordValid] = useState(true);
 
   const schoolLocation = localStorage.getItem("schoolLocation");
   const currentLocation = localStorage.getItem("currentLocation");
 
   const dispatch = useDispatch();
-
-  // $('input[name="mobile"]').keyup(function (e) {
-  //   if (/\D/g.test(this.value)) {
-  //     this.value = this.value.replace(/\D/g, "");
-  //   }
-  // });
 
   $('input[name="name"]').keyup(function (e) {
     if (/[^a-zA-Z]/g.test(this.value)) {
@@ -54,6 +51,7 @@ const EditCounsellor = () => {
   useEffect(() => {
     GetClassData();
     GetUserData();
+    handleGetCouncellor();
     getUserDataById.map((item) => {
       return setItem(item);
     });
@@ -73,20 +71,9 @@ const EditCounsellor = () => {
           required: true,
           minlength: 3,
         },
-        // mobile: {
-        //   required: true,
-        //   digits: true,
-        //   minlength: 10,
-        //   maxlength: 10,
-        // },
-
         email: {
           required: true,
           email: true,
-        },
-        password: {
-          required: true,
-          minlength: 5,
         },
       },
       messages: {
@@ -105,24 +92,30 @@ const EditCounsellor = () => {
           minlength:
             "<p style='color:red'>Your username must consist of at least 3 characters</p>",
         },
-
-        // mobile: {
-        //   required: "<p style='color:red'>Please enter your mobile number</p>",
-        //   digits: "<p style='color:red'>Please enter valid mobile number</p>",
-        //   minlength:
-        //     "<p style='color:red'>Mobile number field accept only 10 digits</p>",
-        //   maxlength:
-        //     "<p style='color:red'>Mobile number field accept only 10 digits</p>",
-        // },
-
-        password: {
-          required: "<p style='color:red'>Please provide a password</p>",
-          minlength:
-            "<p style='color:red'>Your password must be at least 5 characters long</p>",
-        },
       },
     });
   });
+
+  const handleGetCouncellor = () => {
+	setLoading(true)
+    fetch(API.getAllUser, { headers: authHeader() })
+      .then((a) => {
+        if (a.status === 200) {
+          setLoading(false);
+          return a.json();
+        } else {
+          setLoading(true);
+        }
+      })
+      .then((data) => {
+        setCounsellorDetail(data.filter((e) => e.role.name === "counsellor"));
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
+      });
+  };
 
   const GetClassData = async () => {
     setLoading(true);
@@ -153,7 +146,6 @@ const EditCounsellor = () => {
         setLastName(res.data.data[0].lastname);
         setMobile(res.data.data[0].phone);
         setusername(res.data.data[0].username);
-        setPassword(res.data.data[0].password);
         setClassSelect(res.data.data[0].classId);
       })
       .catch((err) => {
@@ -164,37 +156,57 @@ const EditCounsellor = () => {
       });
   };
 
+  const equalsCheck = (a, b) =>
+    a.length === b.length && a.every((v, i) => v === b[i]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const requestData = {
-      name: name === "" ? item.name : name,
-      phone: mobile === "" ? item.phone : mobile,
-      username: username === "" ? item.username : username,
-      password: password === "" ? item.password : password,
-      classId: classSelect === "" ? item.classId : classSelect,
-      lastname: lastname === "" ? item.lastname : lastname,
-    };
-    const res = await axios({
-      method: "put",
-      url: `${API.updateUser}/${id}`,
-      data: requestData,
-      headers: authHeader(),
-    })
-      .then((res) => {
-        toast.success("Councellor Updated");
-        setTimeout(() => {
-          window.location.replace("/counsellor");
-        }, 3000);
+    const findClassId = counsellorDetail.filter((counFil) => {
+      return counFil.classId._id === classSelect;
+    });
+    const manageCouncellor = findClassId.filter((mngFil) => {
+      return mngFil._id === id;
+    });
+    const GettingClassName = getclasses.find((filClassName) => {
+      return filClassName._id === classSelect;
+    });
+
+    if (!equalsCheck(findClassId, manageCouncellor)) {
+      toast.error(
+        `Another counsellor was assigned to the ${GettingClassName.className}`
+      );
+    } else if (passwordValid) {
+      const requestData = {
+        name: name === "" ? item.name : name,
+        phone: mobile === "" ? item.phone : mobile,
+        username: username === "" ? item.username : username,
+        password: password === "" ? item.password : password,
+        classId: classSelect === "" ? item.classId : classSelect,
+        lastname: lastname === "" ? item.lastname : lastname,
+      };
+      const res = await axios({
+        method: "put",
+        url: `${API.updateUser}/${id}`,
+        data: requestData,
+        headers: authHeader(),
       })
-      .catch(function (error) {
-        if (error.response.status === 400) {
-          toast.error("Failed to update councellor");
-        } else if (error.response.status === 401) {
-          handleLogout();
-        }
-      });
+        .then((res) => {
+          toast.success("Councellor Updated");
+          setTimeout(() => {
+            window.location.replace("/counsellor");
+          }, 3000);
+        })
+        .catch(function (error) {
+          if (error.response.status === 400) {
+            toast.error("Failed to update councellor");
+          } else if (error.response.status === 401) {
+            handleLogout();
+          }
+        });
+    }
   };
+
   return (
     <>
       <Sidebar />
@@ -210,6 +222,7 @@ const EditCounsellor = () => {
           <div className="heading1 mb-5">
             <h1>Edit Counsellor</h1>
           </div>
+		  {loading ? <Loader/> :
           <form id="validCouncellor" onSubmit={handleSubmit}>
             <div className="row">
               <div className="form-outline mb-4 col-md-6">
@@ -218,7 +231,7 @@ const EditCounsellor = () => {
                   type="text"
                   id="fullname"
                   name="fullname"
-                  placeholder="Please enter your first name"
+                  placeholder="Please enter first name"
                   className="form-control"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -230,7 +243,7 @@ const EditCounsellor = () => {
                   type="text"
                   id="lastname"
                   name="lastname"
-                  placeholder="Please enter your lastname"
+                  placeholder="Please enter lastname"
                   className="form-control"
                   value={lastname}
                   onChange={(e) => setLastName(e.target.value)}
@@ -290,22 +303,37 @@ const EditCounsellor = () => {
                   id="username"
                   name="username"
                   className="form-control"
-                  placeholder="Please enter your username"
+                  placeholder="Please enter username"
                   value={username}
                   onChange={(e) => setusername(e.target.value)}
                 />
               </div>
               <div className="form-outline mb-4 col-md-6">
-                <label htmlFor="password">Password</label>
+                <label htmlFor="password">Update Password</label>
                 <input
                   type="password"
                   id="password"
                   name="password"
                   className="form-control"
-                  placeholder="Please enter your password"
+                  placeholder="Please enter password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (!e.target.value) {
+                      setPasswordValid(true);
+                    }
+                  }}
                 />
+                {password && (
+                  <PasswordChecklist
+                    rules={["minLength", "specialChar", "number", "capital"]}
+                    minLength={6}
+                    value={password}
+                    onChange={(isValid) => {
+                      setPasswordValid(isValid);
+                    }}
+                  />
+                )}
               </div>
             </div>
             <a
@@ -319,7 +347,7 @@ const EditCounsellor = () => {
               className="btn btn-primary btn-block mb-4"
               value="UPDATE"
             />
-          </form>
+          </form>}
         </Container>
       </div>
     </>

@@ -675,6 +675,27 @@ export default function EnhancedTable(props) {
   const [pin, setPin] = useState("");
   const [openMedical, setOpenMedical] = React.useState(false);
   const [openModel, setOpenModel] = useState(false);
+  const [counsellorDetail, setCounsellorDetail] = useState([]);
+
+  const handleGetCouncellor = () => {
+    fetch(API.getAllUser, { headers: authHeader() })
+      .then((a) => {
+        if (a.status === 200) {
+          setLoading(false);
+          return a.json();
+        } else {
+          setLoading(true);
+        }
+      })
+      .then((data) => {
+        setCounsellorDetail(data.filter((e) => e.role.name === "counsellor"));
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
+      });
+  };
 
   const socket = useRef(io(SOCKET_URL));
 
@@ -689,12 +710,16 @@ export default function EnhancedTable(props) {
   const handleOnChange = (e) => {
     if (e.target.files[0]) {
       fileReader.onload = function (event) {
-        const text = event.target.result.replace(/["]+/g, "");
 
+        let classNameArrayCoun = [];
+        let classAssign_a_Counselor = [];
+
+        const text = event.target.result.replace(/["]+/g, "");
         const csvHeader = text.slice(0, text.indexOf("\n")).split(",");
         const csvRows = text.slice(text.indexOf("\n") + 1).split("\n");
 
         csvRows.splice(-1);
+        
         const array = csvRows.map((i) => {
           const values = i.split(",");
           const obj = csvHeader.reduce((object, header, index) => {
@@ -706,6 +731,17 @@ export default function EnhancedTable(props) {
         const reqData = {
           array: array,
         };
+
+        for (let j = 0; j < counsellorDetail.length; j++) {
+          classNameArrayCoun.push(counsellorDetail[j].classId.className)
+        }
+        
+        for (let k = 0; k < array.length; k++) {
+          classAssign_a_Counselor.push(classNameArrayCoun.includes(array[k].assignClass))
+        }
+
+
+        if(!classAssign_a_Counselor.includes(false)) {
         setLoading(true);
         const res = axios({
           method: "post",
@@ -729,7 +765,11 @@ export default function EnhancedTable(props) {
             toast.error("Failed to uploading csv file");
           });
 
+
         setArray(array);
+        }else{
+          toast.error("Please check the classes and add a counsellor if not added");
+        }
       };
 
       fileReader.readAsText(e.target.files[0]);
@@ -871,6 +911,7 @@ export default function EnhancedTable(props) {
   React.useEffect(() => {
     GetStudentData();
     GetClassData();
+    handleGetCouncellor();
   }, []);
 
   const GetClassData = async () => {

@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import ImageAvatars from "./header";
+import ImageAvatars, { handleLogout } from "./header";
 import Sidebar from "./sidebar";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -9,8 +9,6 @@ import {
   Backdrop,
   Box,
   FormControl,
-  MenuItem,
-  Select,
   Container,
 } from "@mui/material";
 import { createClass, getClass } from "../action/index";
@@ -20,12 +18,12 @@ import $ from "jquery";
 import validate from "jquery-validation";
 import Loader from "../comman/loader";
 import { toast } from "react-toastify";
-import SimpleReactValidator from "simple-react-validator";
 import "react-toastify/dist/ReactToastify.css";
-import moment from "moment";
 import LoaderButton from "../comman/loader1";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import { API } from "../config/config";
+import { authHeader } from "../comman/authToken";
 
 toast.configure();
 
@@ -43,7 +41,6 @@ class AddStudent extends Component {
     phonename3: "",
     phone: "",
     phone1: "",
-    // phone2: "",
     photo: "",
     file: "",
     medical: "",
@@ -62,12 +59,36 @@ class AddStudent extends Component {
     currentLocation: localStorage.getItem("currentLocation"),
     phoneError: "",
     phone1Error: "",
+    CounsellorDetail:[]
   };
+
   handleChange = (event) => {
     let checkedbox = event.target.checked;
     this.setState({
       checked: checkedbox,
     });
+  };
+
+  handleGetCouncellor = () => {
+    this.setState({loading:true})
+    fetch(API.getAllUser, { headers: authHeader() })
+      .then((a) => {
+        if (a.status === 200) {
+          this.setState({loading:false})
+          return a.json();
+        } else {
+          this.setState({loading:true})
+        }
+      })
+      .then((data) => {
+        this.setState({CounsellorDetail: data.filter((e) => e.role.name === "counsellor")});
+      })
+      .catch((err) => {
+        this.setState({loading:false})
+        if (err.response.status === 401) {
+          handleLogout();
+        }
+      });
   };
 
   componentDidMount() {
@@ -178,19 +199,10 @@ class AddStudent extends Component {
       });
     });
 
-    // $('input[name="phone"]').keyup(function (e) {
-    //   if ((this.value === '')) {
-    //     // Filter non-digits from input value.
-    // this.setState({ phoneError: 'The mobile number field is required.' });
-
-    //   }
-    //   else{
-    // this.setState({ phoneError: '' });
-
-    //   }
-    // });
+    this.handleGetCouncellor();
     this.getClassData();
   }
+
 
   getClassData = () => {
     this.props.getClass((res) => {
@@ -204,13 +216,10 @@ class AddStudent extends Component {
       name,
       lastname,
       fatherName,
-      startDate,
       phonename1,
       phone,
       phone1,
-      // phone2,
       phonename2,
-      phonename3,
       emergency,
       medical,
       address,
@@ -218,51 +227,55 @@ class AddStudent extends Component {
       phone1Error,
       phoneError,
       file,
+      CounsellorDetail,
     } = this.state;
+
     emergency.push(
       { Ename: phonename1, number: phone },
       { Ename: phonename2, number: phone1 }
-      // { Ename: phonename3, number: phone2 }
     );
 
-    const formData = new FormData();
-    // if ( this.state.dateError ==="") {
-    //   // toast.warn("Please assign a class");
-    // } else {
-    if (
-      phoneError === "" ||
-      phone1Error === "" ||
-      phone !== "" ||
-      phone1 !== ""
-    ) {
-      const requestData = {
-        name: name,
-        lastName: lastname,
-        fatherName: fatherName,
-        DOB: this.state.startDate,
-        address: address,
-        image: file,
-        assignClass: classSelect,
-        medical: medical,
-        emergency: JSON.stringify(emergency),
-      };
+    const mngStudentClass = CounsellorDetail.filter((counFil)=> {return counFil.classId._id === classSelect})
+    console.log(mngStudentClass)
 
-      for (var key in requestData) {
-        formData.append(key, requestData[key]);
-      }
-      this.setState({ loading: true });
-      this.props.addStudent(formData, (res) => {
-        if (res.status === 200) {
-          this.setState({ loading: false });
-          toast.success("Student Added Successfully");
-          setTimeout(() => {
-            window.location.replace("/student");
-          }, 2000);
-        } else {
-          this.setState({ loading: false });
-          toast.error("Student Added Failed");
+    const formData = new FormData();
+    if (
+      phoneError === "" ||  phone1Error === "" ||   phone !== "" ||   phone1 !== ""  ) {
+
+        if(mngStudentClass.length === 1){
+          const requestData = {
+            name: name,
+            lastName: lastname,
+            fatherName: fatherName,
+            DOB: this.state.startDate,
+            address: address,
+            image: file,
+            assignClass: classSelect,
+            medical: medical,
+            emergency: JSON.stringify(emergency),
+          };
+    
+          for (var key in requestData) {
+            formData.append(key, requestData[key]);
+          }
+          this.setState({ loading: true });
+          this.props.addStudent(formData, (res) => {
+            if (res.status === 200) {
+              this.setState({ loading: false });
+              toast.success("Student Added Successfully");
+              // setTimeout(() => {
+              //   window.location.replace("/student");
+              // }, 2000);
+            } else {
+              this.setState({ loading: false });
+              toast.error("Student Added Failed");
+            }
+          });
+
         }
-      });
+        else{
+          toast.error("Please add a Counsellor before adding students to the class");
+        }
     }
   };
 
@@ -272,12 +285,6 @@ class AddStudent extends Component {
   handleCloseNumber = () => this.setState({ openmodelNumber: false });
   modelEmergency = (e) => {
     this.setState({ addNumber: e });
-    // $('input[name="phone"]').keyup(function (e) {
-    //   if (/\D/g.test(this.value)) {
-    //     // Filter non-digits from input value.
-    //     this.value = this.value.replace(/\D/g, "");
-    //   }
-    // });
   };
 
   handleCreateClass = (e) => {
@@ -299,6 +306,7 @@ class AddStudent extends Component {
       this.props.createClass(requestData, (res) => {
         if (res.status === 200) {
           toast.success(res.data.message);
+          this.getClassData();
           this.setState({ loading: false });
           this.setState({ openmodel: false });
         } else if (res.status === 400) {
@@ -400,15 +408,19 @@ class AddStudent extends Component {
       }
     });
   }
+
   HandleDate(e) {
     const now = new Date();
-    const currentYear = now.getFullYear();
-    const yyyy = e.getFullYear();
+    const currentYear = now?.getFullYear();
+    const yyyy = e?.getFullYear();
 
     const date = currentYear - 2;
+
     if (yyyy > currentYear) {
+      this.setState({ startDate: e });
       this.setState({ dateError: "Date of birth cannot be a future date" });
-    } else if (yyyy > date) {
+    } else if (yyyy >= date) {
+      this.setState({ startDate: e });
       this.setState({ dateError: "Student should be over 2 years old" });
     } else {
       this.setState({ startDate: e });
@@ -425,10 +437,8 @@ class AddStudent extends Component {
       photo,
       phone,
       phone1,
-      // phone2,
       phonename1,
       phonename2,
-      phonename3,
       medical,
       address,
       name,
@@ -694,6 +704,7 @@ class AddStudent extends Component {
                       peekNextMonth
                       showMonthDropdown
                       showYearDropdown
+                      dateFormat="dd/MM/yyyy"
                       dropdownMode="select"
                     />
                   </div>
