@@ -1303,7 +1303,18 @@ body .MuiSelect-select {
 .MuiList-root.MuiList-padding.MuiMenu-list li {
   display: inline-block;
   width: 100%;
-  text-align: center;
+  text-align: left;
+}
+
+.delete-button {
+  border: none;
+  box-shadow: none;
+  padding: 0 25px;
+  color: red;
+}
+
+.delete-button:hover {
+  background: none;
 }
 
 .MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.MuiTablePagination-selectIcon.MuiSelect-icon.MuiSelect-iconStandard.MuiSelect-iconOpen {
@@ -1801,5 +1812,15 @@ select.form-control {
 
 .actionbuttons .edit-group-info {
   height: 32px !important;
-  width: 116px !important
+  width: 116px !important;
+}
+
+.react-tel-input .form-control {
+  height: 48px;
+}
+
+.form-control.assign_class {
+  height: 50px;
+  background: #fafbfc;
+  border: 1px solid #edf0f3;
 }

@@ -59,7 +59,7 @@ class AddStudent extends Component {
     currentLocation: localStorage.getItem("currentLocation"),
     phoneError: "",
     phone1Error: "",
-    CounsellorDetail:[]
+    CounsellorDetail: [],
   };
 
   handleChange = (event) => {
@@ -70,21 +70,23 @@ class AddStudent extends Component {
   };
 
   handleGetCouncellor = () => {
-    this.setState({loading:true})
+    this.setState({ loading: true });
     fetch(API.getAllUser, { headers: authHeader() })
       .then((a) => {
         if (a.status === 200) {
-          this.setState({loading:false})
+          this.setState({ loading: false });
           return a.json();
         } else {
-          this.setState({loading:true})
+          this.setState({ loading: true });
         }
       })
       .then((data) => {
-        this.setState({CounsellorDetail: data.filter((e) => e.role.name === "counsellor")});
+        this.setState({
+          CounsellorDetail: data.filter((e) => e.role.name === "counsellor"),
+        });
       })
       .catch((err) => {
-        this.setState({loading:false})
+        this.setState({ loading: false });
         if (err.response.status === 401) {
           handleLogout();
         }
@@ -203,7 +205,6 @@ class AddStudent extends Component {
     this.getClassData();
   }
 
-
   getClassData = () => {
     this.props.getClass((res) => {
       this.setState({ getclasses: res.data.data });
@@ -235,47 +236,52 @@ class AddStudent extends Component {
       { Ename: phonename2, number: phone1 }
     );
 
-    const mngStudentClass = CounsellorDetail.filter((counFil)=> {return counFil.classId._id === classSelect})
-    console.log(mngStudentClass)
+    const mngStudentClass = CounsellorDetail.filter((counFil) => {
+      return counFil.classId._id === classSelect;
+    });
+    console.log(mngStudentClass);
 
     const formData = new FormData();
     if (
-      phoneError === "" ||  phone1Error === "" ||   phone !== "" ||   phone1 !== ""  ) {
+      phoneError === "" ||
+      phone1Error === "" ||
+      phone !== "" ||
+      phone1 !== ""
+    ) {
+      if (mngStudentClass.length === 1) {
+        const requestData = {
+          name: name,
+          lastName: lastname,
+          fatherName: fatherName,
+          DOB: this.state.startDate,
+          address: address,
+          image: file,
+          assignClass: classSelect,
+          medical: medical,
+          emergency: JSON.stringify(emergency),
+        };
 
-        if(mngStudentClass.length === 1){
-          const requestData = {
-            name: name,
-            lastName: lastname,
-            fatherName: fatherName,
-            DOB: this.state.startDate,
-            address: address,
-            image: file,
-            assignClass: classSelect,
-            medical: medical,
-            emergency: JSON.stringify(emergency),
-          };
-    
-          for (var key in requestData) {
-            formData.append(key, requestData[key]);
+        for (var key in requestData) {
+          formData.append(key, requestData[key]);
+        }
+        this.setState({ loading: true });
+        this.props.addStudent(formData, (res) => {
+          if (res.status === 200) {
+            this.setState({ loading: false });
+            toast.success("Student Added Successfully");
+            // setTimeout(() => {
+            //   window.location.replace("/student");
+            // }, 2000);
+          } else {
+            this.setState({ loading: false });
+            toast.error("Student Added Failed");
           }
-          this.setState({ loading: true });
-          this.props.addStudent(formData, (res) => {
-            if (res.status === 200) {
-              this.setState({ loading: false });
-              toast.success("Student Added Successfully");
-              // setTimeout(() => {
-              //   window.location.replace("/student");
-              // }, 2000);
-            } else {
-              this.setState({ loading: false });
-              toast.error("Student Added Failed");
-            }
-          });
-
-        }
-        else{
-          toast.error("Please add a Counsellor before adding students to the class");
-        }
+        });
+      } else {
+        toast.error(
+          "Please add a Counsellor before adding students to the class"
+        );
+      }
     }
   };
 
@@ -706,12 +712,13 @@ class AddStudent extends Component {
                       showYearDropdown
                       dateFormat="dd/MM/yyyy"
                       dropdownMode="select"
+                      className="form-control"
                     />
+                    <p style={{ color: "red", fontSize: "12px" }}>
+                      {this.state.dateError}
+                    </p>
                   </div>
                 </div>
-                <p style={{ color: "red", fontSize: "12px" }}>
-                  {this.state.dateError}
-                </p>
               </div>
 
               <div className="row">

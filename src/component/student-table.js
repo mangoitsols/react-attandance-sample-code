@@ -296,7 +296,7 @@ const EnhancedTableToolbar = (props) => {
         allData();
         setSelected([]);
         setLoading(false);
-		handleCloseAllStudentDeleteModal()
+        handleCloseAllStudentDeleteModal();
       })
       .catch((err) => {
         setLoading(false);
@@ -304,7 +304,7 @@ const EnhancedTableToolbar = (props) => {
         if (err.response.status === 401) {
           handleLogout();
         }
-		handleCloseAllStudentDeleteModal()
+        handleCloseAllStudentDeleteModal();
       });
   };
 
@@ -561,6 +561,7 @@ const EnhancedTableToolbar = (props) => {
               {!loading ? (
                 <Button
                   variant="contained"
+                  className="delete-button"
                   size="large"
                   onClick={handleAllStuDelete}
                 >
@@ -568,7 +569,12 @@ const EnhancedTableToolbar = (props) => {
                 </Button>
               ) : (
                 <>
-                  <Button variant="contained" size="large" disabled>
+                  <Button
+                    variant="contained"
+                    className="delete-button"
+                    size="large"
+                    disabled
+                  >
                     Delete
                   </Button>
                   <Example1 />
@@ -710,7 +716,6 @@ export default function EnhancedTable(props) {
   const handleOnChange = (e) => {
     if (e.target.files[0]) {
       fileReader.onload = function (event) {
-
         let classNameArrayCoun = [];
         let classAssign_a_Counselor = [];
 
@@ -719,7 +724,7 @@ export default function EnhancedTable(props) {
         const csvRows = text.slice(text.indexOf("\n") + 1).split("\n");
 
         csvRows.splice(-1);
-        
+
         const array = csvRows.map((i) => {
           const values = i.split(",");
           const obj = csvHeader.reduce((object, header, index) => {
@@ -733,42 +738,44 @@ export default function EnhancedTable(props) {
         };
 
         for (let j = 0; j < counsellorDetail.length; j++) {
-          classNameArrayCoun.push(counsellorDetail[j].classId.className)
+          classNameArrayCoun.push(counsellorDetail[j].classId.className);
         }
-        
+
         for (let k = 0; k < array.length; k++) {
-          classAssign_a_Counselor.push(classNameArrayCoun.includes(array[k].assignClass))
+          classAssign_a_Counselor.push(
+            classNameArrayCoun.includes(array[k].assignClass)
+          );
         }
 
-
-        if(!classAssign_a_Counselor.includes(false)) {
-        setLoading(true);
-        const res = axios({
-          method: "post",
-          url: `${API.bulkUpload}`,
-          data: reqData,
-          headers: authHeader(),
-        })
-          .then((res) => {
-            setLoading(false);
-            setProgress(true);
-            GetStudentData();
-            setTimeout(() => {
-              setProgress(false);
-              handleClose1();
-            }, 8500);
+        if (!classAssign_a_Counselor.includes(false)) {
+          setLoading(true);
+          const res = axios({
+            method: "post",
+            url: `${API.bulkUpload}`,
+            data: reqData,
+            headers: authHeader(),
           })
-          .catch((err) => {
-            if (err.response.status === 401) {
-              handleLogout();
-            }
-            toast.error("Failed to uploading csv file");
-          });
+            .then((res) => {
+              setLoading(false);
+              setProgress(true);
+              GetStudentData();
+              setTimeout(() => {
+                setProgress(false);
+                handleClose1();
+              }, 8500);
+            })
+            .catch((err) => {
+              if (err.response.status === 401) {
+                handleLogout();
+              }
+              toast.error("Failed to uploading csv file");
+            });
 
-
-        setArray(array);
-        }else{
-          toast.error("Please check the classes and add a counsellor if not added");
+          setArray(array);
+        } else {
+          toast.error(
+            "Please check the classes and add a counsellor if not added"
+          );
         }
       };
 
@@ -791,14 +798,14 @@ export default function EnhancedTable(props) {
         GetStudentData();
         setLoading1(false);
         setSelected([]);
-		handleCloseDeleteModal(false)
+        handleCloseDeleteModal(false);
       })
       .catch((err) => {
         if (err.response.status === 401) {
           handleLogout();
         }
         setLoading1(false);
-		handleCloseDeleteModal(false)
+        handleCloseDeleteModal(false);
         toast.error("Student Deleted Failed");
       });
   };
@@ -1360,7 +1367,9 @@ export default function EnhancedTable(props) {
                                       aria-describedby="modal-modal-description"
                                     >
                                       <Box sx={{ ...style1, width: 400 }}>
-                                        <Box onClick={closeModel}><CancelOutlinedIcon/></Box>
+                                        <Box onClick={closeModel}>
+                                          <CancelOutlinedIcon />
+                                        </Box>
                                         <Typography
                                           id="modal-modal-title"
                                           variant="h6"
@@ -1434,6 +1443,7 @@ export default function EnhancedTable(props) {
                                           {!loading1 ? (
                                             <Button
                                               variant="contained"
+                                              className="delete-button"
                                               size="large"
                                               onClick={() =>
                                                 handleStuDelete(row._id)
