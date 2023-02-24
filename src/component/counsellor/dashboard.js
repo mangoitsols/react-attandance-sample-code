@@ -153,9 +153,11 @@ const CounsellorDashboard = (props) => {
   const [timer, setTimer] = useState(0);
   const [start, setStart] = useState(false);
   const firstStart = useRef(true);
-  const [toggleChecked, setToggleChecked] = React.useState(false);
-  const [toggleColor, setToggleColor] = React.useState('default');
   const [checkToggleStartOrStop,setCheckToggleStartOrStop] = useState(false)
+  const [toggleRowId,setToggleRowId] = useState('')
+  const [selectTimerId,setSelectedTimerId] = useState('')
+  const [selectTimerIdArray,setSelectedTimerIdArray] = useState(localStorage.getItem('selectTimerIdArray'))
+
   const tick = useRef();
 
   useEffect(() => {
@@ -207,7 +209,7 @@ const CounsellorDashboard = (props) => {
         setCounsellorDetail({...response.data,data:filteredPersons});
         setClassName(response.data.data[0]);
       }).catch((err) => {
-        if (err.response.status === 401) {
+        if (err?.response?.status === 401) {
           handleLogout()
         }
         setLoading(true);
@@ -289,32 +291,54 @@ const CounsellorDashboard = (props) => {
     }
   };
 
-  const handleAttendanceUpdate = async (attdance, row) => {
-    const requestData = {
-      attendence: attdance,
-    };
+  const filteroutofClass =
+  rows?.data?.length === 0
+    ? []
+    : rows?.data?.filter((vall) => {
 
-    if (row && row.dismiss) {
-      toast.warning("This student is dismiss by manager");
-    } else {
-      await axios({
-        method: "put",
-        url: `${API.updateAttendace}/${row && row.attaindence._id}`,
-        data: requestData,
-        headers: authHeader(),
-      })
-        .then((res) => {
-          toast.success("Attendance updated");
-          GetCounsellorData();
-          setPreAbs(!preAbs)
-        })
-        .catch((err) => {
-          if (err.response.status === 401) {
-            handleLogout()
-          }
-          toast.error("Failed to save attendance");
-        });
-    }
+      const keys = Object.keys(vall?.attaindence)
+
+      return (
+        vall && vall?.attaindence && vall?.attaindence === null
+          ? []
+          : (keys.includes('out_of_class') && vall?.attaindence && vall?.attaindence?.out_of_class !== "no" && vall?.dismiss === null && vall?.attaindence?.attendence === "1")
+    )});
+  
+
+  const handleAttendanceUpdate = async (attdance, row) => {
+    const matchTheStudent = filteroutofClass.length > 0 && filteroutofClass.filter((matchFil) => {return (
+      matchFil._id === row._id 
+     )} )
+
+    if(attdance === '0' && filteroutofClass.length > 0 && matchTheStudent.length > 0  ) {
+      toast.error(`Please stop the timer of out of class for student '${row && row.name} ${row && row.lastName} S/o ${row.fatherName} ${row.lastName}'`)
+    }else{
+        const requestData = {
+          attendence: attdance,
+        };
+
+        if (row && row.dismiss) {
+          toast.warning("This student is dismiss by manager");
+        } else {
+          await axios({
+            method: "put",
+            url: `${API.updateAttendace}/${row && row.attaindence._id}`,
+            data: requestData,
+            headers: authHeader(),
+          })
+            .then((res) => {
+              toast.success("Attendance updated");
+              GetCounsellorData();
+              setPreAbs(!preAbs)
+            })
+            .catch((err) => {
+              if (err.response.status === 401) {
+                handleLogout()
+              }
+              toast.error("Failed to save attendance");
+            });
+        }
+  }
   };
 
   const handleMedicalByPin = async () => {
@@ -389,6 +413,7 @@ const CounsellorDashboard = (props) => {
 
   // Timer Functionality start
   const toggleStart = async(id) => {
+
   
       setStart(true);
       setLoading1(true);
@@ -398,6 +423,8 @@ const CounsellorDashboard = (props) => {
         headers: authHeader(),
       }).then((res)=>{
         setTimer(0)
+        setSelectedTimerId(id)
+        selectTimerIdArray.push(id)
         setLoading1(false); 
       }).catch((err) => { 
         if (err.response.status === 401) {
@@ -410,6 +437,7 @@ const CounsellorDashboard = (props) => {
 
   };
 
+  
  const toggleStop = async(id) => {
   
     setStart(false);
@@ -419,6 +447,7 @@ const CounsellorDashboard = (props) => {
 			url: `${API.timerStop}/${id}`,
 			headers: authHeader(),
 		}).then((res)=>{
+      localStorage.removeItem(id)
     setLoading1(false);
     setTimer(0)
       GetCounsellorData();
@@ -487,27 +516,15 @@ const CounsellorDashboard = (props) => {
     );
   };
 
-  const handleChangeToggleChecked = (event) => {
-    setToggleChecked(event.target.checked);
-    if(event.target.checked === true) {
-    setToggleColor('success')
-    } else {
-    setToggleColor('danger')
-    }
+  const handleChangeToggleChecked = (event,row) => {
+    setToggleRowId(row._id)
   };
-  
-
    // Timer Functionality end
-
-   const filteroutofClass =
-   rows?.data?.length === 0
-     ? []
-     : rows?.data?.filter((vall) =>
-         vall && vall?.attaindence && vall?.attaindence === null
-           ? []
-           : vall?.attaindence && vall?.attaindence?.out_of_class !== "no" && vall?.dismiss === null &&  vall?.attaindence?.attendence !== "0" && vall?.attaindence?.inclassDateTime 
-       );
-   
+   if(filteroutofClass?.length > 0) {
+    localStorage.setItem(selectTimerId,dispSecondsAsMins(timer))
+    localStorage.setItem('selectTimerIdArray',[selectTimerIdArray])
+   }
+    
    return (
      <>
       <div className="col-md-3 col-lg-3">
@@ -718,28 +735,30 @@ const CounsellorDashboard = (props) => {
                                     style={{ width: "150px" }}
                                   >
                              
-                                  {row && row.dismiss? "Dismissed" :  row && row.attaindence && row.attaindence.attendence === "1" ? <Switch 
+                                  {toggleRowId === row._id && row && row.dismiss? "Dismissed" :  row && row.attaindence && row.attaindence.attendence === "1" ? <Switch 
                                       checked={true}
-                                      onChange={handleChangeToggleChecked}
+                                      onChange={(e) => {handleChangeToggleChecked(e,row)}}
                                       onClick={() => {handleAttendanceUpdate("0", row )}}
                                       color={'success'}
                                       size="large"
                                       inputProps={{ 'aria-label': 'controlled' }}
                                   />:row && row.attaindence && row.attaindence.attendence === "0" ? <Switch 
                                       checked={false}
-                                      onChange={handleChangeToggleChecked}
+                                      onChange={(e) => {handleChangeToggleChecked(e,row)}}
                                       onClick={() => {handleAttendanceUpdate("1", row )}}
                                       color={'default'}
                                       size="large"
                                       inputProps={{ 'aria-label': 'controlled' }}
-                                  /> :<Switch 
-                                      checked={toggleChecked}
-                                      onChange={handleChangeToggleChecked}
-                                      onClick={() => {toggleChecked === false ? handleAttendance(row, "1") : handleAttendance(row, "0")}}
-                                      color={toggleColor}
+                                  /> :
+                                      <Switch 
+                                      checked={toggleRowId === row._id ? true :false}
+                                      onChange={(e) => {handleChangeToggleChecked(e,row)}}
+                                      onClick={() => {row && row.attaindence && row.attaindence.attendence === null || row && row.attaindence && row.attaindence.attendence === '0' ?  handleAttendance(row, "1") : handleAttendance(row, "0")}}
+                                      color={toggleRowId === row._id ? 'success' : 'error'}
                                       size="large"
                                       inputProps={{ 'aria-label': 'controlled' }}
-                                  />}
+                                  />
+                                 }
 
                                   </TableCell>
                                   <TableCell
@@ -774,7 +793,6 @@ const CounsellorDashboard = (props) => {
                                         </option>
                                         <option value="in Camp">In camp</option>
                                       </NativeSelect>
-
                                       {row &&
                                       row.attaindence && row.attaindence.out_of_class &&
                                       row.attaindence.attendence === "1" ? 
@@ -783,32 +801,8 @@ const CounsellorDashboard = (props) => {
                                             .out_of_class !== "no"?
 
                                               row.attaindence.out_of_class !== "no" ?  <span style={{color:"red",margin:"7px 2px" }}>
-                                                      {dispSecondsAsMins(timer) }
+                                                      {selectTimerIdArray.includes(row._id) ? localStorage.getItem(row._id) : dispSecondsAsMins(timer) }
                                                   </span> : '': '':''}
-
-                                      {/* {( row &&
-                                      row.attaindence && row.attaindence.out_of_class &&
-                                      row.attaindence.attendence === "1") ? 
-                                          handleNoStatus.attaindence &&
-                                          handleNoStatus.attaindence
-                                            .out_of_class !== "no"? (
-
-                                              row.attaindence.out_of_class !== "no" && (
-                                              <Stack direction="row" spacing={1} margin="5px 14px">
-                                                    {!start  ? (!loading1 ? <button  onClick={() => toggleStart(row._id)}>start</button> : <LoaderButton/>) :
-                                                     (!loading1 ?  <button onClick={() => toggleStop(row._id)}>stop</button>:<LoaderButton/> )}
-                                              {" "}
-                                                  <span style={{color:"red",margin:"7px 2px" }}>
-                                                      {dispSecondsAsMins(timer) }
-                                                  </span>
-                                                
-                                                </Stack>)
-                                        ) : (
-                                          ""
-                                        )
-                                       : (
-                                        ""
-                                      )} */}
                                     </FormControl>
                                   </TableCell>
                                   <TableCell
@@ -830,40 +824,6 @@ const CounsellorDashboard = (props) => {
                                       </Button>
                                     )}
                                   </TableCell>
-                                  {/* {row.dismiss ? (
-                                    <TableCell
-                                      align="center"
-                                      className="action"
-                                      style={{ width: "150px" }}
-                                    >
-                                      <span onClick={() => handleDismiss()}>
-                                        <img
-                                          src={require("../images/edit.png")}
-                                          alt="emer"
-                                        />
-                                      </span>
-                                    </TableCell>
-                                  ) : (
-                                    <TableCell
-                                      align="center"
-                                      className="action"
-                                      style={{ width: "150px" }}
-                                    >
-                                      <span
-                                        onClick={() =>
-                                          handleEditPreAbs(
-                                            row._id,
-                                            row.attaindence
-                                          )
-                                        }
-                                      >
-                                        <img
-                                          src={require("../images/edit.png")}
-                                          alt="emer"
-                                        />
-                                      </span>
-                                    </TableCell> */}
-                                  {/* )} */}
                                 </TableRow>
                               </React.Fragment>
                             );
