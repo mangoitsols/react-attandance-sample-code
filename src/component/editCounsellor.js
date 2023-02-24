@@ -97,7 +97,7 @@ const EditCounsellor = () => {
   });
 
   const handleGetCouncellor = () => {
-	setLoading(true)
+    setLoading(true);
     fetch(API.getAllUser, { headers: authHeader() })
       .then((a) => {
         if (a.status === 200) {
@@ -222,132 +222,136 @@ const EditCounsellor = () => {
           <div className="heading1 mb-5">
             <h1>Edit Counsellor</h1>
           </div>
-		  {loading ? <Loader/> :
-          <form id="validCouncellor" onSubmit={handleSubmit}>
-            <div className="row">
-              <div className="form-outline mb-4 col-md-6">
-                <label htmlFor="name">First Name</label>
-                <input
-                  type="text"
-                  id="fullname"
-                  name="fullname"
-                  placeholder="Please enter first name"
-                  className="form-control"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
+          {loading ? (
+            <Loader />
+          ) : (
+            <form id="validCouncellor" onSubmit={handleSubmit}>
+              <div className="row">
+                <div className="form-outline mb-4 col-md-6">
+                  <label htmlFor="name">First Name</label>
+                  <input
+                    type="text"
+                    id="fullname"
+                    name="fullname"
+                    placeholder="Please enter first name"
+                    className="form-control"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+                <div className="form-outline mb-4 col-md-6">
+                  <label htmlFor="lastname">Last Name</label>
+                  <input
+                    type="text"
+                    id="lastname"
+                    name="lastname"
+                    placeholder="Please enter lastname"
+                    className="form-control"
+                    value={lastname}
+                    onChange={(e) => setLastName(e.target.value)}
+                  />
+                </div>
               </div>
-              <div className="form-outline mb-4 col-md-6">
-                <label htmlFor="lastname">Last Name</label>
-                <input
-                  type="text"
-                  id="lastname"
-                  name="lastname"
-                  placeholder="Please enter lastname"
-                  className="form-control"
-                  value={lastname}
-                  onChange={(e) => setLastName(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="row">
-              <div className="form-outline mb-4 col-md-6">
-                <label htmlFor="mobile">Mobile No.</label>
+              <div className="row">
+                <div className="form-outline mb-4 col-md-6">
+                  <label htmlFor="mobile">Mobile No.</label>
 
-                <PhoneInput
-                  country={`${
-                    schoolLocation && schoolLocation.toLowerCase() === "usa"
-                      ? "us"
-                      : currentLocation.toLowerCase()
-                  }`}
-                  enaableAreaCodes
-                  countryCodeEditable={false}
-                  onChange={(phone) => setMobile(phone)}
-                  value={`${mobile}`}
-                  enableAreaCodes
-                  enableSearch="true"
-                />
-              </div>
-              <div className="form-outline mb-4 col-md-6">
-                <label htmlFor="assign" className="w-100">
-                  Assign Class
-                </label>
-                <FormControl
-                  sx={{ m: 0, minWidth: 120 }}
-                  className="filterbox w-100"
-                >
-                  <Select
-                    required="true"
-                    labelId="demo-simple-select-helper-label"
-                    id="demo-simple-select-helper"
-                    value={classSelect}
-                    label="Filter"
-                    onChange={(e) => setClassSelect(e.target.value)}
-                    inputProps={{ "aria-label": "Without label" }}
+                  <PhoneInput
+                    country={`${
+                      schoolLocation && schoolLocation.toLowerCase() === "usa"
+                        ? "us"
+                        : currentLocation.toLowerCase()
+                    }`}
+                    enaableAreaCodes
+                    countryCodeEditable={false}
+                    onChange={(phone) => setMobile(phone)}
+                    value={`${mobile}`}
+                    enableAreaCodes
+                    enableSearch="true"
+                  />
+                </div>
+                <div className="form-outline mb-4 col-md-6">
+                  <label htmlFor="assign" className="w-100">
+                    Assign Class
+                  </label>
+                  <FormControl
+                    sx={{ m: 0, minWidth: 120 }}
+                    className="filterbox w-100"
                   >
-                    {getclasses.map((item) => {
-                      return (
-                        <MenuItem value={item._id}>{item.className}</MenuItem>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
+                    <Select
+                      required="true"
+                      className="form-control assign_class"
+                      labelId="demo-simple-select-helper-label"
+                      id="demo-simple-select-helper"
+                      value={classSelect}
+                      label="Filter"
+                      onChange={(e) => setClassSelect(e.target.value)}
+                      inputProps={{ "aria-label": "Without label" }}
+                    >
+                      {getclasses.map((item) => {
+                        return (
+                          <MenuItem value={item._id}>{item.className}</MenuItem>
+                        );
+                      })}
+                    </Select>
+                  </FormControl>
+                </div>
               </div>
-            </div>
-            <div className="row">
-              {" "}
-              <div className="form-outline mb-4 col-md-6">
-                <label htmlFor="username">User Name</label>
-                <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  className="form-control"
-                  placeholder="Please enter username"
-                  value={username}
-                  onChange={(e) => setusername(e.target.value)}
-                />
-              </div>
-              <div className="form-outline mb-4 col-md-6">
-                <label htmlFor="password">Update Password</label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  className="form-control"
-                  placeholder="Please enter password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (!e.target.value) {
-                      setPasswordValid(true);
-                    }
-                  }}
-                />
-                {password && (
-                  <PasswordChecklist
-                    rules={["minLength", "specialChar", "number", "capital"]}
-                    minLength={6}
+              <div className="row">
+                {" "}
+                <div className="form-outline mb-4 col-md-6">
+                  <label htmlFor="username">User Name</label>
+                  <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    className="form-control"
+                    placeholder="Please enter username"
+                    value={username}
+                    onChange={(e) => setusername(e.target.value)}
+                  />
+                </div>
+                <div className="form-outline mb-4 col-md-6">
+                  <label htmlFor="password">Update Password</label>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    className="form-control"
+                    placeholder="Please enter password"
                     value={password}
-                    onChange={(isValid) => {
-                      setPasswordValid(isValid);
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (!e.target.value) {
+                        setPasswordValid(true);
+                      }
                     }}
                   />
-                )}
+                  {password && (
+                    <PasswordChecklist
+                      rules={["minLength", "specialChar", "number", "capital"]}
+                      minLength={6}
+                      value={password}
+                      onChange={(isValid) => {
+                        setPasswordValid(isValid);
+                      }}
+                    />
+                  )}
+                </div>
               </div>
-            </div>
-            <a
-              href="/counsellor"
-              className="btn btn-transparent btn-block mb-4"
-            >
-              CANCEL
-            </a>
-            <input
-              type="submit"
-              className="btn btn-primary btn-block mb-4"
-              value="UPDATE"
-            />
-          </form>}
+              <a
+                href="/counsellor"
+                className="btn btn-transparent btn-block mb-4"
+              >
+                CANCEL
+              </a>
+              <input
+                type="submit"
+                className="btn btn-primary btn-block mb-4"
+                value="UPDATE"
+              />
+            </form>
+          )}
         </Container>
       </div>
     </>
