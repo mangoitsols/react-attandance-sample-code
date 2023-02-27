@@ -44,6 +44,7 @@ import '../../style/toggle.css';
 import Switch from '@mui/material/Switch';
 import { handleLogout } from "../header";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import Example1 from "../../comman/loader1";
 
 
 
@@ -156,7 +157,7 @@ const CounsellorDashboard = (props) => {
   const [checkToggleStartOrStop,setCheckToggleStartOrStop] = useState(false)
   const [toggleRowId,setToggleRowId] = useState('')
   const [selectTimerId,setSelectedTimerId] = useState('')
-  const [selectTimerIdArray,setSelectedTimerIdArray] = useState(localStorage.getItem('selectTimerIdArray'))
+  const [selectTimerIdArray,setSelectedTimerIdArray] = useState(localStorage.getItem('selectTimerIdArray') || []);
 
   const tick = useRef();
 
@@ -427,7 +428,8 @@ const CounsellorDashboard = (props) => {
         selectTimerIdArray.push(id)
         setLoading1(false); 
       }).catch((err) => { 
-        if (err.response.status === 401) {
+        console.log(err,"err")
+        if (err?.response?.status === 401) {
           handleLogout()
         }
       setLoading1(false);
@@ -437,7 +439,7 @@ const CounsellorDashboard = (props) => {
 
   };
 
-  
+  console.log(selectTimerIdArray,"setSelectedTimerIdArray")
  const toggleStop = async(id) => {
   
     setStart(false);
@@ -764,7 +766,7 @@ const CounsellorDashboard = (props) => {
                                   <TableCell
                                     align="center"
                                     style={{ width: "150px" }}
-                                  >
+                                  >{loading1 ? <Example1/>:
                                     <FormControl
                                       sx={{ m: 1, minWidth: 30 }}
                                       className="filter ml-0 mb-3 w-100 select-box"
@@ -801,9 +803,9 @@ const CounsellorDashboard = (props) => {
                                             .out_of_class !== "no"?
 
                                               row.attaindence.out_of_class !== "no" ?  <span style={{color:"red",margin:"7px 2px" }}>
-                                                      {selectTimerIdArray.includes(row._id) ? localStorage.getItem(row._id) : dispSecondsAsMins(timer) }
+                                                      {selectTimerIdArray?.includes(row._id) ? localStorage.getItem(row._id) : dispSecondsAsMins(timer) }
                                                   </span> : '': '':''}
-                                    </FormControl>
+                                    </FormControl>}
                                   </TableCell>
                                   <TableCell
                                     align="center"

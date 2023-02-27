@@ -325,7 +325,7 @@ class Login extends Component {
                     <Typography component='p' variant='caption'>Username : GovindCouncellor</Typography><Typography component='span' variant='caption'>Password : Mus@2121</Typography></Box></>}
                     arrow >
                   <div className="col d-flex justify-content-end text-right small">
-                    Demo Crediential Hint
+                    Test Crediential
                   </div>
                     </Tooltip>
                 </div>
