@@ -1439,7 +1439,10 @@ export default function EnhancedTable(props) {
                                               row.lastName?.slice(1)}
                                           </strong>
                                         </Typography>
-                                        <Box marginTop={"30px"}>
+                                        <Box
+                                          marginTop={"30px"}
+                                          className="button-action"
+                                        >
                                           {!loading1 ? (
                                             <Button
                                               variant="contained"
