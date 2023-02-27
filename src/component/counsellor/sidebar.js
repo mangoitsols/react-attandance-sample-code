@@ -12,7 +12,7 @@ class Sidebar extends Component {
             <div style={{height:"100%", minHeight:"100vh"}}>
                 <div className="sidebar d-flex flex-column flex-shrink-0 pl-0 p-3  " style={{width:'100%', height:"100%"}}>
                         <a href="#" className="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none logo">
-                                <img src={logo} className="" alt="logo" />
+                                <img src={logo} className="" alt="logo" width={'260px'} height={'58px'} />
                         </a>
         
                         <ul className="nav nav-pills flex-column mb-auto">

@@ -449,14 +449,14 @@ class Profile extends Component {
                           "required|email"
                         )}
                       </div>
-
                       <div className="form-outline mb-4 col-md-6 addressProfileFields">
                         <label htmlFor="mobileNumber">Mobile Number</label>
                         <PhoneInput
                           country={`${
-                            schoolLocation !== ''
-                              ? schoolLocation.toLowerCase()
-                              : currentLocation.toLowerCase()
+                            schoolLocation &&
+                          schoolLocation.toLowerCase() === "usa"
+                            ? "us"
+                            : currentLocation.toLowerCase()
                           }`}
                           value={`${mobileNumber}`}
                           enableAreaCodes

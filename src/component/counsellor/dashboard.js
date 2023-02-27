@@ -151,18 +151,23 @@ const CounsellorDashboard = (props) => {
   const [preAbs, setPreAbs] = useState(false);
   const [className, setClassName] = useState([]);
   const [loading1, setLoading1] = React.useState(false);
+  const [loading2, setLoading2] = React.useState(false);
   const [timer, setTimer] = useState(0);
-  const [start, setStart] = useState(false);
+  const [start, setStart] = useState( JSON.parse(localStorage.getItem('selectTimerIdArray'))?.length > 0 ? true : false);
   const firstStart = useRef(true);
   const [checkToggleStartOrStop,setCheckToggleStartOrStop] = useState(false)
   const [toggleRowId,setToggleRowId] = useState('')
   const [selectTimerId,setSelectedTimerId] = useState('')
-  const [selectTimerIdArray,setSelectedTimerIdArray] = useState(localStorage.getItem('selectTimerIdArray') || []);
+  const [selectTimerIdArray,setSelectedTimerIdArray] = useState( localStorage.getItem('selectTimerIdArray') ? JSON.parse(localStorage.getItem('selectTimerIdArray')) : []);
 
   const tick = useRef();
 
   useEffect(() => {
     GetCounsellorData();
+
+    if(JSON.parse(localStorage.getItem('selectTimerIdArray'))?.length > 0) {
+
+    }
   }, []);
 
   // timer useeffect start
@@ -256,7 +261,7 @@ const CounsellorDashboard = (props) => {
   const isSelected = (id) => selected.indexOf(id) !== -1;
 
   const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.data.length) : 0;
+    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.data?.length) : 0;
 
   const handleAttendance = async (row, attdance) => {
     var today = new Date();
@@ -307,12 +312,12 @@ const CounsellorDashboard = (props) => {
   
 
   const handleAttendanceUpdate = async (attdance, row) => {
-    const matchTheStudent = filteroutofClass.length > 0 && filteroutofClass.filter((matchFil) => {return (
+    const matchTheStudent = filteroutofClass?.length > 0 && filteroutofClass.filter((matchFil) => {return (
       matchFil._id === row._id 
      )} )
 
-    if(attdance === '0' && filteroutofClass.length > 0 && matchTheStudent.length > 0  ) {
-      toast.error(`Please stop the timer of out of class for student '${row && row.name} ${row && row.lastName} S/o ${row.fatherName} ${row.lastName}'`)
+    if(attdance === '0' && filteroutofClass?.length > 0 && matchTheStudent?.length > 0  ) {
+      toast.error(`Please stop the timer or change the status as 'No' of out of class for student '${row && row.name} ${row && row.lastName} S/o ${row.fatherName} ${row.lastName}'`)
     }else{
         const requestData = {
           attendence: attdance,
@@ -346,7 +351,7 @@ const CounsellorDashboard = (props) => {
     const requestData = {
       pin: pin,
     };
-    setLoading1(true)
+    setLoading2(true)
     const res = await axios({
       method: "post",
       url: `${API.varifyPin}`,
@@ -356,14 +361,14 @@ const CounsellorDashboard = (props) => {
       handleLogout()
     }});
     if (res) {
-      setLoading1(false)
+      setLoading2(false)
       toast.success("Pin Verification Confirm");
       setOpenModel(true);
       handleClose();
       setSelected([]);
     } else {
       toast.error("Pin Verification Failed");
-      setLoading1(false)
+      setLoading2(false)
       setSelected([]);
     }
   };
@@ -428,20 +433,20 @@ const CounsellorDashboard = (props) => {
         selectTimerIdArray.push(id)
         setLoading1(false); 
       }).catch((err) => { 
-        console.log(err,"err")
         if (err?.response?.status === 401) {
           handleLogout()
+        }else if(err?.response?.status === 400){
+
+          toast.error("Something went wrong during start timer")
         }
       setLoading1(false);
-      toast.error("Something went wrong during start timer")
       });
    
 
   };
 
-  console.log(selectTimerIdArray,"setSelectedTimerIdArray")
- const toggleStop = async(id) => {
-  
+  const toggleStop = async(id) => {
+    
     setStart(false);
     setLoading1(true);
     await axios({
@@ -450,27 +455,30 @@ const CounsellorDashboard = (props) => {
 			headers: authHeader(),
 		}).then((res)=>{
       localStorage.removeItem(id)
-    setLoading1(false);
-    setTimer(0)
+      selectTimerIdArray.push(id)
+      setLoading1(false);
+      setTimer(0)
       GetCounsellorData();
     })
     .catch((err) => {
       if (err.response.status === 401) {
         handleLogout()
+      }else if(err?.response?.status === 400){
+
+        toast.error("Something went wrong during stop timer")
       }
       setLoading1(false);
-      toast.error("Something went wrong during stop timer")
-     });
+    });
   };
-
+  
   const dispSecondsAsMins = (seconds) => {
-
+    
     let divisor_for_minutes = seconds % (60 * 60);
     const mins = Math.floor(divisor_for_minutes / 60);
-
+    
     let divisor_for_seconds = divisor_for_minutes % 60;
     const seconds_ = Math.ceil(divisor_for_seconds);
-
+    
     return (
       (mins === 0
         ? "00"
@@ -493,20 +501,20 @@ const CounsellorDashboard = (props) => {
         : mins === 9
         ? "09"
         : mins.toString()) +
-      ":" +
-      (seconds_ === 0
-        ? "00"
-        : seconds_ === 1
-        ? "01"
-        : seconds_ === 2
-        ? "02"
-        : seconds_ === 3
-        ? "03"
-        : seconds_ === 4
-        ? "04"
-        : seconds_ === 5
-        ? "05"
-        : seconds_ === 6
+        ":" +
+        (seconds_ === 0
+          ? "00"
+          : seconds_ === 1
+          ? "01"
+          : seconds_ === 2
+          ? "02"
+          : seconds_ === 3
+          ? "03"
+          : seconds_ === 4
+          ? "04"
+          : seconds_ === 5
+          ? "05"
+          : seconds_ === 6
         ? "06"
         : seconds_ === 7
         ? "07"
@@ -515,18 +523,33 @@ const CounsellorDashboard = (props) => {
         : seconds_ === 9
         ? "09"
         : seconds_.toString())
-    );
-  };
-
-  const handleChangeToggleChecked = (event,row) => {
-    setToggleRowId(row._id)
+        );
+      };
+      
+  function hmsToSecondsOnly(str) {
+        var p = str?.split(':'),
+        s = 0, m = 1;
+        
+        while (p?.length > 0) {
+        s += m * parseInt(p?.pop(), 10);
+        m *= 60;
+      }
+      
+      // toggleStart(id)
+      return dispSecondsAsMins(s)
+      // return s;
+    }
+    
+    const handleChangeToggleChecked = (event,row) => {
+      setToggleRowId(row._id)
   };
    // Timer Functionality end
    if(filteroutofClass?.length > 0) {
     localStorage.setItem(selectTimerId,dispSecondsAsMins(timer))
-    localStorage.setItem('selectTimerIdArray',[selectTimerIdArray])
+    // console.log(start,"sssssssssssssssssss")
+    localStorage.setItem('selectTimerIdArray',JSON.stringify(selectTimerIdArray))
    }
-    
+
    return (
      <>
       <div className="col-md-3 col-lg-3">
@@ -622,7 +645,7 @@ const CounsellorDashboard = (props) => {
                 className="student_table-inner"
               >
                 <EnhancedTableToolbar
-                  numSelected={selected.length}
+                  numSelected={selected?.length}
                   selectedRow={selected}
                   allData={GetCounsellorData}
                   setSelected={setSelected}
@@ -635,12 +658,12 @@ const CounsellorDashboard = (props) => {
                     className="stuble-table-box"
                   >
                     <EnhancedTableHead
-                      numSelected={selected.length}
+                      numSelected={selected?.length}
                       order={order}
                       orderBy={orderBy}
                       onSelectAllClick={handleSelectAllClick}
                       onRequestSort={handleRequestSort}
-                      rowCount={rows === false ? "" : rows.data.length}
+                      rowCount={rows === false ? "" : rows.data?.length}
                     />
                     <TableBody>
                       {rows === false ? (
@@ -648,7 +671,7 @@ const CounsellorDashboard = (props) => {
                           <TableCell>Record not found</TableCell>
                         </TableRow>
                       ) : (
-                        rows.data.length ? rows.data
+                        rows.data?.length ? rows.data
                           .slice(
                             page * rowsPerPage,
                             page * rowsPerPage + rowsPerPage
@@ -766,7 +789,7 @@ const CounsellorDashboard = (props) => {
                                   <TableCell
                                     align="center"
                                     style={{ width: "150px" }}
-                                  >{loading1 ? <Example1/>:
+                                  >
                                     <FormControl
                                       sx={{ m: 1, minWidth: 30 }}
                                       className="filter ml-0 mb-3 w-100 select-box"
@@ -803,10 +826,11 @@ const CounsellorDashboard = (props) => {
                                             .out_of_class !== "no"?
 
                                               row.attaindence.out_of_class !== "no" ?  <span style={{color:"red",margin:"7px 2px" }}>
-                                                      {selectTimerIdArray?.includes(row._id) ? localStorage.getItem(row._id) : dispSecondsAsMins(timer) }
+                                                      {selectTimerIdArray.includes(row._id) ? hmsToSecondsOnly(localStorage.getItem(row._id)) : dispSecondsAsMins(timer) }
                                                   </span> : '': '':''}
-                                    </FormControl>}
+                                    </FormControl>
                                   </TableCell>
+                                  
                                   <TableCell
                                     align="center"
                                     style={{ width: "100px" }}
@@ -848,7 +872,7 @@ const CounsellorDashboard = (props) => {
                 <TablePagination
                   rowsPerPageOptions={[5, 10, 25]}
                   component="div"
-                  count={rows === false ? "" : rows.data.length}
+                  count={rows === false ? "" : rows.data?.length}
                   rowsPerPage={rowsPerPage}
                   page={page}
                   onPageChange={handleChangePage}
@@ -893,7 +917,7 @@ const CounsellorDashboard = (props) => {
               />
             </div>
             <Button onClick={handleClose}>CANCEL</Button>
-            {!loading1 ? <Button onClick={handleMedicalByPin}>SUBMIT</Button> : <><Button disabled>SUBMIT</Button><LoaderButton /></>}
+            {!loading2 ? <Button onClick={handleMedicalByPin}>SUBMIT</Button> : <><Button disabled>SUBMIT</Button><LoaderButton /></>}
           </Box>
         </Modal>
       </div>

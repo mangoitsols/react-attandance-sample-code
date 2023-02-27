@@ -59,6 +59,7 @@ class Sidebar extends Component {
   render() {
     const {data} = this.state
     const localData = localStorage.getItem('logoImage')
+  
     return (
       <React.Fragment>
         
@@ -72,7 +73,7 @@ class Sidebar extends Component {
                 href="#"
                 className="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none logo"
               >
-                {localData ? <img src={BASE_URL+'/'+localData} className="" alt="logo" width={'270px'} height={'58px'}/> : !data ? <img src={logo} className="" alt="logo" width={'270px'} height={'58px'}/> :  <img src={BASE_URL+'/'+data.logo} className="" alt="logo" width={'270px'} height={'58px'}/> }
+                {localData ? <img src={BASE_URL+'/'+localData} className="" alt="local_logo" width={'270px'} height={'58px'}/> : !data ? <img src={logo} className="" alt="db_logo" width={'270px'} height={'58px'}/> :  <img src={BASE_URL+'/'+data.logo} className="" alt="demo_logo" width={'270px'} height={'58px'}/> }
               </a>
 
               <ul className="nav nav-pills flex-column mb-auto">

@@ -888,6 +888,7 @@ export default function EnhancedTable(props) {
           if (err.response.status === 401) {
             handleLogout();
           }
+          alert('er')
           // setLoading(false)
           setFilter([]);
         });

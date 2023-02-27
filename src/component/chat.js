@@ -94,10 +94,11 @@ useEffect(() => {
     socket.on("typing", () => setIsTyping(true));
     socket.on("stop typing", () => setIsTyping(false));
 
+    handleGetLoginStatus()
     return () => {
       socket.disconnect();
     };
-}, []);
+  }, []);
 
 useEffect(() => {
     handleGetOnlyGroups();
@@ -128,14 +129,19 @@ useEffect(() => {
     });
 }, [socket]);
 
-  useEffect(() =>{
-    socket?.on("sendUserStatus",(data) => {
-        setStatusData(data);
+const handleGetLoginStatus = async() =>{
+
+  await axios
+    .get(`${API.getLoginStatus}`, { headers: authHeader() })
+    .then((res) => {
+      setStatusData(res.data) 
     })
-
-},[socket])
-
-console.log(statusData,"statusData")
+    .catch((err) => {
+      if (err.response.status === 401) {
+        handleLogout()
+      }
+    });
+}
 
   const handleGetOnlyGroups = async () => {
       await axios({
@@ -742,10 +748,13 @@ console.log(statusData,"statusData")
                             <Box>
                               <Avatar
                                 alt={item.name ? item.name : item.chatName}
-                                src={`${BASE_URL}/${item ? item?.image : ""}`}
+                                src={`${BASE_URL}/${item?.image}`}
                                 sx={{ width: 56, height: 56 }}
                               />
-                              <i><CircleIcon sx={{fontSize:'12px',left: "58px", width: "14px",color: "gray",  position: "absolute", top: "260px"}}/></i>
+                              {statusData.map((status) => { 
+                                return (
+                                    status.userId === item._id && status.status === 'online' ?  <i sx={{position: 'relative', top: '-19px',left: '38px'}}><CircleIcon sx={{color:"green",fontSize:'12px'}} /></i> : ''
+                              )})}
                               </Box>
                             }
                             {item.name ? item.name : item.chatName}{" "}

@@ -1,10 +1,12 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Avatar, Stack } from "@mui/material";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ArrowBackIosOutlinedIcon from "@mui/icons-material/ArrowBackIosOutlined";
 import Divider from "@mui/material/Divider";
 import { handleLogout } from "../header";
+import { API, BASE_URL } from "../../config/config";
+import { authHeader } from "../../comman/authToken";
 toast.configure();
 
 export default function ImageAvatars() {
@@ -12,9 +14,29 @@ export default function ImageAvatars() {
   const [isActive, setActive] = useState("true");
   const [name, setName] = useState(localStorage.getItem("name"));
   const [lastname, setLastname] = useState(localStorage.getItem("lastname"));
+  const [newPass,setNewPass]=useState(""); 
+
   const ToggleClass = () => {
     setActive(!isActive);
   };
+
+  useEffect(()=>{
+    getUser()
+  },[])
+
+  const getUser = () => {
+    const id = localStorage.getItem("id")
+   fetch(`${API.getUser}/${id}`, { headers: authHeader() }
+    )
+                .then((res) => res.json())
+                .then((json) => {
+                  setNewPass(json)
+                }).catch((err) => {
+                  if (err.response.status === 401) {
+                    handleLogout()
+                  }
+                })
+  }
 
   return (
     <React.Fragment>
@@ -40,8 +62,8 @@ export default function ImageAvatars() {
       </div>
       <Stack direction="row" spacing={2}>
         <Avatar
-          alt="Remy Sharp"
-          src={require("../../images/avatar/Avatar.jpg")}
+          alt={name}
+          src={localStorage.getItem('image') && localStorage.getItem("image").startsWith('uploads/') ? `${BASE_URL}/${localStorage.getItem("image")}` :  newPass.data &&  `${BASE_URL}/${newPass.data[0].image}`}
           sx={{ width: 56, height: 56 }}
         />
         <span>
@@ -55,8 +77,8 @@ export default function ImageAvatars() {
           <div className={isActive ? "toggleNone" : "active"}>
             <div className="myprofileToggle">
               <Avatar
-                alt="Remy Sharp"
-                src={require("../../images/avatar/Avatar.jpg")}
+                alt={name}
+                src={localStorage.getItem('image') && localStorage.getItem("image").startsWith('uploads/') ? `${BASE_URL}/${localStorage.getItem("image")}` :  newPass.data &&  `${BASE_URL}/${newPass.data[0].image}`}
                 sx={{ width: 56, height: 56 }}
               />
               <span>

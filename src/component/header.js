@@ -14,23 +14,6 @@ import axios from "axios";
 
 toast.configure();
 
-const handleGetLoginStatus = async() =>{
-
-  var socket = io.connect(SOCKET_URL);
-  socket.on("connected", () => {});
-
-  await axios
-    .get(`${API.getLoginStatus}`, { headers: authHeader() })
-    .then((res) => {
-      socket.emit("checkUserStatus", res.data);
-    })
-    .catch((err) => {
-      if (err.response.status === 401) {
-        handleLogout()
-      }
-    });
-}
-
 const handleUpdateLoginStatus = async() =>{
 
     const payload = {
@@ -41,7 +24,6 @@ const handleUpdateLoginStatus = async() =>{
       .patch(`${API.updateLoginStatus}/${localStorage.getItem('loginStatusId')}`,payload, { headers: authHeader() })
       .then((res) => {
         if(res){
-        handleGetLoginStatus()
         }
 
       })

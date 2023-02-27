@@ -94,6 +94,8 @@ class AddStudent extends Component {
   };
 
   componentDidMount() {
+    const {phone,phone1} = this.state;
+
     $('input[name="name"]').keyup(function (e) {
       if (/[^a-zA-Z]/g.test(this.value)) {
         this.value = this.value.replace(/[^a-zA-Z]/g, "");
@@ -239,7 +241,17 @@ class AddStudent extends Component {
     const mngStudentClass = CounsellorDetail.filter((counFil) => {
       return counFil.classId._id === classSelect;
     });
-    console.log(mngStudentClass);
+  
+    if(phone === '' && phone1 === ''){
+      this.setState({ phoneError: "The mobile number field is required." });
+      this.setState({ phone1Error: "The mobile number field is required." });
+    }else if(phone1 === ''){
+      this.setState({ phone1Error: "The mobile number field is required." });
+    }else if(phone === ''){
+      this.setState({ phoneError: "The mobile number field is required." });
+    }else{
+      this.setState({ phoneError: "" });
+      this.setState({ phone1Error: "" });
 
     const formData = new FormData();
     if (
@@ -269,9 +281,9 @@ class AddStudent extends Component {
           if (res.status === 200) {
             this.setState({ loading: false });
             toast.success("Student Added Successfully");
-            // setTimeout(() => {
-            //   window.location.replace("/student");
-            // }, 2000);
+            setTimeout(() => {
+              window.location.replace("/student");
+            }, 2000);
           } else {
             this.setState({ loading: false });
             toast.error("Student Added Failed");
@@ -283,6 +295,7 @@ class AddStudent extends Component {
         );
       }
     }
+  }
   };
 
   handleClose = () => this.setState({ openmodel: false });
