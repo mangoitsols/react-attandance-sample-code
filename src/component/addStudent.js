@@ -881,39 +881,6 @@ class AddStudent extends Component {
                       )}
                     </span>
                   </div>
-                  {/* <div className="phoneNo">
-                    <span className="col-md-4 mr-2 p-0">
-                      <input
-                        type="text"
-                        id="phonename3"
-                        name="phonename3"
-                        placeholder="Name"
-                        className="form-control mb-3 col-md-12 "
-                        value={phonename3}
-                        onChange={(e) => this.setOnChange(e)}
-                      />
-                      {/* {this.validator.message('name',phonename1,'required|min:3' )} */}
-                  {/* </span>
-                    <span className="col-md-8 p-0">
-                      {" "}
-                       <PhoneInput
-                          country={`${
-                            schoolLocation
-                              ? schoolLocation.toLowerCase()
-                              : currentLocation.toLowerCase()
-                          }`}
-                          value={`${phone2}`}
-                          enableAreaCodes
-                          enableSearch="true"
-                          // countryCodeEditable={false}
-                          onChange={(phone) => this.setState({phone2:phone})}
-                          inputProps={{
-                            name: "phone2",
-                          }}
-                        />
-                      
-                    </span>
-                  </div> */}
                   {database ? (
                     <>
                       {database.map((data) => {

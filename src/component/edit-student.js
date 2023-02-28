@@ -461,7 +461,7 @@ const EditStudent = () => {
                     }`}
                     placeholder="Please enter your number"
                     enaableAreaCodes
-                    value={addNumber}
+                    value={`${addNumber}`}
                     countryCodeEditable={false}
                     onChange={(phone) => setAddNumber(phone)}
                     enableAreaCodes

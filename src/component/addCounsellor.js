@@ -35,8 +35,8 @@ class AddCounsellor extends Component {
     loading: false,
     passwordVerification: false,
     setCounsellorDetail: [],
-    schoolLocation: localStorage.getItem("schoolLocation"),
-    currentLocation: localStorage.getItem("currentLocation"),
+    schoolLocation: localStorage?.getItem("schoolLocation"),
+    currentLocation: localStorage?.getItem("currentLocation"),
   };
 
   componentDidMount() {
@@ -175,7 +175,7 @@ class AddCounsellor extends Component {
         `Another counsellor was assigned to the ${GettingClassName.className}`
       );
     } else {
-      this.setState({ mobile: "" });
+      this.setState({ mobileError: "" });
 
       if (
         classSelect === "" ||
@@ -287,7 +287,7 @@ class AddCounsellor extends Component {
                         ? "us"
                         : currentLocation.toLowerCase()
                     }`}
-                    value={this.state.mobile}
+                    value={`${this.state.mobile}`}
                     enableAreaCodes
                     enableSearch="true"
                     onChange={(phone) => {this.setOnChangeForPhone(phone)}}

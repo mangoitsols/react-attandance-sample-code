@@ -7,17 +7,10 @@ import {
   getUser,
 } from "../../action/index";
 import {
-  FormControl,
-  MenuItem,
-  Select,
   Container,
   Avatar,
   Stack,
-  Button,
 } from "@mui/material";
-
-import $ from "jquery";
-import validate from "jquery-validation";
 import { API, BASE_URL } from "../../config/config";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -26,6 +19,8 @@ import Loader from "../../comman/loader";
 import SimpleReactValidator from "simple-react-validator";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 import { handleLogout } from "../header";
 
 toast.configure();
@@ -38,15 +33,15 @@ class CProfile extends Component {
       firstName: "",
       lastName: "",
       username: "",
-      classId: "",
       mobileNumber: "",
+      mobileNumberError: "",
       getUserDetail: [],
       userDetail: "",
       loading: true,
-      numberValid: true,
       cancel: false,
       getclasses: [],
-     
+      schoolLocation: localStorage?.getItem("schoolLocation"),
+      currentLocation: localStorage?.getItem("currentLocation"),
     };
   }
 
@@ -56,7 +51,6 @@ class CProfile extends Component {
 
   componentDidMount() {
     this.getDetailUser();
-    this.GetClassData();
   }
 
   handleSubmit = (e) => {
@@ -68,10 +62,13 @@ class CProfile extends Component {
       mobileNumber,
       classId,
       role,
-      numberValid,
     } = this.state;
+    if (this.validator.allValid() && mobileNumber.toString().length < 6) {
+      this.setState({ mobileNumberError: "The mobile number field is required." });
+    }else{
+    if (this.validator.allValid() ) {
+        this.setState({ mobileNumberError: "" });
 
-    if (this.validator.allValid() && numberValid === true) {
       const id = localStorage.getItem("id");
       const requestData = {
         role: role,
@@ -94,9 +91,10 @@ class CProfile extends Component {
       });
     } else {
       this.validator.showMessages();
-      toast.success("Please fill the valid information");
+      toast.error("Please fill the valid information");
       this.setState({ [e.target.name]: e.target.value });
     }
+  }
   };
 
   getDetailUser() {
@@ -109,18 +107,19 @@ class CProfile extends Component {
         this.setState({ lastName: res.data.data[0].lastname });    
         this.setState({ username: res.data.data[0].username });
         this.setState({ mobileNumber: res.data.data[0].phone });
-        this.setState({ classId: res.data.data[0].classId });
+        this.GetClassData(res.data.data[0].classId)
       }
     });
   }
 
-  GetClassData = async() => {
+  GetClassData = async(classId) => {
     this.setState({loading:true});
     await axios
       .get(`${API.getClass}`)
       .then((res) => {
         this.setState({loading:false});
-        this.setState({getclasses:res.data.data});
+        const classNameData = res.data.data.filter((ress)=>{ return (  ress._id === classId )})
+        this.setState({getclasses:classNameData});
       })
       .catch((err) => {
         if (err.response.status === 401) {
@@ -137,43 +136,37 @@ class CProfile extends Component {
       this.validator.showMessages();
       this.setState({ [e.target.name]: e.target.value });
     }
-    $('input[name="mobileNumber"]').keyup(function (e) {
-      if (/\D/g.test(this.value)) {
-        // Filter non-digits from input value.
-        this.value = this.value.replace(/\D/g, "");
-      }
-    });
-    if (e.target.name === "mobileNumber") {
-      if (e.target.value.toString().length < 10) {
-        this.setState({ numberValid: false });
-      } else if (e.target.value.toString().length > 10) {
-        this.setState({ numberValid: false });
-      } else {
-        this.setState({ numberValid: true });
-      }
+  }
+  
+  setOnChangeForPhone = (e) => {
+    if (e !== "") {
+      this.setState({ mobileNumber: e });
+      this.setState({ mobileNumberError: ""});
+    } else {
+      this.setState({ mobileNumberError: "The mobile number field is required." });
     }
   }
-
   render() {
     const {
-        lastName,
+      lastName,
       loading,
-      numberValid,
       image,
       firstName,
       username,
       mobileNumber,
-      classId,
+      mobileNumberError,
       getclasses,
-     
+      schoolLocation,
+      currentLocation
     } = this.state;
-    
+
     const roleStr = localStorage?.getItem("role");
-    const capitalizeFirstLetter = roleStr.charAt(0).toUpperCase() + roleStr.slice(1);
-
-    const capitalizeFirstLetterofFirstName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
-    const capitalizeFirstLetterofLastName = lastName.charAt(0).toUpperCase() + lastName.slice(1);
-
+    const capitalizeFirstLetter = roleStr?.charAt(0)?.toUpperCase() + roleStr?.slice(1);
+    
+    const capitalizeFirstLetterofFirstName = firstName?.charAt(0)?.toUpperCase() + firstName?.slice(1);
+    const capitalizeFirstLetterofLastName = lastName?.charAt(0)?.toUpperCase() + lastName?.slice(1);
+    
+    
     return (
       <>
         <div className="col-md-3 col-lg-2">
@@ -206,13 +199,13 @@ class CProfile extends Component {
                        {capitalizeFirstLetterofFirstName} {capitalizeFirstLetterofLastName}
                       </span>
                       <br />
-                      <small> {capitalizeFirstLetter} </small>
+                      <small> {capitalizeFirstLetter} | {getclasses[0]?.className}</small>
                     </span>
                   </Stack>
                   <div className="profileBox">
                     <div className="row">
 
-<div className="form-outline mb-4 col-md-6 profileName">
+                  <div className="form-outline mb-4 col-md-6 profileName">
                         <label htmlFor="streetAddress">First Name</label>
                         <input
                           type="text"
@@ -244,23 +237,28 @@ class CProfile extends Component {
                     <div className="row profileFields">
                       <div className="form-outline mb-4 col-md-6 addressProfileFields">
                         <label htmlFor="streetAddress">Mobile Number</label>
-                        <input
-                          type="tel"
-                          id="mobileNumber"
-                          name="mobileNumber"
-                          className="form-control"
-                          placeholder="Please enter your mobile number"
-                          value={mobileNumber}
-                          onChange={(e) => this.setOnChange(e)}
-                        />
-                        {numberValid === false ? (
-                          <p style={{ color: "red", fontSize: "12px" }}>
-                            Mobile number must be 10 digit
-                          </p>
-                        ) : (
-                          ""
-                        )}
-                      </div>
+                       
+                        <PhoneInput
+                    country={`${
+                      schoolLocation && schoolLocation?.toLowerCase() === "usa"
+                        ? "us"
+                        : currentLocation?.toLowerCase()
+                    }`}
+                    value={`${mobileNumber}`}
+                    enableAreaCodes
+                    enableSearch="true"
+                    countryCodeEditable={false}
+                    onChange={(phone) => {this.setOnChangeForPhone(phone)}}
+                    inputProps={{
+                      name: "mobile",
+                      // required: true,
+                    }}
+                  />
+				         {mobileNumberError ? <p style={{ color: "red", fontSize: "12px" }}>
+                          {mobileNumberError}
+                        </p> : ""}
+                      
+                       </div>
                       
                       <div className="form-outline mb-4 col-md-6 addressProfileFields">
                         <label htmlFor="city">Username</label>
@@ -275,31 +273,7 @@ class CProfile extends Component {
                         />
                         {this.validator.message("username", username, "required|alpha")}
                       </div>
-                          
-
-                      <div className="form-outline mb-4 col-md-6 addressProfileFields">
-                        <label htmlFor="mobileNumber">Assign Class</label>
-                        <FormControl
-                  sx={{ m: 0, minWidth: 120 }}
-                  className="filterbox w-100"
-                >
-                  <Select
-                    required="true"
-                    labelId="demo-simple-select-helper-label"
-                    id="demo-simple-select-helper"
-                    value={classId}
-                    label="Filter"
-                    onChange={(e) => this.setOnChange(e)}
-                    inputProps={{ "aria-label": "Without label" }}
-                  >
-                    {getclasses.map((item) => {
-                      return (
-                        <MenuItem value={item._id}>{item.className}</MenuItem>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
-                      </div>
+             
                     </div>
                     <div className="profileBtn">
                       <Link
