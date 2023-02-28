@@ -552,26 +552,26 @@ const CounsellorDashboard = (props) => {
 
    return (
      <>
-      <div className="col-md-3 col-lg-3">
+      <div className="col-md-4 col-lg-2">
         <Sidebar />
       </div>
-      <div className="col-md-9 col-lg-9 mr-30">
+      <div className="col-md-8 col-lg-10 mr-30">
         <div className="header">
           {" "}
           <ImageAvatars />
         </div>
+        <PushNotification />
         <Container
           maxWidth="100%"
           style={{ padding: "0", display: "inline-block" }}
         >
-          <PushNotification />
-
           <div className="heading">
             <h1 className="mb-5">
               Today Attendance for{" "}
               {className && className.assignClass?.className}
             </h1>
           </div>
+
           <Box sx={{ flexGrow: 1 }} className="dashboard-grid">
             <Grid container spacing={2}>
               <Grid item xs={3}>
