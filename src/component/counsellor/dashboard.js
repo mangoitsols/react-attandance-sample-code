@@ -153,7 +153,7 @@ const CounsellorDashboard = (props) => {
   const [loading1, setLoading1] = React.useState(false);
   const [loading2, setLoading2] = React.useState(false);
   const [timer, setTimer] = useState(0);
-  const [start, setStart] = useState( JSON.parse(localStorage.getItem('selectTimerIdArray'))?.length > 0 ? true : false);
+  const [start, setStart] = useState( JSON.parse(localStorage?.getItem('selectTimerIdArray'))?.length > 0 ? true : false);
   const firstStart = useRef(true);
   const [checkToggleStartOrStop,setCheckToggleStartOrStop] = useState(false)
   const [toggleRowId,setToggleRowId] = useState('')
@@ -534,8 +534,6 @@ const CounsellorDashboard = (props) => {
         s += m * parseInt(p?.pop(), 10);
         m *= 60;
       }
-      
-      // toggleStart(id)
       return dispSecondsAsMins(s)
       // return s;
     }
@@ -546,7 +544,6 @@ const CounsellorDashboard = (props) => {
    // Timer Functionality end
    if(filteroutofClass?.length > 0) {
     localStorage.setItem(selectTimerId,dispSecondsAsMins(timer))
-    // console.log(start,"sssssssssssssssssss")
     localStorage.setItem('selectTimerIdArray',JSON.stringify(selectTimerIdArray))
    }
 
