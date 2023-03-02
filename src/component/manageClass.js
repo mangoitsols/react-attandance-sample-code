@@ -15,6 +15,7 @@ import $ from "jquery";
 import "./css/student.css";
 import "react-toastify/dist/ReactToastify.css";
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import Example1 from '../comman/loader1';
 toast.configure();
  
     const ManageClass = () => {
@@ -24,6 +25,8 @@ toast.configure();
         const [page, setPage] = useState(0);
         const [dense, setDense] = useState(false);
         const [loading, setLoading] = useState(true);
+        const [Editloading, setEditLoading] = useState(false);
+        const [Addloading, setAddLoading] = useState(false);
         const [search,setSearch]=useState('');
         const [nameC,setNameC]=useState('');
         const [openmodel,setOpenmodel]=useState(false);
@@ -122,20 +125,12 @@ toast.configure();
             e.preventDefault(); 
             
             if(nameC === ''){
-                toast.error("Please provide classname");
-            }
-            else if (!nameC.startsWith("class")) {
-                toast.error("Classname must be start with class then space ex: 'class G'");
-            }
-            else if(nameC.charAt(6) === " "){
-                toast.warning("Given classname is not in correct format ex- 'class G'")
-            }
-            else if(nameC.charAt(5) !== " "){
-                toast.warning("Given classname is not in correct format ex- 'class G'")
+                toast.error("Classname is required");
             }
             else {
+                setAddLoading(true)
                   const requestData = {
-                      className: (nameC.slice(0,-1) +  nameC.charAt(6).toUpperCase()),
+                      className: (nameC),
                     };
                     await axios({
                         method: "post",
@@ -146,15 +141,20 @@ toast.configure();
                         toast.success("Classname created successfully");
                         setOpenmodel( false);
                         handleGetClass();
+                        setAddLoading(false)
                   }).catch((err) => {
                     if(err.response.data.message === "class already exists"){
                     toast.error("Classname already exists");
                     }else if (err.response.status === 401) {
                         handleLogout()
-                      }
+                    }else if(err.response.status === 400) {
+                    toast.error(err.response.data.message);
+                    }
                     else{
                     toast.error("Failed to created class");
                     }
+                    setAddLoading(false)
+
                   });
               }
         };
@@ -163,18 +163,10 @@ toast.configure();
             e.preventDefault();    
             
             if(nameC === ''){
-                toast.error("Please provide classname");
-            }
-            else if (!nameC.startsWith("class")) {
-                toast.error("Classname must be start with class then space ex: 'class G'");
-            }
-            else if(nameC.charAt(6) === " "){
-                toast.warning("Given classname is not in correct format ex- 'class G'")
-            }
-            else if(nameC.charAt(5) !== " "){
-                toast.warning("Given classname is not in correct format ex- 'class G'")
+                toast.error("Classname is required");
             }
             else {
+                setEditLoading(true)
                   const requestData = {
                       className: (nameC.slice(0,-1) +  nameC.charAt(6).toUpperCase()),
                     };
@@ -184,6 +176,7 @@ toast.configure();
                         data: requestData,
                         headers: authHeader(),
                     }).then((res)=>{
+                        setEditLoading(false)
                         toast.success("Classname updated successfully");
                         setOpenmodelEdit( false);
                         handleGetClass();
@@ -196,6 +189,7 @@ toast.configure();
                     else{
                     toast.error("Failed to created class");
                     }
+                    setEditLoading(false)
                   });
               }
         };
@@ -208,24 +202,20 @@ toast.configure();
                   rules: {
                     class: {
                       required: true,
-                      minlength: 7, 
-                      maxlength: 7
                         },
                     },
                     messages: {
                         class: {
-                          required: "<p style='color:red'>Please enter classname</P>",
-                          minlength:"<p style='color:red'>Classname must be 7 characters</p>",
-                          maxlength:"<p style='color:red'>Classname must be 7 characters</p>",
+                          required: "<p style='color:red'>Classname is required</P>",
                         },
                     }
                 })
             });
 
           $('input[name="class"]').keyup(function (e) {
-            if (/[^A-Za-z\s]/g.test(this.value)) {
-              this.value = this.value.replace(/[^A-Za-z\s]/g, "");
-            }
+            if (/[^A-Za-z0-9-\s]/g.test(this.value)) {
+                this.value = this.value.replace(/[^A-Za-z0-9-\s]/g, "");
+              }
           });
         }
 
@@ -438,11 +428,11 @@ toast.configure();
                         >
                             CLOSE
                         </button>
-                        <input
+                        {Addloading ? <Example1/> :<input
                             type="submit"
                             className="btn btn-primary"
                             value="SAVE"
-                        />
+                        />}
                         </div>
                     </form>
                     </Box>
@@ -483,11 +473,11 @@ toast.configure();
                         >
                             CLOSE
                         </button>
-                        <input
+                        {Editloading ? <Example1/> :<input
                             type="submit"
                             className="btn btn-primary"
                             value="UPDATE"
-                        />
+                        />}
                         </div>
                     </form>
                     </Box>

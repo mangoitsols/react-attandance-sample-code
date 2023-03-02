@@ -28,6 +28,8 @@ import SimpleReactValidator from "simple-react-validator";
 import { Link } from "react-router-dom";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
+
 toast.configure();
 
 class Profile extends Component {
@@ -60,6 +62,7 @@ class Profile extends Component {
     numberValid: true,
     cancel: false,
     profileName: "",
+    zipcode: "",
     schoolLocation: localStorage.getItem("schoolLocation"),
     currentLocation: localStorage.getItem("currentLocation"),
 	mobileNumberError:'',
@@ -90,6 +93,7 @@ class Profile extends Component {
       file,
       numberValid,
       imagePreviewUrl,
+      zipcode,
 	  mobileNumberError,
     } = this.state;
     const formData = new FormData();
@@ -105,6 +109,7 @@ class Profile extends Component {
         state: state,
         email: email,
         name: name,
+        // zipcode: zipCode,
         image: file === "" ? image : file,
       };
 
@@ -116,7 +121,6 @@ class Profile extends Component {
           toast.success("Profile updated successfully");
           this.getDetailUser();
           localStorage.setItem("name", name);
-          //   localStorage.setItem("image", image);
         } else if (res.status === 400) {
           toast.error(res.data.message);
         }
@@ -175,6 +179,7 @@ class Profile extends Component {
         this.setState({ image: res.data.data[0].image });
         this.setState({ state: res.data.data[0].state });
         this.setState({ country: res.data.data[0].country });
+        this.setState({ zipcode: res.data.data[0].phone });
         localStorage.setItem("image", res.data.data[0].image);
       }
       this.handleState(res.data.data[0].country);
@@ -217,6 +222,7 @@ class Profile extends Component {
       this.setState({ mobileNumber: e });
 	  this.setState({ mobileNumberError: '' });
     }else{
+      this.setState({ mobileNumber: e });
 		this.setState({ mobileNumberError: 'The mobile number field is required.' });
 	}
   }
@@ -229,7 +235,6 @@ class Profile extends Component {
       country,
       state,
       loading,
-      numberValid,
       image,
       name,
       streetAddress,
@@ -240,6 +245,7 @@ class Profile extends Component {
       file,
       currentLocation,
       schoolLocation,
+      zipcode,
 	  mobileNumberError,
     } = this.state;
     let $imagePreview = null;
@@ -269,6 +275,12 @@ class Profile extends Component {
               <Loader />
             ) : (
               <React.Fragment>
+                    <div className='heading'>
+                        <h1>
+                            <span className='counsellor-logo'><AssignmentIndIcon/>  </span>
+                             My Profile
+                        </h1>
+                    </div>
                 <form onSubmit={this.handleSubmit}>
                   <Stack direction="row" spacing={2} className="profileAvtar">
                     <div>
@@ -429,6 +441,21 @@ class Profile extends Component {
                           </Select>
                         </FormControl>
                       </div>
+                      <div className="form-outline mb-4 col-md-6 addressProfileFields">
+                        <label htmlFor="zipcode" className="w-100">
+                          Zip Code
+                        </label>
+                        <input
+                          type="number"
+                          id="zipcode"
+                          name="zipcode"
+                          className="form-control"
+                          placeholder="Please enter your zipcode"
+                          value={zipcode}
+                          onChange={(e) => this.setOnChange(e)}
+                        />
+                        {this.validator.message("city", zipcode, "required|number")}
+                      </div>
                     </div>
                     <h5 className="contactDetail">Contact Detail</h5>
                     <div className="row profileFields">
@@ -460,7 +487,7 @@ class Profile extends Component {
                           }`}
                           value={`${mobileNumber}`}
                           enableAreaCodes
-                          countryCodeEditable={false}
+                         
                           enableSearch="true"
                           onChange={(phone) => this.setOnChangeForMobile(phone)}
                           inputProps={{

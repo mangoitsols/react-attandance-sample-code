@@ -244,18 +244,10 @@ const EnhancedTableToolbar = (props) => {
     e.preventDefault();
 
     if (nameC === "") {
-      toast.error("Please provide classname");
-    } else if (!nameC.startsWith("class")) {
-      toast.error(
-        "Classname must be start with class then space ex: 'class E'"
-      );
-    } else if (nameC.charAt(6) === " ") {
-      toast.warning("Given classname is not in correct format ex- 'class E'");
-    } else if (nameC.charAt(5) !== " ") {
-      toast.warning("Given classname is not in correct format ex- 'class E'");
+      toast.error("Classname is required");
     } else {
       const requestData = {
-        className: nameC.slice(0, -1) + nameC.charAt(6).toUpperCase(),
+        className: nameC,
       };
       setButtonDisable(true);
       await axios({
@@ -265,7 +257,7 @@ const EnhancedTableToolbar = (props) => {
         headers: authHeader(),
       })
         .then((res) => {
-          toast.success("New classname created successfully");
+          toast.success("Classname created successfully");
           setButtonDisable(false);
           GetClassData();
           childClose();
@@ -276,7 +268,9 @@ const EnhancedTableToolbar = (props) => {
             setButtonDisable(false);
           } else if (err.response.status === 401) {
             handleLogout();
-          } else {
+          } else if(err.response.status === 400) {
+            toast.error(err.response.data.message);
+            }else {
             toast.error("Failed to created class");
             setButtonDisable(false);
           }
@@ -386,25 +380,19 @@ const EnhancedTableToolbar = (props) => {
         rules: {
           classNameAdd: {
             required: true,
-            minlength: 7,
-            maxlength: 7,
           },
         },
         messages: {
           classNameAdd: {
-            required: "<p style='color:red'>Please enter classname</P>",
-            minlength:
-              "<p style='color:red'>Classname must be 7 characters</p>",
-            maxlength:
-              "<p style='color:red'>Classname must be 7 characters</p>",
+            required: "<p style='color:red'>Classname is required</P>",
           },
         },
       });
     });
 
     $('input[name="classNameAdd"]').keyup(function (e) {
-      if (/[^A-Za-z\s]/g.test(this.value)) {
-        this.value = this.value.replace(/[^A-Za-z\s]/g, "");
+      if (/[^A-Za-z0-9-\s]/g.test(this.value)) {
+        this.value = this.value.replace(/[^A-Za-z0-9-\s]/g, "");
       }
     });
   };
@@ -457,7 +445,7 @@ const EnhancedTableToolbar = (props) => {
                     <Button type="button" disabled>
                       SAVE
                     </Button>
-                    <LoaderButton />
+                    {/* <LoaderButton /> */}
                   </>
                 )}
               </div>
@@ -1332,6 +1320,7 @@ export default function EnhancedTable(props) {
                                           alt="delete icon"
                                         />
                                       </span>
+                                      {row && row.attaindence && row.attaindence.attendence === null ? <span style={{marginRight:'30px'}}></span> :
                                       <span
                                         onClick={() => handleStuDismiss(row)}
                                       >
@@ -1356,7 +1345,7 @@ export default function EnhancedTable(props) {
                                             alt="dismiss icon"
                                           />
                                         )}
-                                      </span>
+                                      </span>}
                                     </TableCell>
                                   </TableRow>
                                   {/* Medical message modal */}

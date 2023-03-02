@@ -21,7 +21,7 @@ const ChatNotify = () => {
             socket.disconnect();
           }
       
-      },[])
+      },[socket])
     
     
 }

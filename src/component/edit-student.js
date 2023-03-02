@@ -30,6 +30,7 @@ import { authHeader } from "../comman/authToken";
 import moment from "moment";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import Example1 from "../comman/loader1";
 
 toast.configure();
 
@@ -57,7 +58,7 @@ const EditStudent = () => {
   const [checked, setChecked] = useState(false);
   const [item, setItem] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [addClassLoading, setAddClassLoading] = useState(false);
   const schoolLocation = localStorage.getItem("schoolLocation");
   const currentLocation = localStorage.getItem("currentLocation");
 
@@ -78,8 +79,6 @@ const EditStudent = () => {
   });
 
   const { id } = useParams();
-
-  const dd = useSelector((state) => state);
 
   $(document).ready(function () {
     $("#editval").validate({
@@ -249,26 +248,39 @@ const EditStudent = () => {
   const handleCreateClass = async (e) => {
     e.preventDefault();
 
-    if (!nameC.startsWith("class")) {
-      toast.error("classname must start with class ex: 'class A'");
-    } else {
+    if(nameC === ''){
+      toast.error("Classname is required");
+  }
+   else {
       const requestData = {
         className: nameC,
       };
-      const res = await axios
-        .post(`${API.createClass}`, requestData)
-        .catch((err) => {
-          if (err.response.status === 401) {
-            handleLogout();
-          }
-        });
-      if (res.status === 200) {
-        toast.success(res.data.message);
+      setAddClassLoading(true)
+      await axios({
+        method: "post",
+        url: `${API.createClass}`,
+        data: requestData,
+        headers: authHeader(),
+      }).then((res) => {
+        toast.success("Classname created successfully");
+        setAddClassLoading(false);
         setOpenmodel(false);
         setClassSelect(res);
-      } else if (res.status === 400) {
-        toast.error(res.data.message);
-      }
+        setNameC('')
+        getClassData();
+      }).catch((err) => {
+        if (err.response.data.message === "class already exists") {
+          toast.error("Classname already exists");
+
+        } else if (err.response.status === 401) {
+          handleLogout();
+        } else if(err.response.status === 400) {
+          toast.error(err.response.data.message);
+          }else {
+          toast.error("Failed to created class");
+        }
+        setAddClassLoading(false)
+        });
     }
   };
 
@@ -367,6 +379,32 @@ const EditStudent = () => {
     }
   };
 
+  const handleOnChange = (e) => {
+    setNameC(e.target.value)
+   
+    $(document).ready(function () {
+        $("#addClass").validate({
+          rules: {
+            class: {
+              required: true,
+                },
+            },
+            messages: {
+                class: {
+                  required: "<p style='color:red'>Classname is required</P>",
+                },
+            }
+        })
+    });
+
+  $('input[name="class"]').keyup(function (e) {
+    if (/[^A-Za-z0-9-\s]/g.test(this.value)) {
+        this.value = this.value.replace(/[^A-Za-z0-9-\s]/g, "");
+      }
+  });
+}
+
+
   return (
     <>
       <Sidebar />
@@ -388,14 +426,15 @@ const EditStudent = () => {
         >
           <Fade in={openmodel}>
             <Box sx={style}>
-              <form className="mui-form" onSubmit={handleCreateClass}>
+              <form id='addClass' className="mui-form" onSubmit={handleCreateClass}>
                 <legend>Add Class</legend>
                 <div className="mui-textfield">
                   <input
                     type="text"
                     placeholder="class E"
+                    name="class"
                     value={nameC}
-                    onChange={(e) => setNameC(e.target.value)}
+                    onChange={(e) => handleOnChange(e)}
                   />
                 </div>
                 <div className="btndesign text-right">
@@ -406,11 +445,12 @@ const EditStudent = () => {
                   >
                     CLOSE
                   </button>
-                  <input
+                  {addClassLoading ? <Example1/> :<input
                     type="submit"
                     className="btn btn-primary"
                     value="SAVE"
-                  />
+                    disabled={addClassLoading}
+                  />}
                 </div>
               </form>
             </Box>

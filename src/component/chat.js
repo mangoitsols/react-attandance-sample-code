@@ -98,7 +98,7 @@ useEffect(() => {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [socket]);
 
 useEffect(() => {
     handleGetOnlyGroups();
