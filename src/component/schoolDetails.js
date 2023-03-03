@@ -257,9 +257,7 @@ const SchoolDetails = () => {
         handleGetSchoolInfo()
       }, [])
       
-    if(loading){
-        return <Example/>
-    }
+
 
   return (
     <>
@@ -269,7 +267,7 @@ const SchoolDetails = () => {
           {" "}
           <ImageAvatars />
         </div>
-        {data ?
+        {!loading ? (data ?
          <Container
           maxWidth="100%"
           style={{ padding: "0", display: "inline-block" }}
@@ -527,7 +525,7 @@ const SchoolDetails = () => {
                     </div>
                 </form>
           </React.Fragment>
-        </Container>}
+        </Container>):<Example/>}
       </div>
     </>
   );

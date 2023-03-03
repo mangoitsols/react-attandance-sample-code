@@ -73,7 +73,7 @@ class CreatePin extends Component {
                   {" "}
                   <img src={pin} className="" alt="logo" />
                 </span>
-                Manage Pin
+                Manage Pin for Medical Information
               </h1>
             </div>
             <form id="myform" onSubmit={this.handleSubmit}>
@@ -85,7 +85,7 @@ class CreatePin extends Component {
                       <PinInput
                         length={4}
                         initialValue=""
-                        type="numeric"
+                        type="password"
                         inputMode="number"
                         style={{ padding: "10px" }}
                         onComplete={(value, index) => {
@@ -105,7 +105,7 @@ class CreatePin extends Component {
                       <PinInput
                         length={4}
                         initialValue=""
-                        type="numeric"
+                        type="password"
                         inputMode="number"
                         placeholder="0"
                         style={{ padding: "10px" }}      
@@ -131,7 +131,7 @@ class CreatePin extends Component {
                         placeholder="0"
                         // secret
                         // onChange={ (value, index) => {this.setState({ pint: value })}}
-                        type="numeric"
+                        type="password"
                         inputMode="number"
                         style={{ padding: "10px" }}
                         // inputStyle={{borderColor: 'red'}}

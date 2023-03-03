@@ -27,6 +27,7 @@ class AddCounsellor extends Component {
     uname: "",
     password: "",
     mobile: "",
+    mobileError: "",
     lastname: "",
     name: "",
     getclasses: [],
@@ -34,8 +35,8 @@ class AddCounsellor extends Component {
     loading: false,
     passwordVerification: false,
     setCounsellorDetail: [],
-    schoolLocation: localStorage.getItem("schoolLocation"),
-    currentLocation: localStorage.getItem("currentLocation"),
+    schoolLocation: localStorage?.getItem("schoolLocation"),
+    currentLocation: localStorage?.getItem("currentLocation"),
   };
 
   componentDidMount() {
@@ -73,7 +74,6 @@ class AddCounsellor extends Component {
             required: true,
             minlength: 3,
           },
-
           email: {
             required: true,
             email: true,
@@ -167,11 +167,15 @@ class AddCounsellor extends Component {
       return filClassName._id === classSelect;
     });
 
-    if (DuplicateClassFinder.length > 0) {
+    if (mobile === "") {
+      this.setState({ mobileError: "The mobile number field is required." });
+    } else if (DuplicateClassFinder.length > 0) {
       toast.error(
         `Another counsellor was assigned to the ${GettingClassName.className}`
       );
     } else {
+      this.setState({ mobileError: "" });
+
       if (
         classSelect === "" ||
         mobile === "" ||
@@ -217,8 +221,17 @@ class AddCounsellor extends Component {
     }
   };
 
+  setOnChangeForPhone = (e) => {
+    if (e !== "") {
+      this.setState({ mobile: e });
+      this.setState({ mobileError: ""});
+    } else {
+      this.setState({ mobileError: "The mobile number field is required." });
+    }
+  }
+
   render() {
-    const { schoolLocation, currentLocation } = this.state;
+    const { schoolLocation, currentLocation,mobileError } = this.state;
     return (
       <>
         <Sidebar />
@@ -273,15 +286,22 @@ class AddCounsellor extends Component {
                         ? "us"
                         : currentLocation.toLowerCase()
                     }`}
-                    value={this.state.mobile}
+                    value={`${this.state.mobile}`}
                     enableAreaCodes
                     enableSearch="true"
-                    onChange={(phone) => this.setState({ mobile: phone })}
+                    onChange={(phone) => {this.setOnChangeForPhone(phone)}}
                     inputProps={{
                       name: "mobile",
                       required: true,
                     }}
                   />
+				  {mobileError !== "" ? (
+                        <p style={{ color: "red", fontSize: "12px" }}>
+                          {mobileError}
+                        </p>
+                      ) : (
+                        ""
+                      )}
                 </div>
                 <div className="form-outline mb-4 col-md-6">
                   <label for="assign" className="w-100">

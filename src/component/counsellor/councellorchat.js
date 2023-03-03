@@ -3,7 +3,7 @@ import Sidebar from "./sidebar";
 import ImageAvatars from "./header";
 import { authHeader } from "../../comman/authToken";
 import { API, BASE_URL, SOCKET_URL } from "../../config/config";
-import { Avatar, Button, Tooltip } from "@mui/material";
+import { Avatar, Box, Button, Tooltip } from "@mui/material";
 import SearchBar from "material-ui-search-bar";
 import axios from "axios";
 import Loader from "../../comman/loader";
@@ -25,6 +25,8 @@ import send from "../images/send.svg";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { handleLogout } from "../header";
+import CircleIcon from '@mui/icons-material/Circle';
+
 toast.configure();
 
 const CouncellorChat = () => {
@@ -43,6 +45,7 @@ const CouncellorChat = () => {
   const [toggle, setToggle] = useState(false);
   const [index, setIndex] = useState('');
   const [oldMessage, setOldMessage] = useState('');
+  const [statusData, setStatusData] = useState([]);
 
   var socket;
 
@@ -70,7 +73,9 @@ const CouncellorChat = () => {
 
   useEffect(()=>{
     handleGetCounsellorAndGroups();
+    handleGetLoginStatus();
   },[1])
+
 
   useEffect(() => {
     fetchMessages();
@@ -95,6 +100,20 @@ const CouncellorChat = () => {
       handleGetCounsellorAndGroups();
     });
   },[socket]);
+
+  const handleGetLoginStatus = async() =>{
+
+    await axios
+      .get(`${API.getLoginStatus}`, { headers: authHeader() })
+      .then((res) => {
+        setStatusData(res.data) 
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout()
+        }
+      });
+  }
     
     const handleGetCounsellorAndGroups = async(data) => {
       if(!data){
@@ -429,13 +448,20 @@ const CouncellorChat = () => {
                       return (
                         <li key={item._id}>
                           <p  className="avtarimage" onClick={() => { handleSelectChatUser(item); handleSeenGroupMessage(item._id,localStorage.getItem('id')); }} >
-                            {
+                           
+                           <Box> {
+
                               <Avatar
                                 alt={item.name ? item.name : item.chatName}
                                 src={`${BASE_URL}/${item?.image}`}
                                 sx={{ width: 56, height: 56 }}
-                              />
-                            }{" "}
+                                />
+                              }{" "}
+                              {statusData.map((status) => { 
+                                return (
+                                    status.userId === item._id && status.status === 'online' ?  <i  style={{position: 'relative', top: '-19px',left: '38px'}}><CircleIcon sx={{fontSize:'12px',color:"green"}} /></i> : ''
+                               )})}
+                               </Box>
                             {item && item.name ? item.name : item.chatName}{" "}
                             {item && item.lastname ? item.lastname : ""}
                     

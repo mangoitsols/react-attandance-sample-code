@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ImageAvatars from './header';
 import Sidebar from './sidebar';
-import { Container } from "@mui/material";
+import { Checkbox, Container } from "@mui/material";
 import { changePassword} from "../action/auth";
 import { connect } from "react-redux";
 import $ from "jquery";
@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 import Loader from "../comman/loader1";
 import "react-toastify/dist/ReactToastify.css";
 import PasswordChecklist from "react-password-checklist"
-import { CleaningServices } from '@mui/icons-material';
+
 toast.configure();
 
 class ChangePassword extends Component {
@@ -22,7 +22,8 @@ class ChangePassword extends Component {
       oldPassVerification:false,
       newPassVerification:false,
       confirmPassVerification:false,
-      loading:false
+      loading:false,
+      checked:false
        } 
 
      componentDidMount() {
@@ -86,8 +87,14 @@ class ChangePassword extends Component {
      
   }
 
+  handleChange = (event) => {
+    this.setState({checked: event.target.checked})
+  };
+
     render() { 
-      const {newPassVerification,confirmPassVerification,oldPass,newPass,confirmPass,oldPassVerification,loading} = this.state;
+      const {newPassVerification,oldPass,newPass,confirmPass,oldPassVerification,loading,checked} = this.state;
+      const passwordType = checked ? 'text' : 'password';
+
        return (<>
           <Sidebar/>
           <div className='col-md-8 col-lg-9 col-xl-10 mr-30 '>
@@ -104,7 +111,7 @@ class ChangePassword extends Component {
               <div className='row'>
                 <div className="form-outline mb-4 col-md-6">
                   <label for="oldPass">Old Password</label>
-                  <input type="password" id="oldPass" name="oldPass" className="form-control" placeholder='Please provide old password' value={this.state.oldPass} onChange={(e) => this.setState({ oldPass: e.target.value }) } />
+                  <input type={passwordType} id="oldPass" name="oldPass" className="form-control" placeholder='Please provide old password' value={this.state.oldPass} onChange={(e) => this.setState({ oldPass: e.target.value }) } />
                   {oldPass == '' || !oldPassVerification &&
                       <PasswordChecklist
                     rules={["minLength","specialChar","number","capital"]}
@@ -117,7 +124,7 @@ class ChangePassword extends Component {
               <div className='row'>
                 <div className="form-outline mb-4 col-md-6">
                   <label for="newPass">New Password</label>
-                  <input type="password"  id="newPass" name="newPass" className="form-control" placeholder='Please provide new password' value={newPass} onChange={(e) => this.setState({ newPass: e.target.value }) } />
+                  <input type={passwordType}  id="newPass" name="newPass" className="form-control" placeholder='Please provide new password' value={newPass} onChange={(e) => this.setState({ newPass: e.target.value }) } />
                   {newPass == '' || !newPassVerification &&
                       <PasswordChecklist
                     rules={["minLength","specialChar","number","capital"]}
@@ -137,7 +144,7 @@ class ChangePassword extends Component {
               <div className='row'>  
                 <div className="form-outline mb-4 col-md-6">
                   <label for="confirmPass">Confirm Password</label>
-                  <input type="password" id="confirmPass" name="confirmPass" className="form-control" placeholder='Please provide confirm password'  value={confirmPass} onChange={(e) => this.setState({ confirmPass: e.target.value }) } />
+                  <input type={passwordType} id="confirmPass" name="confirmPass" className="form-control" placeholder='Please provide confirm password'  value={confirmPass} onChange={(e) => this.setState({ confirmPass: e.target.value }) } />
                   {confirmPass !== ''  &&
                       <PasswordChecklist
                     rules={["minLength","specialChar","number","capital","match"]}
@@ -151,6 +158,16 @@ class ChangePassword extends Component {
                   />}
                 </div>
               </div>
+              <div className='row'>  
+                <div className="form-outline mb-4 col-md-6">
+                        <Checkbox
+                          checked={checked}
+                          onChange={this.handleChange}
+                          inputProps={{ 'aria-label': 'controlled' }}
+                        />
+                  <label>Show Password</label>
+                </div>
+            </div>
               <div className='mt-4'>
               <button type="button" className="btn btn-transparent btn-block mb-4" onClick={this.handleCancel} >CANCEL</button>
              {!loading ? <input type="submit" className="btn btn-primary btn-block mb-4" value="UPDATE" /> : <input type="button" className="btn btn-secondary btn-block mb-4" disabled value="UPDATE" /> }

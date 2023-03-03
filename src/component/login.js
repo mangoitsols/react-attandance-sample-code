@@ -35,29 +35,6 @@ class Login extends Component {
     isChecked:false,
   };
 
-  
-  
-  handleGetLoginStatus = async() =>{
-
-    var socket = io.connect(SOCKET_URL);
-    socket.on("connected", () => {});
-
-    await axios
-      .get(`${API.getLoginStatus}`, { headers: authHeader() })
-      .then((res) => {
-        socket.emit("checkUserStatus", res.data);
-
-        socket?.on("sendUserStatus",(data) => {
-          console.log(data);
-      })
- 
-      })
-      .catch((err) => {
-        if (err.response.status === 401) {
-          handleLogout()
-        }
-      });
-  }
 
   componentDidMount() {
 
@@ -130,7 +107,6 @@ class Login extends Component {
       .post(`${API.addLoginStatus}`,payload, { headers: authHeader() })
       .then((res) => {
         localStorage.setItem("loginStatusId",res.data.data._id)
-          this.handleGetLoginStatus()
       })
       .catch((err) => {
         if (err.response.status === 401) {
@@ -146,17 +122,20 @@ class Login extends Component {
       .get(`${API.getSchoolInfo}/${Manager_ID}`, { headers: authHeader() })
       .then((res) => {
         localStorage.setItem("schoolLocation", res.data.country);
+        localStorage.setItem("logoImage", res.data.logo);
       })
       .catch((err) => {
         if (err.response.status === 401) {
           handleLogout()
         }
+        localStorage.setItem("logoImage", '');
         localStorage.setItem("schoolLocation",'');
       });
   }
 
   handleSubmit = (e) => {
     e.preventDefault();
+
     const { email, password ,isChecked} = this.state;
     const requestData = {
       password: password,
@@ -179,6 +158,7 @@ class Login extends Component {
         localStorage.setItem("lastname", res.data.lastname ? res.data.lastname : "");
         localStorage.setItem("role", res.data.role);
         localStorage.setItem("id", res.data._id);
+        
         this.he();
         this.getCurrentLocation();
         if(res.data.role === 'manager'){
