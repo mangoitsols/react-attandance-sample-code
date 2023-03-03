@@ -15,8 +15,9 @@ import axios from "axios";
 import { authHeader } from "../comman/authToken";
 import { handleLogout } from "./header";
 import io from "socket.io-client";
-import { Box, Tooltip } from "@mui/material";
+import { Box, FormControl, IconButton, InputAdornment, Tooltip } from "@mui/material";
 import { Typography } from "@material-ui/core";
+import { Visibility, VisibilityOff } from "@material-ui/icons";
 
 
 
@@ -33,6 +34,7 @@ class Login extends Component {
     password: "",
     loading: false,
     isChecked:false,
+    show:false,
   };
 
 
@@ -184,6 +186,8 @@ class Login extends Component {
     });
   }
 
+  handleClickShowPassword = () => this.setState({  show: !this.state.show })
+
   render() {
 
     return (
@@ -267,7 +271,7 @@ class Login extends Component {
                 <div className="form-outline mb-2">
                   <TextField
                     label="Password"
-                    type="password"
+                    type={this.state.show ? 'text' : 'password'}
                     id="password outlined-basic"
                     name="password"
                     className="form-control"
@@ -276,6 +280,12 @@ class Login extends Component {
                     onChange={(e) =>
                       this.setState({ password: e.target.value })
                     }
+                    InputProps={{
+                      endAdornment: <InputAdornment position="end"> <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={this.handleClickShowPassword}
+                    >{this.state.show ? <VisibilityOff /> : <Visibility />}</IconButton></InputAdornment>,
+                    }}
                   />
                 </div>
                 <div className="row mb-4 mt-3">

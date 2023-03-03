@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import ImageAvatars, { handleLogout } from "./header";
 import Sidebar from "./sidebar";
-import { FormControl, MenuItem, Select, Container } from "@mui/material";
+import { FormControl, MenuItem, Select, Container, InputAdornment, IconButton, TextField } from "@mui/material";
 import { API } from "../config/config";
 import axios from "axios";
 import { useDispatch } from "react-redux";
@@ -15,6 +15,7 @@ import $ from "jquery";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import PasswordChecklist from "react-password-checklist";
+import { Visibility, VisibilityOff } from "@material-ui/icons";
 toast.configure();
 
 const EditCounsellor = () => {
@@ -30,6 +31,7 @@ const EditCounsellor = () => {
   const [item, setItem] = useState("");
   const [loading, setLoading] = useState(false);
   const [passwordValid, setPasswordValid] = useState(true);
+  const [show, setShow] = useState(false);
 
   const schoolLocation = localStorage.getItem("schoolLocation");
   const currentLocation = localStorage.getItem("currentLocation");
@@ -207,6 +209,9 @@ const EditCounsellor = () => {
     }
   };
 
+  const handleClickShowPassword = () => setShow((show) => !show)
+
+
   return (
     <>
       <Sidebar />
@@ -313,11 +318,12 @@ const EditCounsellor = () => {
                 </div>
                 <div className="form-outline mb-4 col-md-6">
                   <label htmlFor="password">Update Password</label>
-                  <input
-                    type="password"
-                    id="password"
+
+                  <TextField
+                    type={show ? 'text' : 'password'}
                     name="password"
                     className="form-control"
+                    variant="outlined"
                     placeholder="Please enter password"
                     value={password}
                     onChange={(e) => {
@@ -326,6 +332,13 @@ const EditCounsellor = () => {
                         setPasswordValid(true);
                       }
                     }}
+                    InputProps={{
+                      endAdornment: <InputAdornment position="end"> <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={handleClickShowPassword}
+                    >{show ? <VisibilityOff /> : <Visibility />}</IconButton></InputAdornment>,
+                    }}
+                    sx={{marginBottom:'20px'}}
                   />
                   {password && (
                     <PasswordChecklist

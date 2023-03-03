@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import ImageAvatars, { handleLogout } from "./header";
 import Sidebar from "./sidebar";
-import { FormControl, Container } from "@mui/material";
+import { FormControl, Container, TextField, InputAdornment, IconButton } from "@mui/material";
 import {
   createClass,
   getClass,
@@ -18,6 +18,7 @@ import PasswordChecklist from "react-password-checklist";
 import Example1 from "../comman/loader1";
 import { API } from "../config/config";
 import { authHeader } from "../comman/authToken";
+import { Visibility, VisibilityOff } from "@material-ui/icons";
 
 toast.configure();
 
@@ -37,6 +38,7 @@ class AddCounsellor extends Component {
     setCounsellorDetail: [],
     schoolLocation: localStorage?.getItem("schoolLocation"),
     currentLocation: localStorage?.getItem("currentLocation"),
+    show:false
   };
 
   componentDidMount() {
@@ -230,6 +232,9 @@ class AddCounsellor extends Component {
     }
   }
 
+  handleClickShowPassword = () => this.setState({  show: !this.state.show })
+
+
   render() {
     const { schoolLocation, currentLocation,mobileError } = this.state;
     return (
@@ -349,16 +354,24 @@ class AddCounsellor extends Component {
                 </div>
                 <div className="form-outline mb-4 col-md-6">
                   <label for="password">Password</label>
-                  <input
-                    type="password"
-                    id="password"
+
+                  <TextField
+                    type={this.state.show ? 'text' : 'password'}
                     name="password"
                     className="form-control"
+                    variant="outlined"
                     placeholder="Please enter your password"
                     value={this.state.password}
                     onChange={(e) =>
                       this.setState({ password: e.target.value })
                     }
+                    InputProps={{
+                      endAdornment: <InputAdornment position="end"> <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={this.handleClickShowPassword}
+                    >{this.state.show ? <VisibilityOff /> : <Visibility />}</IconButton></InputAdornment>,
+                    }}
+                    sx={{marginBottom:'30px'}}
                   />
                   {this.state.password !== "" && (
                     <PasswordChecklist

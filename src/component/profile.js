@@ -109,7 +109,7 @@ class Profile extends Component {
         state: state,
         email: email,
         name: name,
-        // zipcode: zipCode,
+        zip_code: zipcode,
         image: file === "" ? image : file,
       };
 
@@ -282,22 +282,7 @@ class Profile extends Component {
                         </h1>
                     </div>
                 <form onSubmit={this.handleSubmit}>
-                  <Stack direction="row" spacing={2} className="profileAvtar">
-                    <div>
-                      <Avatar
-                        alt={capitalizeFirstLetterofName}
-                        src={`${BASE_URL}/${image}`}
-                        sx={{ width: 56, height: 56 }}
-                      />
-                    </div>
-                    <span>
-                      <span className="editable">
-                        {capitalizeFirstLetterofProfileName}
-                      </span>
-                      <br />
-                      <small> {capitalizeFirstLetter} </small>
-                    </span>
-                  </Stack>
+
                   <div className="profileBox">
                     <div className="row">
                       <div className="form-outline mb-4 col-md-6">
@@ -314,7 +299,7 @@ class Profile extends Component {
                                   />{" "}
                                   <i
                                     className="fa fa-camera"
-                                    style={{ fontSize: "35px" }}
+                                    style={{ fontSize: "35px", right: "44px" }}
                                   ></i>
                                 </div>
                               ))
