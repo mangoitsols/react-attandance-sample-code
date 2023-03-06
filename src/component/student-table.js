@@ -268,9 +268,9 @@ const EnhancedTableToolbar = (props) => {
             setButtonDisable(false);
           } else if (err.response.status === 401) {
             handleLogout();
-          } else if(err.response.status === 400) {
+          } else if (err.response.status === 400) {
             toast.error(err.response.data.message);
-            }else {
+          } else {
             toast.error("Failed to created class");
             setButtonDisable(false);
           }
@@ -876,7 +876,7 @@ export default function EnhancedTable(props) {
           if (err.response.status === 401) {
             handleLogout();
           }
-          alert('er')
+          alert("er");
           // setLoading(false)
           setFilter([]);
         });
@@ -1062,7 +1062,7 @@ export default function EnhancedTable(props) {
               <legend className="text-center">
                 Upload students record in CSV{" "}
               </legend>
-              <div style={{ textAlign: "center" }}>
+              <div style={{ textAlign: "center", width: "100%" }}>
                 <form>
                   <input
                     type={"file"}
@@ -1073,7 +1073,7 @@ export default function EnhancedTable(props) {
                 </form>
               </div>
               <div style={{ textAlign: "center" }}>
-                Sample Csv File
+                Sample Csv File &nbsp;
                 <CSVLink data={csvData} filename="sample.csv" target="_blank">
                   Download
                 </CSVLink>
@@ -1320,32 +1320,39 @@ export default function EnhancedTable(props) {
                                           alt="delete icon"
                                         />
                                       </span>
-                                      {row && row.attaindence && row.attaindence.attendence === null ? <span style={{marginRight:'30px'}}></span> :
-                                      <span
-                                        onClick={() => handleStuDismiss(row)}
-                                      >
-                                        {dismissId === row._id ? (
-                                          !loading1 ? (
-                                            <img
-                                              src={require("./images/dismiss.png")}
-                                              alt="dismiss icon"
-                                            />
-                                          ) : (
-                                            <>
-                                              <Example1 />{" "}
+                                      {row &&
+                                      row.attaindence &&
+                                      row.attaindence.attendence === null ? (
+                                        <span
+                                          style={{ marginRight: "30px" }}
+                                        ></span>
+                                      ) : (
+                                        <span
+                                          onClick={() => handleStuDismiss(row)}
+                                        >
+                                          {dismissId === row._id ? (
+                                            !loading1 ? (
                                               <img
                                                 src={require("./images/dismiss.png")}
                                                 alt="dismiss icon"
                                               />
-                                            </>
-                                          )
-                                        ) : (
-                                          <img
-                                            src={require("./images/dismiss.png")}
-                                            alt="dismiss icon"
-                                          />
-                                        )}
-                                      </span>}
+                                            ) : (
+                                              <>
+                                                <Example1 />{" "}
+                                                <img
+                                                  src={require("./images/dismiss.png")}
+                                                  alt="dismiss icon"
+                                                />
+                                              </>
+                                            )
+                                          ) : (
+                                            <img
+                                              src={require("./images/dismiss.png")}
+                                              alt="dismiss icon"
+                                            />
+                                          )}
+                                        </span>
+                                      )}
                                     </TableCell>
                                   </TableRow>
                                   {/* Medical message modal */}
@@ -1356,7 +1363,10 @@ export default function EnhancedTable(props) {
                                       aria-labelledby="modal-modal-title"
                                       aria-describedby="modal-modal-description"
                                     >
-                                      <Box sx={{ ...style1, width: 400 }}>
+                                      <Box
+                                        sx={{ ...style1, width: 833 }}
+                                        className="medical-message"
+                                      >
                                         <Box onClick={closeModel}>
                                           <CancelOutlinedIcon />
                                         </Box>
@@ -1365,12 +1375,10 @@ export default function EnhancedTable(props) {
                                           variant="h6"
                                           component="h2"
                                         >
-                                          <strong>
-                                            Student Name:{" "}
-                                            <span>
-                                              {row.name} {row.lastname}
-                                            </span>
-                                          </strong>
+                                          <strong>Student Name: </strong>
+                                          <span>
+                                            {row.name} {row.lastname}
+                                          </span>
                                         </Typography>
                                         <Typography
                                           id="modal-modal-description"

@@ -1240,7 +1240,8 @@ body .bg-secondary {
 
 .createpersonal ul li p.avatar-image div,
 .createpersonal ul li .avtarimage div {
-  margin-right: 15px;
+  margin-right: 9px;
+  height: 56px;
 }
 
 body .ForwardRef-searchContainer-11 {
@@ -1450,6 +1451,12 @@ body .MuiSelect-select {
   padding: 0 15px;
 }
 
+.attendace-type > span:first-child {
+  position: absolute;
+  left: 0;
+  top: 0px;
+}
+
 .button-action button.delete-button {
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
   font-weight: 500;
@@ -1464,6 +1471,56 @@ body .MuiSelect-select {
   background-color: #1976d2;
   box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
     0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+}
+
+.medical-message > div {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+.medical-message h2 strong {
+  font-size: 16px;
+  color: #005cb3;
+  font-weight: 500;
+}
+
+.medical-message h2 span {
+  font-weight: normal;
+  font-size: 16px;
+  color: #1d202f;
+  margin-left: 10px;
+}
+
+.heading h1 span,
+.heading h1 svg,
+.heading1 h1 span {
+  display: none;
+}
+
+form .profileAvtar {
+  display: none;
+}
+
+.avtarimage .MuiBox-root .MuiAvatar-root + i ~ i {
+  display: none;
+}
+
+.medical-message #modal-modal-description strong {
+  font-size: 16px;
+  color: #005cb3;
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+.medical-message #modal-modal-description #medical {
+  border: 1px solid #eae9e9;
+  padding: 5px 11px;
+  height: 145px;
+  overflow: auto;
+  color: #454545;
+  font-size: 13px;
 }
 
 .button-action button {

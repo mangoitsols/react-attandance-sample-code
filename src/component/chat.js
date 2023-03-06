@@ -39,7 +39,7 @@ import {
   isSameSenderMargin,
   isSameUser,
 } from "../config/chatLogics";
-import CircleIcon from '@mui/icons-material/Circle';
+import CircleIcon from "@mui/icons-material/Circle";
 toast.configure();
 
 const Chat = () => {
@@ -72,7 +72,6 @@ const Chat = () => {
   const [openModelLeaveGroup, setOpenModelLeaveGroup] = useState(false);
   const [statusData, setStatusData] = useState([]);
 
-  
   var socket;
 
   const defaultOptions = {
@@ -80,73 +79,72 @@ const Chat = () => {
     autoplay: true,
     animationData: animationData,
     rendererSettings: {
-        preserveAspectRatio: "xMidYMid slice",
+      preserveAspectRatio: "xMidYMid slice",
     },
-};
+  };
 
-const handleCloseLeaveGroupModal = () =>
-setOpenModelLeaveGroup(!openModelLeaveGroup);
+  const handleCloseLeaveGroupModal = () =>
+    setOpenModelLeaveGroup(!openModelLeaveGroup);
 
-useEffect(() => {
+  useEffect(() => {
     socket = io.connect(SOCKET_URL);
     socket.on("connected", () => setSocketConnected(true));
     socket.emit("setup", localStorage.getItem("id"));
     socket.on("typing", () => setIsTyping(true));
     socket.on("stop typing", () => setIsTyping(false));
 
-    handleGetLoginStatus()
+    handleGetLoginStatus();
     return () => {
       socket.disconnect();
     };
   }, [socket]);
 
-useEffect(() => {
+  useEffect(() => {
     handleGetOnlyGroups();
     handleGetOnlyCounsellor();
     handleGetGruops();
-}, [1]);
+  }, [1]);
 
-useEffect(() => {
+  useEffect(() => {
     fetchMessages();
     setSearch("");
     handleGetGruops();
-}, [chatId]);
+  }, [chatId]);
 
-useEffect(() => {
+  useEffect(() => {
     socket?.on("message recieved", (newMessageReceived) => {
-        let localData = localStorage.getItem("chatId");
-        let chatIdLocal = chatId ? chatId._id : localData;
-        
-        if (newMessageReceived[0].chat._id === chatIdLocal) {
-            setMessage(newMessageReceived);
-        } else {
-        }
-    });
-    
-    socket?.on("count", (messagesData) => {
-        toast.info("You have new message");
-        handleGetGruops();
-    });
-}, [socket]);
+      let localData = localStorage.getItem("chatId");
+      let chatIdLocal = chatId ? chatId._id : localData;
 
-const handleGetLoginStatus = async() =>{
-
-  await axios
-    .get(`${API.getLoginStatus}`, { headers: authHeader() })
-    .then((res) => {
-      setStatusData(res.data) 
-    })
-    .catch((err) => {
-      if (err.response.status === 401) {
-        handleLogout()
+      if (newMessageReceived[0].chat._id === chatIdLocal) {
+        setMessage(newMessageReceived);
+      } else {
       }
     });
-}
+
+    socket?.on("count", (messagesData) => {
+      toast.info("You have new message");
+      handleGetGruops();
+    });
+  }, [socket]);
+
+  const handleGetLoginStatus = async () => {
+    await axios
+      .get(`${API.getLoginStatus}`, { headers: authHeader() })
+      .then((res) => {
+        setStatusData(res.data);
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
+      });
+  };
 
   const handleGetOnlyGroups = async () => {
-      await axios({
-          method: "post",
-          url: `${API.fetchGroup}`,
+    await axios({
+      method: "post",
+      url: `${API.fetchGroup}`,
       data: localStorage.getItem("id"),
       headers: authHeader(),
     })
@@ -745,16 +743,36 @@ const handleGetLoginStatus = async() =>{
                             }}
                           >
                             {
-                            <Box>
-                              <Avatar
-                                alt={item.name ? item.name : item.chatName}
-                                src={`${BASE_URL}/${item?.image}`}
-                                sx={{ width: 56, height: 56 }}
-                              />
-                              {statusData.map((status) => { 
-                                return (
-                                    status.userId === item._id && status.status === 'online' ?  <i sx={{position: 'relative', top: '-19px',left: '38px'}}><CircleIcon sx={{color:"green",fontSize:'12px'}} /></i> : ''
-                              )})}
+                              <Box>
+                                <Avatar
+                                  alt={item.name ? item.name : item.chatName}
+                                  src={`${BASE_URL}/${item?.image}`}
+                                  sx={{ width: 56, height: 56 }}
+                                />
+                                {statusData.map((status) => {
+                                  return status.userId === item._id &&
+                                    status.status === "online" ? (
+                                    <i
+                                      sx={{
+                                        position: "relative",
+                                        top: "-19px",
+                                        left: "38px",
+                                      }}
+                                    >
+                                      <CircleIcon
+                                        sx={{
+                                          color: "green",
+                                          fontSize: "12px",
+                                          position: "relative",
+                                          top: "-19px",
+                                          left: "38px",
+                                        }}
+                                      />
+                                    </i>
+                                  ) : (
+                                    ""
+                                  );
+                                })}
                               </Box>
                             }
                             {item.name ? item.name : item.chatName}{" "}
@@ -1184,11 +1202,9 @@ const handleGetLoginStatus = async() =>{
                                     </span>
                                   ) : togglee === true || togglee === false ? (
                                     togglee === true && m?._id === index ? (
-                                     
-                                        <span style={{ color: "white" }}>
-                                          Edit
-                                        </span>
-                                      
+                                      <span style={{ color: "white" }}>
+                                        Edit
+                                      </span>
                                     ) : (
                                       <span
                                         onClick={() =>
