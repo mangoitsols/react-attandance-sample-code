@@ -171,7 +171,7 @@ const DashBoard1 = () => {
                 >
                   <option value="all">All</option>
                   {classData.map((item) => {
-                    const str = item?.className;
+                    const str = item?.className?.slice(6);
                     const capitalizeFirstLetter =
                       str?.charAt(0)?.toUpperCase() + str?.slice(1);
                     return (
@@ -186,7 +186,7 @@ const DashBoard1 = () => {
           </div>
 
           <div className="filter-text">
-            {classNameOnChange === "all" ? "" : classNameOnChange}
+            {classNameOnChange === "all" ? "" : classNameOnChange?.slice(6)}
             {classNameOnChange ? (
               <span>
                 <div className="filter-text">
@@ -309,7 +309,7 @@ const DashBoard1 = () => {
                               <small className="avtar-text">
                                 {item &&
                                   item.assignClass &&
-                                  item.assignClass.className}
+                                  item.assignClass.className?.slice(6)}
                               </small>
                             </span>
                           </div>

@@ -465,7 +465,7 @@ export default function AttandanceReport(props) {
 											{classData.map((item) => {
 												return (
 													<option key={item._id} value={item._id}>
-														{item.className}
+														{item.className?.slice(6)}
 													</option>
 												);
 											})}
@@ -518,7 +518,7 @@ export default function AttandanceReport(props) {
 							</div>
 							<div>
 								<div>
-									<span>{classNaam && classNaam.className}</span> |{" "}
+									<span>{classNaam && classNaam.className?.slice(6)}</span> |{" "}
 									<span>
 										{counsellorName
 											? `${counsellorName.name} ${counsellorName.lastname}`

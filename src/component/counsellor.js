@@ -220,7 +220,7 @@ export default function Counsellor() {
                                 >
                                   {item &&
                                     item.classId &&
-                                    item.classId.className}
+                                    item.classId.className?.slice(6)}
                                 </TableCell>
 
                                 <TableCell
@@ -323,7 +323,7 @@ export default function Counsellor() {
                                          selectedCouncellorDetail?.name?.slice(1) }{' '} 
                                      { selectedCouncellorDetail &&
                                        selectedCouncellorDetail?.lastname?.charAt(0).toUpperCase() +
-                                         selectedCouncellorDetail?.lastname?.slice(1)}</strong>
+                                         selectedCouncellorDetail?.lastname?.slice(1)}</strong> ?
                                              </Typography>
                                            <Box marginTop={'30px'}>
                                           

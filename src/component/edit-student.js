@@ -41,7 +41,6 @@ const EditStudent = () => {
   const [getclasses, setGetClasses] = useState([]);
   const [photo, setPhoto] = useState("");
   const [image, setImage] = useState("");
-  const [phonename1, setPhoneName1] = useState("");
   const [medical, setMedical] = useState("");
   const [address, setAddress] = useState("");
   const [name, setName] = useState();
@@ -61,6 +60,12 @@ const EditStudent = () => {
   const [addClassLoading, setAddClassLoading] = useState(false);
   const schoolLocation = localStorage.getItem("schoolLocation");
   const currentLocation = localStorage.getItem("currentLocation");
+  const [state, setState] = useState('');
+  const [country, setCountry] = useState('');
+  const [city, setCity] = useState('');
+  const [zipcode, setZipcode] = useState('');
+  const [stateByCountry, setStateByCountry] = useState([]);
+  const [getCountry, setGetCountry] = useState([]);
 
   $('input[name="name"]').keyup(function (e) {
     if (/[^a-zA-Z]/g.test(this.value)) {
@@ -77,6 +82,12 @@ const EditStudent = () => {
       this.value = this.value.replace(/[^a-zA-Z]/g, "");
     }
   });
+  $('input[name="city"]').keyup(function (e) {
+    if (/[^a-zA-Z]/g.test(this.value)) {
+      this.value = this.value.replace(/[^a-zA-Z]/g, "");
+    }
+  });
+
 
   const { id } = useParams();
 
@@ -100,6 +111,21 @@ const EditStudent = () => {
         },
         dob: {
           required: true,
+        }, 
+        zipcode:{
+          required: true,
+          minlength:5,
+			    maxlength:5,
+        },
+        city: { 
+          required: true ,
+          minlength: 3
+        },
+        countryselect: {
+           required: true
+        },
+        stateselect: { 
+            required: true
         },
       },
       messages: {
@@ -119,11 +145,30 @@ const EditStudent = () => {
             "<p style='color:red'>Your father name must consist of at least 3 characters</p>",
         },
         address: {
-          required: "<p style='color:red'>Please enter your address</P>",
+          required: "<p style='color:red'>Please enter your street address</P>",
         },
-
+        city: {
+          required: "<p style='color:red'>Please enter city</P>",
+          minlength:
+            "<p style='color:red'>City name must consist of at least 3 characters</p>",
+        },
+        zipcode: {
+          required: "<p style='color:red'>zipcode is required</P>",
+          minlength:
+              "<p style='color:red'>zipcode must consist of at least 5 characters</p>",
+			    maxlength:
+              "<p style='color:red'>zipcode must consist of at least 5 characters</p>",
+        },
         dob: {
           required: "<p style='color:red'>Please provide a Date Of Birth</p>",
+        },
+        countryselect: {
+          required:
+            "<p style='color:red;position: absolute;top: 56px;' >Country is required </p>",
+        },
+        stateselect: {
+          required:
+            "<p style='color:red;position: absolute;top: 56px;' >State is required </p>",
         },
       },
     });
@@ -131,7 +176,32 @@ const EditStudent = () => {
   useEffect(() => {
     getClassData();
     getStudentDataById();
+    getCountries();
   }, []);
+
+  const getCountries = async() =>{
+    await axios.get(`${API.getAllCountry}`, { headers: authHeader() }).then((ress) => {
+      setGetCountry(ress.data.country);
+    })
+    .catch((err) => {
+      if (err.response.status === 401) {
+        handleLogout();
+      }
+    });
+  }
+  
+   const handleCountry = (e) => {
+      setCountry(e.target.value);
+      const id = e.target.value;
+      if(id){
+      handleState(id)}
+    };
+  
+    const handleState = async(id) => {
+    await axios.get(`${API.getStateBYCountryId}/${id}`, { headers: authHeader() }).then((res) => {
+        setStateByCountry(res.data);
+      });
+    };
 
   let $imagePreview = null;
 
@@ -148,9 +218,7 @@ const EditStudent = () => {
     let reader = new FileReader();
     let file = e.target.files[0];
 
-    if (file.size >= 6000) {
-      toast.error("Student image must be less than 6kb");
-    } else {
+    if (file) {
       reader.onloadend = () => {
         setFile(file);
         setPhoto(reader.result);
@@ -174,10 +242,15 @@ const EditStudent = () => {
       setLastName(response.data[0].lastName);
       setFatherName(response.data[0].fatherName);
       setDob(response.data[0].DOB);
-      setAddress(response.data[0].address);
+      setAddress(response.data[0].street_Address);
       setImage(response.data[0].image);
       setClassSelect(response.data[0].assignClass);
+      setZipcode(response.data[0].zip_code);
+      setCity(response.data[0].city);
+      setCountry(response.data[0].country);
+      setState(response.data[0].state);
       setMedical(response.data[0].medical);
+      handleState(response.data[0].country)
       const result = response.data[0].emergency.map(({ _id, ...rest }) => ({
         ...rest,
       }));
@@ -307,10 +380,14 @@ const EditStudent = () => {
         lastName: lastname,
         fatherName: fatherName,
         DOB: dob,
-        address: address,
+        street_Address: address,
         image: file,
         assignClass: classSelect,
         medical: medical,
+        city: city,
+        zip_code: zipcode,
+        country: country,
+        state: state,
         emergency: JSON.stringify(emergency),
       };
       for (var key in requestData) {
@@ -482,17 +559,7 @@ const EditStudent = () => {
                     id="name"
                     placeholder="Please enter your number"
                     onChange={(e) => addFillName(e)}
-
-                    // onChange={(e) => setAddName(e.target.value)}
                   />
-                  {/* <input
-                    type="tel"
-                    placeholder="Please enter your number"
-                    id="mobile"
-                    name="mobile"
-                    onChange={(e) => setAddNumber(e.target.value)}
-                  /> */}
-
                   <PhoneInput
                     country={`${
                       schoolLocation && schoolLocation.toLowerCase() === "usa"
@@ -604,19 +671,112 @@ const EditStudent = () => {
                         </div>
                       </div>
                       <div className="row">
-                        <div className="form-outline mb-4 col-md-6">
-                          <div className="col-md-12 pl-0 pr-0 mb-4">
-                            <InputField
+                      <div className="form-outline mb-4 col-md-6">
+                      <InputField
                               htmlFor="address"
-                              label="Address"
+                              label=" Street Address"
                               id="address"
                               name="address"
                               className="form-control"
-                              placeholder="Please enter your address"
+                              placeholder="Please enter your street address"
                               value={address}
                               onChange={(e) => setAddress(e.target.value)}
                             />
-                          </div>
+                            </div>
+                            <div className="form-outline mb-4 col-md-6">
+                        <label htmlFor="country" className="w-100">
+                          Country
+                        </label>
+                        <FormControl
+                          sx={{ m: 1, minWidth: 120 }}
+                          className="filter ml-0 mb-3 w-100 select-box"
+                        >
+                          <select
+                            labelId="demo-simple-select-helper-label"
+                            id="demo-simple-select-helper"
+                            name="countryselect"
+                            value={country}
+                            label="country"
+                            onChange={handleCountry}
+                            inputProps={{ "aria-label": "Without label" }}
+                            className="form-control w-100"
+                          >
+                          <option value="">select</option>
+                            {getCountry.map((item) => {
+                              return (
+                                <option key={item._id} value={item._id}>
+                                  {item.name}
+                                </option>
+                              );
+                            })}
+                          </select>
+                        </FormControl>
+                      </div>
+
+
+</div>
+
+<div className="row">
+			  <div className="form-outline mb-4 col-md-6">
+                        <label htmlFor="city">City</label>
+                        <input
+                          type="text"
+                          id="city"
+                          name="city"
+                          className="form-control"
+                          placeholder="Please enter your city"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                        />
+                      </div>
+					  <div className="form-outline mb-4 col-md-6">
+                        <label htmlFor="state" className="w-100">
+                          State
+                        </label>
+                        <FormControl
+                          sx={{ m: 1, minWidth: 120 }}
+                          className="filter ml-0 mb-3 w-100 select-box"
+                        >
+                          <select
+                            labelId="demo-simple-select-helper-label state"
+                            id="demo-simple-select-helper state"
+                            name="stateselect"
+                            value={state}
+                            label="state"
+                            onChange={(e) =>  setState(e.target.value)  }
+                            inputProps={{ "aria-label": "Without label" }}
+                            className="form-control w-100"
+                          >
+                          <option value="">select</option>
+                            {stateByCountry.map((item) => {
+                              return (
+                                <option key={item._id} value={item._id}>
+                                  {item.name}
+                                </option>
+                              );
+                            })}
+                          </select>
+                        </FormControl>
+                    </div>
+                    
+                    
+			  </div>
+
+
+                      <div className="row">
+                        <div className="form-outline mb-4 col-md-6">
+                        <div className="col-md-12 pl-0 pr-0 mb-4">
+                    <label htmlFor="zipcode">Zipcode</label>
+                    <input
+                      type="number"
+                      id="zipcode"
+                      name="zipcode"
+                      className="form-control"
+                      value={zipcode}
+                      onChange={(e) => setZipcode(e.target.value)}
+                      placeholder="Please provide zipcode"
+                    />
+                  </div>
                           <div className="col-md-12 pl-0 pr-0">
                             <div className="form-outline mb-4">
                               <label className="w-100" htmlFor="assign">
@@ -640,7 +800,7 @@ const EditStudent = () => {
                                   {getclasses.map((item) => {
                                     return (
                                       <MenuItem key={item._id} value={item._id}>
-                                        {item.className}
+                                        {item.className?.slice(6)}
                                       </MenuItem>
                                     );
                                   })}
@@ -701,11 +861,11 @@ const EditStudent = () => {
                         <label htmlFor="photo">
                           {photo
                             ? ($imagePreview = (
-                                <div>
+                                <div className="previewText">
                                   <Avatar
                                     alt={name}
                                     src={photo}
-                                    style={{ width: "100px", height: "100px" }}
+                                    sx={{ width: 56, height: 56 }}
                                   />
                                   <i
                                     className="fa fa-camera"
@@ -719,7 +879,7 @@ const EditStudent = () => {
                                   <Avatar
                                     src={`${BASE_URL}/${image}`}
                                     alt={name}
-                                    style={{ width: "100px", height: "100px" }}
+                                    sx={{ width: 56, height: 56 }}
                                   />
                                   <i
                                     className="fa fa-camera"
@@ -738,7 +898,7 @@ const EditStudent = () => {
 
                                   <i
                                     className="fa fa-camera"
-                                    style={{ fontSize: "35px" }}
+                                    style={{ fontSize: "35px"}}
                                   ></i>
                                 </div>
                               ))
@@ -751,16 +911,12 @@ const EditStudent = () => {
                                   />
                                   <i
                                     className="fa fa-camera"
-                                    style={{ fontSize: "35px" }}
+                                    style={{ fontSize: "35px"  }}
                                   ></i>
                                 </div>
                               ))}
                         </label>
-                        {
-                          <p style={{ fontSize: "13px" }}>
-                            Student image must be less than 6kb
-                          </p>
-                        }
+                       
                         <InputField
                           type="file"
                           id="photo"

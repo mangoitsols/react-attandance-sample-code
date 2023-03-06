@@ -119,7 +119,7 @@ toast.configure();
         const handleClose = () => setOpenmodel( false);
         const handleOpen = () => setOpenmodel( true );
         const handleCloseEdit = () => setOpenmodelEdit( false);
-        const handleOpenEdit = (classname) => {setOpenmodelEdit( true ) ; setNameC(classname.className); setClassNameId(classname._id)}
+        const handleOpenEdit = (classname) => {setOpenmodelEdit( true ) ; setNameC(classname.className?.slice(6)); setClassNameId(classname._id)}
         
         const handleCreateClass = async(e) => {
             e.preventDefault(); 
@@ -130,7 +130,7 @@ toast.configure();
             else {
                 setAddLoading(true)
                   const requestData = {
-                      className: (nameC),
+                      className: `class ${nameC}`,
                     };
                     await axios({
                         method: "post",
@@ -168,7 +168,7 @@ toast.configure();
             else {
                 setEditLoading(true)
                   const requestData = {
-                      className: (nameC.slice(0,-1) +  nameC.charAt(6).toUpperCase()),
+                      className: `class ${nameC}`,
                     };
                     await axios({
                         method: "put",
@@ -229,7 +229,7 @@ toast.configure();
                   if (a.status === 200 || a.status === 201) {
                     setLoading(false);
                     handleCloseClassDeleteModal('',[])
-                    toast.success(`${selectedClassDetail?.className?.charAt(0)?.toUpperCase() + selectedClassDetail?.className?.slice(1)} deleted successfully`);
+                    toast.success(`${classnamee?.charAt(0)?.toUpperCase() + classnamee?.slice(1)} deleted successfully`);
                     handleGetClass();
                   } else {
                     setLoading(false);
@@ -253,7 +253,7 @@ toast.configure();
             };
     
         const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - classDetail.length) : 0;
-    
+    const classnamee = selectedClassDetail?.className?.slice(6)
         return (
             <>
                 
@@ -304,17 +304,16 @@ toast.configure();
                                 <TableBody>
                                     {classDetail.length > 0 ? classDetail.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((item,index) => {
                                        const counDetail = counsellorDetail.filter((ccitem) => {return ccitem.classId._id === item._id})
-                                    
+                                    const classnamee = item.className?.slice(6)
                                         return (
                                             <TableRow key={item && item._id}>
                                                 
-                                                 <TableCell  > {" "}{item && item.className.charAt(0).toUpperCase() + item.className.slice(1)}</TableCell>
+                                                 <TableCell  > {" "}{classnamee?.charAt(0).toUpperCase() + classnamee.slice(1)}</TableCell>
                                                  <TableCell  > {" "}{counDetail.length > 0 ? counDetail[0]?.name?.charAt(0)?.toUpperCase() + counDetail[0]?.name?.slice(1) :''}  {counDetail.length > 0 ? counDetail[0]?.lastname?.charAt(0)?.toUpperCase() + counDetail[0]?.lastname?.slice(1): ''}</TableCell>
                                                  <TableCell  > {" "}{counDetail[0]?.studentCount}</TableCell>
                                                 
                                                 <TableCell align="center" className='action' style={{ width: "150px", }}>
                                                 <span onClick={() => handleOpenEdit(item)}><img src={require('./images/edit.png')} alt="Edit icon" /></span>
-                                                
                                                     <span onClick={() => handleCloseClassDeleteModal(item,counDetail)}><img src={require('./images/delet.png')} alt="Delete icon" /></span>
                                                  
                                                 </TableCell>
@@ -340,7 +339,7 @@ toast.configure();
                                              id="modal-modal-description"
                                              component={'subtitle2'}>
                                                Do you really want to delete the counsellor  
-                                               <strong> { selectedClassDetail && selectedClassDetail?.className?.charAt(0)?.toUpperCase() + selectedClassDetail?.className?.slice(1) }</strong>
+                                               <strong> { selectedClassDetail && classnamee?.charAt(0)?.toUpperCase() + classnamee?.slice(1) }</strong> ?
                                              </Typography>
                                            <Box marginTop={'30px'}>
                                           

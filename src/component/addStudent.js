@@ -10,8 +10,11 @@ import {
   Box,
   FormControl,
   Container,
+  FormControlLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
-import { createClass, getClass } from "../action/index";
+import { createClass, getClass,getAllCountry,getStateBYCountryId } from "../action/index";
 import { addStudent } from "../action/student";
 import { connect } from "react-redux";
 import $ from "jquery";
@@ -48,6 +51,10 @@ class AddStudent extends Component {
     emergency: [],
     getclasses: [],
     classSelect: "",
+    state:"",
+    stateByCountry:[],
+    getCountry:[],
+    country:"",
     addName: "",
     addNumber: "",
     database: [],
@@ -62,6 +69,7 @@ class AddStudent extends Component {
     phoneError: "",
     phone1Error: "",
     CounsellorDetail: [],
+    city:'',
   };
 
   handleChange = (event) => {
@@ -94,6 +102,11 @@ class AddStudent extends Component {
   componentDidMount() {
 
     $('input[name="name"]').keyup(function (e) {
+      if (/[^a-zA-Z]/g.test(this.value)) {
+        this.value = this.value.replace(/[^a-zA-Z]/g, "");
+      }
+    });
+    $('input[name="city"]').keyup(function (e) {
       if (/[^a-zA-Z]/g.test(this.value)) {
         this.value = this.value.replace(/[^a-zA-Z]/g, "");
       }
@@ -154,10 +167,15 @@ class AddStudent extends Component {
           },
           zipcode:{
             required: true,
+			minlength:5,
+			maxlength:5,
           },
           phone: { required: true },
+          city: { required: true ,minlength: 3},
 
           demoselect: { required: true },
+          countryselect: { required: true },
+          stateselect: { required: true },
         },
         messages: {
           name: {
@@ -179,10 +197,14 @@ class AddStudent extends Component {
             required: "<p style='color:red'>Date of birth is required</P>",
           },
           address: {
-            required: "<p style='color:red'>Address is required</P>",
+            required: "<p style='color:red'>Street address is required</P>",
           },
           zipcode: {
             required: "<p style='color:red'>zipcode is required</P>",
+			minlength:
+              "<p style='color:red'>zipcode must consist of at least 5 characters</p>",
+			maxlength:
+              "<p style='color:red'>zipcode must consist of at least 5 characters</p>",
           },
           phone: {
             required: "<p style='color:red'>phone is required</P>",
@@ -197,10 +219,22 @@ class AddStudent extends Component {
             minlength:
               "<p style='color:red'>Your phone name must consist of at least 3 characters</p>",
           },
-
+          city: {
+            required: "<p style='color:red'>Please enter city</P>",
+            minlength:
+              "<p style='color:red'>City name must consist of at least 3 characters</p>",
+          },
           demoselect: {
             required:
               "<p style='color:red;position: absolute;top: 56px;' >Assign class is required </p>",
+          },
+          countryselect: {
+            required:
+              "<p style='color:red;position: absolute;top: 56px;' >Country is required </p>",
+          },
+          stateselect: {
+            required:
+              "<p style='color:red;position: absolute;top: 56px;' >State is required </p>",
           },
         },
       });
@@ -208,7 +242,29 @@ class AddStudent extends Component {
 
     this.handleGetCouncellor();
     this.getClassData();
+    this.getCountries();
   }
+
+  getCountries = () =>{
+  this.props.getAllCountry((res) => {
+    if (res.status === 200) {
+      this.setState({ getCountry: res.data.country });
+    }
+  });
+}
+
+  handleCountry = (e) => {
+    this.setState({ country: e.target.value });
+    const id = e.target.value;
+    if(id){
+    this.handleState(id)}
+  };
+
+  handleState = (id) => {
+    this.props.getStateBYCountryId(id, (res) => {
+      this.setState({ stateByCountry: res.data });
+    });
+  };
 
   getClassData = () => {
     this.setState({getClassloading:true})
@@ -237,6 +293,9 @@ class AddStudent extends Component {
       file,
       zipcode,
       CounsellorDetail,
+      country,
+      state,
+      city,
     } = this.state;
 
     emergency.push(
@@ -272,10 +331,13 @@ class AddStudent extends Component {
           lastName: lastname,
           fatherName: fatherName,
           DOB: this.state.startDate,
-          address: address,
+          street_Address: address,
           image: file,
           assignClass: classSelect,
           medical: medical,
+          country: country,
+        city: city,
+        state: state,
           zipcode:zipcode,
           emergency: JSON.stringify(emergency),
         };
@@ -320,7 +382,7 @@ class AddStudent extends Component {
       toast.error("Classname is required");
     } else {
       const requestData = {
-        className: nameC,
+        className: `class ${nameC}`,
       };
       this.setState({ AddClassloading: true });
       this.props.createClass(requestData, (res) => {
@@ -369,9 +431,7 @@ class AddStudent extends Component {
 
     let reader = new FileReader();
     let file = e.target.files[0];
-    if (file.size >= 6000) {
-      toast.error("Student image must be less than 6kb");
-    } else {
+    if (file) {
       reader.onloadend = () => {
         this.setState({
           file: file,
@@ -469,7 +529,12 @@ class AddStudent extends Component {
       phone1Error,
       phoneError,
       getClassloading,
-      zipcode
+      zipcode,
+      city,
+      country,
+      state,
+      stateByCountry,
+      getCountry
     } = this.state;
 
     const style = {
@@ -725,10 +790,9 @@ class AddStudent extends Component {
                 </div>
               </div>
 
-              <div className="row">
-                <div className="form-outline mb-4 col-md-6">
-                  <div className="col-md-12 pl-0 pr-0 mb-4">
-                    <label htmlFor="address">Address</label>
+			  <div className="row">
+			  <div className="form-outline mb-4 col-md-6">
+                    <label htmlFor="address"> Street Address</label>
                     <input
                       type="text"
                       id="address"
@@ -736,9 +800,91 @@ class AddStudent extends Component {
                       className="form-control"
                       value={address}
                       onChange={(e) => this.setOnChange(e)}
-                      placeholder="Please provide address"
+                      placeholder="Please provide street address"
                     />
                   </div>
+				  <div className="form-outline mb-4 col-md-6">
+                        <label htmlFor="country" className="w-100">
+                          Country
+                        </label>
+                        <FormControl
+                          sx={{ m: 1, minWidth: 120 }}
+                          className="filter ml-0 mb-3 w-100 select-box"
+                        >
+                          <select
+                            labelId="demo-simple-select-helper-label"
+                            id="demo-simple-select-helper"
+                            name="countryselect"
+                            value={country}
+                            label="country"
+                            onChange={this.handleCountry}
+                            inputProps={{ "aria-label": "Without label" }}
+                            className="form-control w-100"
+                          >
+                          <option value="">select</option>
+                            {getCountry.map((item) => {
+                              return (
+                                <option key={item._id} value={item._id}>
+                                  {item.name}
+                                </option>
+                              );
+                            })}
+                          </select>
+                        </FormControl>
+                      </div>
+			  </div>
+
+			  <div className="row">
+			  <div className="form-outline mb-4 col-md-6">
+                        <label htmlFor="city">City</label>
+                        <input
+                          type="text"
+                          id="city"
+                          name="city"
+                          className="form-control"
+                          placeholder="Please enter your city"
+                          value={city}
+                          onChange={(e) => this.setOnChange(e)}
+                        />
+                      </div>
+					  <div className="form-outline mb-4 col-md-6">
+                        <label htmlFor="state" className="w-100">
+                          State
+                        </label>
+                        <FormControl
+                          sx={{ m: 1, minWidth: 120 }}
+                          className="filter ml-0 mb-3 w-100 select-box"
+                        >
+                          <select
+                            labelId="demo-simple-select-helper-label state"
+                            id="demo-simple-select-helper state"
+                            name="stateselect"
+                            value={state}
+                            label="state"
+                            onChange={(e) =>
+                              this.setState({ state: e.target.value })
+                            }
+                            inputProps={{ "aria-label": "Without label" }}
+                            className="form-control w-100"
+                          >
+                          <option value="">select</option>
+                            {stateByCountry.map((item) => {
+                              return (
+                                <option key={item._id} value={item._id}>
+                                  {item.name}
+                                </option>
+                              );
+                            })}
+                          </select>
+                        </FormControl>
+                    </div>
+                    
+                    
+			  </div>
+
+              <div className="row">
+                <div className="form-outline mb-4 col-md-6">
+                               
                   <div className="col-md-12 pl-0 pr-0 mb-4">
                     <label htmlFor="zipcode">Zipcode</label>
                     <input
@@ -753,7 +899,7 @@ class AddStudent extends Component {
                   </div>
                   <div className="col-md-12 pl-0 pr-0">
                     <div className="form-outline mb-4">
-                      <label className="w-100" htmlFor="assign">
+                      <label className="w-100" htmlFor="demoselect">
                         Assign Class
                       </label>
 
@@ -780,7 +926,7 @@ class AddStudent extends Component {
                           {getclasses.map((item) => {
                             return (
                               <option key={item._id} value={item._id}>
-                                {item.className}
+                                {item.className?.slice(6)}
                               </option>
                           )})}</>:<option value="">Loading...</option>}
                          
@@ -808,7 +954,6 @@ class AddStudent extends Component {
                         value={phonename1}
                         onChange={(e) => this.setOnChange(e)}
                       />
-                      {/* {this.validator.message('name',phonename1,'required|min:3' )} */}
                     </span>
                     <span className="col-md-8 p-0">
                       <PhoneInput
@@ -910,26 +1055,16 @@ class AddStudent extends Component {
                   ) : (
                     ""
                   )}
-
-                  {/* {phone === "" ||
-                  phone1 === "" ||
-                  // phone2 === "" ||
-                  phonename1 === "" ||
-                  phonename2 === ""
-                  // phonename3 === "" 
-                  ? (
-                    ""
-                  ) : ( */}
                   <a
                     className="float-right pointer blue"
                     onClick={this.handleAddNumber}
                   >
                     Add new
                   </a>
-                  {/* )} */}
                 </div>
               </div>
 
+		
               <div className="row">
                 <div className="form-outline mb-4 col-md-6">
                   <label className="w-100"> Photo</label>
@@ -950,9 +1085,7 @@ class AddStudent extends Component {
                               {" "}
                               <strong>Upload image</strong>
                             </div>
-                            <p style={{ fontSize: "13px" }}>
-                              Student image must be less than 6kb
-                            </p>
+                           
                           </>
                         )}
                   </label>
@@ -1031,4 +1164,6 @@ export default connect(mapStateToProps, {
   createClass,
   getClass,
   addStudent,
+  getAllCountry,
+  getStateBYCountryId
 })(AddStudent);

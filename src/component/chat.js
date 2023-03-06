@@ -387,9 +387,7 @@ const handleGetLoginStatus = async() =>{
     let reader = new FileReader();
     let file = e.target.files[0];
 
-    if (file.size >= 6000) {
-      toast.error("Group image must be less than 6kb");
-    } else {
+    if (file) {
       reader.onloadend = () => {
         setFile(file);
         setPhoto(reader.result);
@@ -1078,7 +1076,7 @@ const handleGetLoginStatus = async() =>{
                                 ? chatId.chatName.charAt(0).toUpperCase() +
                                   chatId.chatName.slice(1)
                                 : ""}
-                            </strong>
+                            </strong> ?
                           </Typography>
                           <Box marginTop={"30px"}>
                             {!loading ? (
@@ -1363,7 +1361,6 @@ const handleGetLoginStatus = async() =>{
                       </div>
                     ))}
               </label>
-              <label>Group image must be less than 6kb</label>
               <input
                 type="file"
                 id="photo"

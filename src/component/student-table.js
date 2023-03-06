@@ -247,7 +247,7 @@ const EnhancedTableToolbar = (props) => {
       toast.error("Classname is required");
     } else {
       const requestData = {
-        className: nameC,
+        className: `class ${nameC}`,
       };
       setButtonDisable(true);
       await axios({
@@ -484,7 +484,7 @@ const EnhancedTableToolbar = (props) => {
                       return (
                         <>
                           <option key={item._id} value={item._id}>
-                            {item.className}
+                            {item.className?.slice(6)}
                           </option>
                         </>
                       );
@@ -543,7 +543,7 @@ const EnhancedTableToolbar = (props) => {
               Are you sure?
             </Typography>
             <Typography id="modal-modal-description" component={"subtitle2"}>
-              Do you really want to delete the selected student
+              Do you really want to delete the selected student ?
             </Typography>
             <Box marginTop={"30px"}>
               {!loading ? (
@@ -1135,7 +1135,7 @@ export default function EnhancedTable(props) {
                       <option key={item._id} value={item.className}>
                         {item.className === "unassign"
                           ? "Un Assign"
-                          : item.className}
+                          : item.className?.slice(6)}
                       </option>
                     );
                   })}
@@ -1258,7 +1258,7 @@ export default function EnhancedTable(props) {
                                       style={{ width: "100px" }}
                                     >
                                       {row.assignClass
-                                        ? row.assignClass.className
+                                        ? row.assignClass.className?.slice(6)
                                         : ""}
                                     </TableCell>
                                     <TableCell
@@ -1427,7 +1427,7 @@ export default function EnhancedTable(props) {
                                               ?.charAt(0)
                                               .toUpperCase() +
                                               row.lastName?.slice(1)}
-                                          </strong>
+                                          </strong> ?
                                         </Typography>
                                         <Box marginTop={"30px"}>
                                           {!loading1 ? (
@@ -1564,7 +1564,7 @@ export default function EnhancedTable(props) {
               <PinInput
                 length={4}
                 initialValue=""
-                type="numeric"
+                type="password"
                 inputMode="number"
                 placeholder="0"
                 style={{ padding: "10px" }}

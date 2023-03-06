@@ -902,7 +902,7 @@ const CounsellorDashboard = (props) => {
               <PinInput
                 length={4}
                 initialValue=""
-                type="numeric"
+                type="password"
                 inputMode="number"
                 placeholder="0"
                 style={{ padding: "10px" }}

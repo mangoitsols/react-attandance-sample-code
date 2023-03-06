@@ -62,7 +62,7 @@ class Profile extends Component {
     numberValid: true,
     cancel: false,
     profileName: "",
-    zipcode: "",
+    zip_code: "",
     schoolLocation: localStorage.getItem("schoolLocation"),
     currentLocation: localStorage.getItem("currentLocation"),
 	mobileNumberError:'',
@@ -92,8 +92,7 @@ class Profile extends Component {
       image,
       file,
       numberValid,
-      imagePreviewUrl,
-      zipcode,
+      zip_code,
 	  mobileNumberError,
     } = this.state;
     const formData = new FormData();
@@ -109,7 +108,7 @@ class Profile extends Component {
         state: state,
         email: email,
         name: name,
-        zip_code: zipcode,
+        zip_code: zip_code,
         image: file === "" ? image : file,
       };
 
@@ -150,9 +149,7 @@ class Profile extends Component {
 
     let reader = new FileReader();
     let file = e.target.files[0];
-    if (file.size >= 6000) {
-      toast.error("Profile picture size should be less than 6kb.");
-    } else {
+    if (file) {
       reader.onloadend = () => {
         this.setState({
           file: file,
@@ -175,11 +172,10 @@ class Profile extends Component {
         this.setState({ mobileNumber: res.data.data[0].phone });
         this.setState({ email: res.data.data[0].email });
         this.setState({ name: res.data.data[0].name });
-        this.setState({ profileName: res.data.data[0].name });
         this.setState({ image: res.data.data[0].image });
         this.setState({ state: res.data.data[0].state });
         this.setState({ country: res.data.data[0].country });
-        this.setState({ zipcode: res.data.data[0].phone });
+        this.setState({ zip_code: res.data.data[0].zip_code });
         localStorage.setItem("image", res.data.data[0].image);
       }
       this.handleState(res.data.data[0].country);
@@ -187,6 +183,7 @@ class Profile extends Component {
   }
 
   setOnChange(e) {
+
     if (this.validator.allValid()) {
       this.setState({ [e.target.name]: e.target.value });
     } else {
@@ -241,23 +238,17 @@ class Profile extends Component {
       city,
       email,
       mobileNumber,
-      profileName,
-      file,
       currentLocation,
       schoolLocation,
-      zipcode,
+      zip_code,
 	  mobileNumberError,
     } = this.state;
     let $imagePreview = null;
 
     const roleStr = localStorage?.getItem("role");
-    const capitalizeFirstLetter =
-      roleStr.charAt(0).toUpperCase() + roleStr.slice(1);
 
     const capitalizeFirstLetterofName =
       name.charAt(0).toUpperCase() + name.slice(1);
-    const capitalizeFirstLetterofProfileName =
-      profileName.charAt(0).toUpperCase() + profileName.slice(1);
 
     return (
       <>
@@ -356,8 +347,47 @@ class Profile extends Component {
                         {this.validator.message(
                           "street address",
                           streetAddress,
-                          "required|min:10"
+                          "required|min:7"
                         )}
+                      </div>
+                      <div className="form-outline mb-4 col-md-6 addressProfileFields">
+                        <label htmlFor="country" className="w-100">
+                          Country
+                        </label>
+                        <FormControl
+                          sx={{ m: 0, minWidth: 120 }}
+                          className="filter ml-0 w-100 country"
+                        >
+                          <Select
+                            labelId="demo-simple-select-helper-label"
+                            id="demo-simple-select-helper"
+                            value={country}
+                            label="country"
+                            onChange={this.handleCountry}
+                            inputProps={{ "aria-label": "Without label" }}
+                          >
+                            {getCountry.map((item) => {
+                              return (
+                                <MenuItem key={item._id} value={item._id}>
+                                  {item.name}
+                                </MenuItem>
+                              );
+                            })}
+                          </Select>
+                        </FormControl>
+                      </div>
+                      <div className="form-outline mb-4 col-md-6 addressProfileFields">
+                        <label htmlFor="city">City</label>
+                        <input
+                          type="text"
+                          id="city"
+                          name="city"
+                          className="form-control"
+                          placeholder="Please enter your city"
+                          value={city}
+                          onChange={(e) => this.setOnChange(e)}
+                        />
+                        {this.validator.message("city", city, "required|alpha")}
                       </div>
                       <div className="form-outline mb-4 col-md-6 addressProfileFields">
                         <label htmlFor="state" className="w-100">
@@ -387,59 +417,21 @@ class Profile extends Component {
                           </Select>
                         </FormControl>
                       </div>
+                    
                       <div className="form-outline mb-4 col-md-6 addressProfileFields">
-                        <label htmlFor="city">City</label>
-                        <input
-                          type="text"
-                          id="city"
-                          name="city"
-                          className="form-control"
-                          placeholder="Please enter your city"
-                          value={city}
-                          onChange={(e) => this.setOnChange(e)}
-                        />
-                        {this.validator.message("city", city, "required|alpha")}
-                      </div>
-                      <div className="form-outline mb-4 col-md-6 addressProfileFields">
-                        <label htmlFor="country" className="w-100">
-                          Country
-                        </label>
-                        <FormControl
-                          sx={{ m: 0, minWidth: 120 }}
-                          className="filter ml-0 w-100 country"
-                        >
-                          <Select
-                            labelId="demo-simple-select-helper-label"
-                            id="demo-simple-select-helper"
-                            value={country}
-                            label="country"
-                            onChange={this.handleCountry}
-                            inputProps={{ "aria-label": "Without label" }}
-                          >
-                            {getCountry.map((item) => {
-                              return (
-                                <MenuItem key={item._id} value={item._id}>
-                                  {item.name}
-                                </MenuItem>
-                              );
-                            })}
-                          </Select>
-                        </FormControl>
-                      </div>
-                      <div className="form-outline mb-4 col-md-6 addressProfileFields">
-                        <label htmlFor="zipcode" className="w-100">
+                        <label htmlFor="zip_code" className="w-100">
                           Zip Code
                         </label>
                         <input
                           type="number"
-                          id="zipcode"
-                          name="zipcode"
+                          id="zip_code"
+                          name="zip_code"
                           className="form-control"
                           placeholder="Please enter your zipcode"
-                          value={zipcode}
+                          value={zip_code}
                           onChange={(e) => this.setOnChange(e)}
                         />
-                        {this.validator.message("city", zipcode, "required|number")}
+                        {this.validator.message("zip_code",zip_code.toString(),"required|min:5|max:5")}
                       </div>
                     </div>
                     <h5 className="contactDetail">Contact Detail</h5>

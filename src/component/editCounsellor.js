@@ -49,6 +49,11 @@ const EditCounsellor = () => {
       this.value = this.value.replace(/[^a-zA-Z]/g, "");
     }
   });
+  $('input[name="username"]').keyup(function (e) {
+    if (/[^a-zA-Z0-9@_\.-]*$/g.test(this.value)) {
+      this.value = this.value.replace(/[^a-zA-Z0-9@_\.-]*$/g, "");
+    }
+  });
 
   useEffect(() => {
     GetClassData();
@@ -176,7 +181,7 @@ const EditCounsellor = () => {
 
     if (!equalsCheck(findClassId, manageCouncellor)) {
       toast.error(
-        `Another counsellor was assigned to the ${GettingClassName.className}`
+        `Another counsellor was assigned to the ${GettingClassName.className?.slice(6)}`
       );
     } else if (passwordValid) {
       const requestData = {
@@ -295,7 +300,7 @@ const EditCounsellor = () => {
                     >
                       {getclasses.map((item) => {
                         return (
-                          <MenuItem value={item._id}>{item.className}</MenuItem>
+                          <MenuItem value={item._id}>{item.className?.slice(6)}</MenuItem>
                         );
                       })}
                     </Select>

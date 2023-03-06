@@ -53,8 +53,8 @@ class AddCounsellor extends Component {
       }
     });
     $('input[name="uname"]').keyup(function (e) {
-      if (/[^a-z0-9_\.]+$/g.test(this.value)) {
-        this.value = this.value.replace(/[^a-z0-9_\.]+$/g, "");
+      if (/[^a-zA-Z0-9@_\.-]*$/g.test(this.value)) {
+        this.value = this.value.replace(/[^a-zA-Z0-9@_\.-]*$/g, "");
       }
     });
 
@@ -74,7 +74,7 @@ class AddCounsellor extends Component {
           },
           uname: {
             required: true,
-            minlength: 3,
+            minlength: 5,
           },
           email: {
             required: true,
@@ -98,7 +98,7 @@ class AddCounsellor extends Component {
           uname: {
             required: "<p style='color:red'>Please provide your username</P>",
             minlength:
-              "<p style='color:red'>Your username must consist of at least 3 characters</p>",
+              "<p style='color:red'>Your username must consist of at least 5 characters</p>",
           },
           assignclass: {
             required: "<p style='color:red'>Please select a classname</P>",
@@ -331,7 +331,7 @@ class AddCounsellor extends Component {
                       <option value="">select</option>
                       {this.state.getclasses.map((item) => {
                         return (
-                          <option value={item._id}>{item.className}</option>
+                          <option value={item._id}>{item.className?.slice(6)}</option>
                         );
                       })}
                     </select>

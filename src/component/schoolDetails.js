@@ -28,8 +28,18 @@ const SchoolDetails = () => {
   const [updateCountry,setUpdateCountry] = useState('')
   const [updateName,setUpdateName] = useState('')
   const [updateAddress,setUpdateAddress] = useState('')
+  const [state, setState] = useState('');
+  const [city, setCity] = useState('');
+  const [zipcode, setZipcode] = useState('');
+  const [stateByCountry, setStateByCountry] = useState([]);
   
   const Manager_ID = localStorage.getItem("id");
+
+  $('input[name="city"]').keyup(function (e) {
+    if (/[^a-zA-Z]/g.test(this.value)) {
+      this.value = this.value.replace(/[^a-zA-Z]/g, "");
+    }
+  });
 
   $(document).ready(function () {
     $("#regvalidation").validate({
@@ -44,6 +54,18 @@ const SchoolDetails = () => {
         country: {
           required: true,
         },
+        city: { 
+          required: true ,
+          minlength: 3
+        },
+        state: { 
+          required: true,
+        },
+        zipcode:{
+          required: true,
+          minlength:5,
+			    maxlength:5,
+        },
         updateName: {
           required: true,
           minlength: 3,
@@ -54,30 +76,66 @@ const SchoolDetails = () => {
         updateCountry: {
           required: true,
         },
+        updateState: { 
+          required: true
+        },
+        updateCity: { 
+          required: true ,
+          minlength: 3
+        },
+        updateZipcode:{
+          required: true,
+          minlength:5,
+			    maxlength:5,
+        }        
       },
       messages: {
         name: {
-          required: "<p style='color:red'>Please provide your school name</P>",
+          required: "<p style='color:red'>Please provide your school name</p>",
           minlength:
             "<p style='color:red'>School name must be at least 3 characters.</p>",
         },
         address: {
-          required: "<p style='color:red'>Please provide your school address</P>",
+          required: "<p style='color:red'>Please provide your school address</p>",
         },
         country: {
-          required: "<p style='color:red'>Please select your country</P>",
+          required: "<p style='color:red'>Please select your country</p>",
+        },
+        state: {
+          required:"<p style='color:red>Please select your state </p>",
+        },
+        city:{
+            required: "<p style='color:red'>Please provide your city</p>",
+            minlength: "<p style='color:red'>City name must consist of at least 3 characters</p>",
+        },
+        zipcode: {
+          required: "<p style='color:red'>Please provide your zipcode</p>",
+          minlength: "<p style='color:red'>zipcode must consist of at least 5 characters</p>",
+			    maxlength: "<p style='color:red'>zipcode must consist of at least 5 characters</p>",
         },
         updateName: {
-          required: "<p style='color:red'>Please provide your school name</P>",
+          required: "<p style='color:red'>Please provide your school name</p>",
           minlength:
             "<p style='color:red'>School name must be at least 3 characters.</p>",
         },
         updateAddress: {
-          required: "<p style='color:red'>Please provide your school address</P>",
+          required: "<p style='color:red'>Please provide your school address</p>",
         },
         updateCountry: {
-          required: "<p style='color:red'>Please select your country</P>",
+          required: "<p style='color:red'>Please select your country</p>",
         },
+        updateState: {
+          required:"<p style='color:red> Please select your state </p>",
+        },
+        updateCity:{
+          required: "<p style='color:red'>Please provide your city</p>",
+          minlength: "<p style='color:red'>City name must consist of at least 3 characters</p>",
+        },
+        updateZipcode:{
+          required: "<p style='color:red'>zipcode is required</p>",
+          minlength: "<p style='color:red'>zipcode must consist of at least 5 characters</p>",
+			    maxlength: "<p style='color:red'>zipcode must consist of at least 5 characters</p>",
+        }
       },
     });
   });
@@ -100,15 +158,22 @@ const SchoolDetails = () => {
     const handleCountry = (e) => {
         setCountry(e.target.value);
         setUpdateCountry(e.target.value);
+        const id = e.target.value;
+      if(id){
+      handleState(id)}
     }
+  
+    const handleState = async(id) => {
+    await axios.get(`${API.getStateBYCountryId}/${id}`, { headers: authHeader() }).then((res) => {
+        setStateByCountry(res.data);
+      });
+    };
 
     const _handleImageChange = (e) => {
         e.preventDefault();
         let reader = new FileReader();
         let file = e.target.files[0];
-        if (file.size >= 6000) {
-            toast.error("Profile picture size should be less than 6kb.");
-        } else {
+        if (file) {
             reader.onloadend = () => {
                     setFile(file)
                     setImagePreviewUrl(reader.result)
@@ -119,16 +184,24 @@ const SchoolDetails = () => {
       }
 
     const setOnChange = (e) => {
-
+console.log(e.target.name,"55555555555555555")
         if(e.target.name === "name"){
             setName(e.target.value)
         }else if(e.target.name === "address"){
             setAddress(e.target.value)
-        }else if(e.target.name === "updateName"){
+        }else if(e.target.name === "city"){
+          setCity(e.target.value)
+      }else if(e.target.name === "zipcode"){
+        setZipcode(e.target.value)
+    }else if(e.target.name === "updateName"){
           setUpdateName(e.target.value)
       }else if(e.target.name === "updateAddress"){
         setUpdateAddress(e.target.value)
-      }
+      }else if(e.target.name === "updateCity"){
+        setCity(e.target.value)
+    }else if(e.target.name === "updateZipcode"){
+      setZipcode(e.target.value)
+  }
 
         $('input[name="name"]').keyup(function (e) {
             if (/[^A-Za-z\s]/g.test(this.value)) {
@@ -179,6 +252,9 @@ const SchoolDetails = () => {
         address:address,
         country:country,
         managerId:Manager_ID,
+        state:state,
+        zip_code:zipcode,
+        city:city,
         logo: file,
       }
 
@@ -379,6 +455,64 @@ const SchoolDetails = () => {
 
                       </div>
                       </div>
+                      <div className="row">
+                      <div className="form-outline mb-4 col-md-6 profileName">
+                        <label htmlFor="updateCity">School City</label>
+                        <input
+                          type="text"
+                          id="updateCity"
+                          name="updateCity"
+                          className="form-control"
+                          placeholder="Please provide school city"
+                          value={city}
+                          onChange={(e) => setOnChange(e)}
+                        />
+                      </div>
+                      
+                      <div className="form-outline mb-4 col-md-6 profileName">
+                        <label htmlFor="updateState" className="w-100">
+                        School State
+                        </label>
+
+                        <FormControl
+                    sx={{ m: 0, minWidth: 120 }}
+                    className="filterbox w-100"
+                  >
+                    <select
+                      name="updateState"
+                      labelId="demo-simple-select-helper-label state"
+                      id="demo-simple-select-helper state"
+                      value={state}
+                      label="updateState"
+                      onChange={(e) => setState(e.target.value)}
+                      inputProps={{ "aria-label": "Without label" }}
+                      className="form-control"
+                    >
+                      <option value="" disabled>select</option>
+                      {stateByCountry.map((item) => {
+                        return (
+                          <option key={item._id} value={item._id}>{item.name}</option>
+                        );
+                      })}
+                    </select>
+                  </FormControl>
+
+                      </div>
+                      </div>
+                    <div className="row">
+                      <div className="form-outline mb-4 col-md-6 profileName">
+                        <label htmlFor="zipcode">School Area Zipcode</label>
+                        <input
+                          type="text"
+                          id="zipcode"
+                          name="zipcode"
+                          className="form-control"
+                          placeholder="Please provide school area zipcode"
+                          value={zipcode}
+                          onChange={(e) => setOnChange(e)}
+                        />
+                      </div>
+                      </div>
                     </div>
                    
                     <div className="profileBtn">
@@ -475,9 +609,7 @@ const SchoolDetails = () => {
                           value={address}
                           onChange={(e) => setOnChange(e)}
                         />
-                      </div>
-            
-                                   
+                      </div>                                   
                       <div className="form-outline mb-4 col-md-6 addressProfileFields">
                         <label htmlFor="country" className="w-100">
                         School Country
@@ -489,8 +621,8 @@ const SchoolDetails = () => {
                   >
                     <select
                       name="country"
-                      labelId="demo-simple-select-helper-label"
-                      id="demo-simple-select-helper"
+                      labelId="demo-simple-select-helper-label country"
+                      id="demo-simple-select-helper country"
                       value={country}
                       label="Filter"
                       onChange={handleCountry}
@@ -500,7 +632,51 @@ const SchoolDetails = () => {
                       <option value="" disabled>select</option>
                       {getCountryValue.map((item) => {
                         return (
-                          <option value={item.name}>{item.name}</option>
+                          <option key={item._id} value={item._id}>{item.name}</option>
+                        );
+                      })}
+                    </select>
+                  </FormControl>
+
+                      </div>
+                      </div>
+                      <div className="row">
+                      <div className="form-outline mb-4 col-md-6 profileName">
+                        <label htmlFor="city">School City</label>
+                        <input
+                          type="text"
+                          id="city"
+                          name="city"
+                          className="form-control"
+                          placeholder="Please provide school city"
+                          value={city}
+                          onChange={(e) => setOnChange(e)}
+                        />
+                      </div>
+                      
+                      <div className="form-outline mb-4 col-md-6 profileName">
+                        <label htmlFor="state" className="w-100">
+                        School State
+                        </label>
+
+                        <FormControl
+                    sx={{ m: 0, minWidth: 120 }}
+                    className="filterbox w-100"
+                  >
+                    <select
+                      name="state"
+                      labelId="demo-simple-select-helper-label state"
+                      id="demo-simple-select-helper state"
+                      value={state}
+                      label="state"
+                      onChange={(e) => setState(e.target.value)}
+                      inputProps={{ "aria-label": "Without label" }}
+                      className="form-control"
+                    >
+                      <option value="" disabled>select</option>
+                      {stateByCountry.map((item) => {
+                        return (
+                          <option key={item._id} value={item._id}>{item.name}</option>
                         );
                       })}
                     </select>
@@ -509,6 +685,20 @@ const SchoolDetails = () => {
                       </div>
                       </div>
                     </div>
+                    <div className="row">
+                      <div className="form-outline mb-4 col-md-6 profileName">
+                        <label htmlFor="zipcode">School Area Zipcode</label>
+                        <input
+                          type="text"
+                          id="zipcode"
+                          name="zipcode"
+                          className="form-control"
+                          placeholder="Please provide school area zipcode"
+                          value={zipcode}
+                          onChange={(e) => setOnChange(e)}
+                        />
+                      </div>
+                      </div>
                    
                     <div className="profileBtn">
                       <Link
