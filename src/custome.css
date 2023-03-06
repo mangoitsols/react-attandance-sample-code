@@ -1199,7 +1199,7 @@ body .sidebar {
   border: none;
 }
 
-body .css-pqjvzy-MuiSvgIcon-root-MuiSelect-icon {
+body .MuiSvgIcon-root.MuiSvgIcon-fontSizeMedium.MuiTablePagination-selectIcon {
   right: -10px;
 }
 
@@ -1240,7 +1240,8 @@ body .bg-secondary {
 
 .createpersonal ul li p.avatar-image div,
 .createpersonal ul li .avtarimage div {
-  margin-right: 15px;
+  margin-right: 9px;
+  height: 56px;
 }
 
 body .ForwardRef-searchContainer-11 {
@@ -1450,7 +1451,92 @@ body .MuiSelect-select {
   padding: 0 15px;
 }
 
-.chatmessage button {
+.attendace-type > span:first-child {
+  position: absolute;
+  left: 0;
+  top: 0px;
+}
+
+.button-action button.delete-button {
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-weight: 500;
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  letter-spacing: 0.02857em;
+  text-transform: uppercase;
+  min-width: 64px;
+  padding: 8px 22px;
+  border-radius: 4px;
+  color: #fff;
+  background-color: #1976d2;
+  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+    0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+}
+
+.medical-message > div {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+.medical-message h2 strong {
+  font-size: 16px;
+  color: #005cb3;
+  font-weight: 500;
+}
+
+.medical-message h2 span {
+  font-weight: normal;
+  font-size: 16px;
+  color: #1d202f;
+  margin-left: 10px;
+}
+
+.heading h1 span,
+.heading h1 svg,
+.heading1 h1 span {
+  display: none;
+}
+
+form .profileAvtar {
+  display: none;
+}
+
+.avtarimage .MuiBox-root .MuiAvatar-root + i ~ i {
+  display: none;
+}
+
+.medical-message #modal-modal-description strong {
+  font-size: 16px;
+  color: #005cb3;
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: inline-block;
+}
+.medical-message #modal-modal-description #medical {
+  border: 1px solid #eae9e9;
+  padding: 5px 11px;
+  height: 145px;
+  overflow: auto;
+  color: #454545;
+  font-size: 13px;
+}
+
+.button-action button {
+  border: 1px solid #cccc;
+  border: 1px solid rgba(25, 118, 210, 0.5);
+  border-top-color: rgba(25, 118, 210, 0.5);
+  border-right-color: rgba(25, 118, 210, 0.5);
+  border-bottom-color: rgba(25, 118, 210, 0.5);
+  border-left-color: rgba(25, 118, 210, 0.5);
+  color: #1976d2;
+  margin-left: 15px;
+  border-color: rgba(0, 0, 0, 0.87);
+  color: rgba(0, 0, 0, 0.87);
+  min-width: 64px;
+  padding: 7px 21px;
+  border-radius: 4px;
 }
 
 .phoneNo .form-group input {

@@ -22,7 +22,7 @@ import axios from "axios";
 import { authHeader } from "../comman/authToken";
 import counsellor from "../images/counsellor.svg";
 import { Avatar, Box, Button, Modal, Typography } from "@mui/material";
-import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 
 import "./css/student.css";
 import Example1 from "../comman/loader1";
@@ -40,8 +40,9 @@ export default function Counsellor() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [openModelDelete, setOpenModelDelete] = useState(false);
-  const [selectedCouncellorDetail, setSelectedCouncellorDetail] = useState('false');
-  
+  const [selectedCouncellorDetail, setSelectedCouncellorDetail] =
+    useState("false");
+
   useEffect(() => {
     handleGetUser();
     setSearch("");
@@ -59,11 +60,12 @@ export default function Counsellor() {
       })
       .then((data) => {
         setCounsellorDetail(data.filter((e) => e.role.name === "counsellor"));
-      }).catch((err) => {
-        if (err.response.status === 401) {
-          handleLogout()
-        }
       })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
+      });
   };
 
   const handleChangeRowsPerPage = (event) => {
@@ -84,24 +86,26 @@ export default function Counsellor() {
     fetch(`${API.deleteUser}/${id}`, {
       method: "DELETE",
       headers: authHeader(),
-    }).then((a) => {
-      if (a.status === 200 || a.status === 201) {
-        setLoading(false);
-        handleGetUser();
-        toast.success("Deleted successfully");
-        handleCloseDeleteModal('')
-      } else {
-        setLoading(true);
-      }
-    }).catch(err => {
-      if (err.response.status === 401) {
-        handleLogout()
-      }
     })
+      .then((a) => {
+        if (a.status === 200 || a.status === 201) {
+          setLoading(false);
+          handleGetUser();
+          toast.success("Deleted successfully");
+          handleCloseDeleteModal("");
+        } else {
+          setLoading(true);
+        }
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
+      });
   };
 
   const handleSearch = async (data) => {
-    setSearch(data);  
+    setSearch(data);
     if (data !== "") {
       await axios
         .get(`${API.counsellorSearch}/${data}`, { headers: authHeader() })
@@ -113,7 +117,7 @@ export default function Counsellor() {
         })
         .catch((err) => {
           if (err.response.status === 401) {
-            handleLogout()
+            handleLogout();
           }
           setCounsellorDetail([]);
         });
@@ -122,26 +126,25 @@ export default function Counsellor() {
     }
   };
 
-  const handleCloseDeleteModal = (data) => {setOpenModelDelete(!openModelDelete)
-  setSelectedCouncellorDetail(data)}
-
+  const handleCloseDeleteModal = (data) => {
+    setOpenModelDelete(!openModelDelete);
+    setSelectedCouncellorDetail(data);
+  };
 
   const emptyRows =
     page > 0
       ? Math.max(0, (1 + page) * rowsPerPage - counsellorDetail.length)
       : 0;
 
-      const style = {
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        bgcolor: "background.paper",
-        borderRadius: "15px",
-        p: 4,
-      };
-    
-
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    bgcolor: "background.paper",
+    borderRadius: "15px",
+    p: 4,
+  };
 
   return (
     <>
@@ -162,7 +165,9 @@ export default function Counsellor() {
               </span>
               Counsellor
             </h1>
-            <a href="addCounsellor">ADD COUNSELLOR</a>
+            <div>
+              <a href="addCounsellor">ADD COUNSELLOR</a>
+            </div>
           </div>
           <div className="search">
             <div>
@@ -192,7 +197,6 @@ export default function Counsellor() {
                         <TableCell style={{ textAlign: "center" }}>
                           Action
                         </TableCell>
-                        
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -209,7 +213,7 @@ export default function Counsellor() {
                                   {" "}
                                   {item &&
                                     item.name.charAt(0).toUpperCase() +
-                                      item.name.slice(1)}{" "} 
+                                      item.name.slice(1)}{" "}
                                   {item &&
                                     item.lastname.charAt(0).toUpperCase() +
                                       item.lastname.slice(1)}
@@ -242,36 +246,31 @@ export default function Counsellor() {
                                     <img
                                       src={require("./images/delet.png")}
                                       alt="Delete icon"
-                                      onClick={() => 
-                                        handleCloseDeleteModal (item)
+                                      onClick={() =>
+                                        handleCloseDeleteModal(item)
                                       }
                                     />
                                   </span>
-
                                 </TableCell>
                               </TableRow>
-                                   
-                                   );
-
-                                 
+                            );
                           })
-
                       ) : (
-                        <TableCell colSpan={3} style={{ textAlign: "center" }}>Record Not found</TableCell>
-                        )}
+                        <TableCell colSpan={3} style={{ textAlign: "center" }}>
+                          Record Not found
+                        </TableCell>
+                      )}
                       {emptyRows > 0 && (
                         <TableRow
                           style={{
                             height: (dense ? 33 : 53) * emptyRows,
                           }}
-                          >
+                        >
                           <TableCell colSpan={6} />
                         </TableRow>
                       )}
                     </TableBody>
-                    
                   </Table>
-                  
                 </TableContainer>
                 <TablePagination
                   rowsPerPageOptions={[5, 10, 15]}
@@ -290,7 +289,6 @@ export default function Counsellor() {
                   label="Dense padding"
                 />
               </div>
-             
             </React.Fragment>
           ) : (
             <Loader />
@@ -325,11 +323,11 @@ export default function Counsellor() {
                                        selectedCouncellorDetail?.lastname?.charAt(0).toUpperCase() +
                                          selectedCouncellorDetail?.lastname?.slice(1)}</strong> ?
                                              </Typography>
-                                           <Box marginTop={'30px'}>
+                                           <Box marginTop={'30px'} className="button-action" >
                                           
                                           
                                              {!loading ? (
-                                               <Button variant="contained" size="large" onClick={() => handleDelete(selectedCouncellorDetail && selectedCouncellorDetail?._id)}>Delete</Button>
+                                               <Button variant="contained" size="large" className="delete-button" onClick={() => handleDelete(selectedCouncellorDetail && selectedCouncellorDetail?._id)}>Delete</Button>
                                              ) : (
                                                <>
                                              <Button variant="contained" size="large" disabled>Delete</Button> 
