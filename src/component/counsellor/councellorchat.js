@@ -3,7 +3,7 @@ import Sidebar from "./sidebar";
 import ImageAvatars from "./header";
 import { authHeader } from "../../comman/authToken";
 import { API, BASE_URL, SOCKET_URL } from "../../config/config";
-import { Avatar, Box, Button, Tooltip } from "@mui/material";
+import { Avatar, Box, Button, Chip, Modal, Tooltip, Typography } from "@mui/material";
 import SearchBar from "material-ui-search-bar";
 import axios from "axios";
 import Loader from "../../comman/loader";
@@ -26,6 +26,8 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { handleLogout } from "../header";
 import CircleIcon from '@mui/icons-material/Circle';
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+
 
 toast.configure();
 
@@ -46,6 +48,7 @@ const CouncellorChat = () => {
   const [index, setIndex] = useState('');
   const [oldMessage, setOldMessage] = useState('');
   const [statusData, setStatusData] = useState([]);
+  const [subHeaderOpen, setSubHeaderOpen] = useState(false);
 
   var socket;
 
@@ -58,6 +61,8 @@ const CouncellorChat = () => {
     },
   };
   
+  const handleCloseGroupInfoModal = () =>
+  setSubHeaderOpen(!subHeaderOpen);
 
   useEffect(() => {
     socket = io.connect(SOCKET_URL);
@@ -75,6 +80,16 @@ const CouncellorChat = () => {
     handleGetCounsellorAndGroups();
     handleGetLoginStatus();
   },[1])
+
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    bgcolor: "background.paper",
+    borderRadius: "15px",
+    p: 4,
+  };
 
 
   useEffect(() => {
@@ -409,6 +424,8 @@ const CouncellorChat = () => {
     chatId.data.users &&
     chatId.data.users.filter((e) => e._id !== localStorage.getItem("id"));
 
+    const ids = statusData.map(o => o.userId)
+    const filtered = statusData.filter(({userId}, index) => !ids.includes(userId, index + 1))
 
   return (
     <React.Fragment>
@@ -457,7 +474,7 @@ const CouncellorChat = () => {
                                 sx={{ width: 56, height: 56 }}
                                 />
                               }{" "}
-                              {statusData.map((status) => { 
+                              {filtered.map((status) => { 
                                 return (
                                     status.userId === item._id && status.status === 'online' ?  <i  style={{position: 'relative', top: '-19px',left: '38px'}}><CircleIcon sx={{fontSize:'12px',color:"green"}} /></i> : ''
                                )})}
@@ -647,20 +664,43 @@ const CouncellorChat = () => {
                       }
                     </span>
                     <div className='group-name'><h3>{chatId ? chatId.chatName.charAt(0).toUpperCase() + chatId.chatName.slice(1) : ""}</h3></div>
-                    <div className='group-member-name'>{chatId.users.map((member,index) => {
-          
-                      return (
-
-                        <p key={index} >{
-                          (index ? ', ' : '') + 
-                        (member.name === localStorage.getItem("name")
-                            ? 'You'  
-                            : member.name.charAt(0).toUpperCase() + member.name.slice(1))}
-                      </p>
-                          
-                      
-                      );
-                    })}</div>
+                    <div className='group-member-name'>
+                    <span style={{fontSize:'15px'}} onClick={() => setSubHeaderOpen(true)}>Click here for group info</span>
+                    </div>
+                     {
+                      <Modal
+                        open={subHeaderOpen}
+                        onClose={handleCloseGroupInfoModal}
+                        aria-labelledby="modal-modal-title"
+                        aria-describedby="modal-modal-description"
+                      >
+                        <Box sx={{ ...style, width: 500 }}>
+                          <Box>
+                            <CancelOutlinedIcon
+                            onClick={handleCloseGroupInfoModal}
+                              sx={{
+                                float: "right",
+                              }}
+                              
+                            />
+                          <Typography id="modal-modal-title" component="h6" sx={{mb:3,fontWeight: 'bold',fontSize:' 20px'}}>
+                            Group Members
+                          </Typography>
+                          </Box>
+                          <Box>
+                          {chatId.users.map((member, index) => {
+                        return (
+                          <Chip label={(member.name === localStorage.getItem("name")
+                          ? "You"
+                          : member.name.charAt(0).toUpperCase() +
+                            member.name.slice(1))} sx={{marginRight:1}} />                         
+                        );
+                      })}
+                      </Box>
+                          </Box>
+                       
+                      </Modal>
+                    }
                   </div>
 
                   {/* Group chat Scrollable feed */}

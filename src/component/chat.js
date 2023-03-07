@@ -70,7 +70,9 @@ const Chat = () => {
   const [index, setIndex] = useState("");
   const [oldMessage, setOldMessage] = useState("");
   const [openModelLeaveGroup, setOpenModelLeaveGroup] = useState(false);
+  const [subHeaderOpen, setSubHeaderOpen] = useState(false);
   const [statusData, setStatusData] = useState([]);
+  
 
   var socket;
 
@@ -85,6 +87,9 @@ const Chat = () => {
 
   const handleCloseLeaveGroupModal = () =>
     setOpenModelLeaveGroup(!openModelLeaveGroup);
+
+    const handleCloseGroupInfoModal = () =>
+    setSubHeaderOpen(!subHeaderOpen);
 
   useEffect(() => {
     socket = io.connect(SOCKET_URL);
@@ -688,7 +693,7 @@ const Chat = () => {
         }
       });
   };
-  
+
   const ids = statusData.map(o => o.userId)
   const filtered = statusData.filter(({userId}, index) => !ids.includes(userId, index + 1))
   
@@ -1039,17 +1044,7 @@ const Chat = () => {
                     </div>
 
                     <div className="group-member-name">
-                      {chatId.users.map((member, index) => {
-                        return (
-                          <p>
-                            {(index ? ", " : "") +
-                              (member.name === localStorage.getItem("name")
-                                ? "You"
-                                : member.name.charAt(0).toUpperCase() +
-                                  member.name.slice(1))}{" "}
-                          </p>
-                        );
-                      })}
+                      <span style={{fontSize:'15px'}} onClick={() => setSubHeaderOpen(true)}>Click here for group info</span>
                     </div>
                     <div className="actionbuttons">
                       <button
@@ -1065,7 +1060,7 @@ const Chat = () => {
                         className="btn btn-danger leave-group-button"
                         onClick={handleCloseLeaveGroupModal}
                       >
-                        Delete Group
+                        Delete
                       </button>
                     </div>
                     {
@@ -1134,6 +1129,40 @@ const Chat = () => {
                             </Button>
                           </Box>
                         </Box>
+                      </Modal>
+                    }
+                      {
+                      <Modal
+                        open={subHeaderOpen}
+                        onClose={handleCloseGroupInfoModal}
+                        aria-labelledby="modal-modal-title"
+                        aria-describedby="modal-modal-description"
+                      >
+                        <Box sx={{ ...style, width: 500 }}>
+                          <Box>
+                            <CancelOutlinedIcon
+                            onClick={handleCloseGroupInfoModal}
+                              sx={{
+                                float: "right",
+                              }}
+                              
+                            />
+                          <Typography id="modal-modal-title" component="h6" sx={{mb:3,fontWeight: 'bold',fontSize:' 20px'}}>
+                            Group Members
+                          </Typography>
+                          </Box>
+                          <Box>
+                          {chatId.users.map((member, index) => {
+                        return (
+                          <Chip label={(member.name === localStorage.getItem("name")
+                          ? "You"
+                          : member.name.charAt(0).toUpperCase() +
+                            member.name.slice(1))} sx={{marginRight:1}} />                         
+                        );
+                      })}
+                      </Box>
+                          </Box>
+                       
                       </Modal>
                     }
                   </div>
