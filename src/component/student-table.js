@@ -321,30 +321,14 @@ const EnhancedTableToolbar = (props) => {
     for (var i = 0; i < selectedRow.length; i++) {
       row.filter((item) => {
         if (item._id === selectedRow[i]) {
+          const studentNamee = item.name.charAt(0).toUpperCase() + item.name.slice(1);
+          const studentLastNamee = item.lastName.charAt(0).toUpperCase() + item.lastName.slice(1);
           if (item && item.dismiss) {
-            toast.error(
-              item.name.toUpperCase() +
-                " " +
-                item.lastName.toUpperCase() +
-                " " +
-                " is already dismissed"
-            );
+            toast.error(`"${studentNamee} ${studentLastNamee}" is already dismissed`);
           } else if (item.attaindence.attendence === null) {
-            toast.error(
-              item.name.toUpperCase() +
-                " " +
-                item.lastName.toUpperCase() +
-                " " +
-                "is not mark as Dismiss until he is Present."
-            );
+            toast.error(`"${studentNamee} ${studentLastNamee}" is not mark as dismiss until he is present.`);
           } else if (item && item.attaindence.attendence === "0") {
-            toast.error(
-              item.name.toUpperCase() +
-                " " +
-                item.lastName.toUpperCase() +
-                " " +
-                "is absent so you can not Dismiss him."
-            );
+            toast.error(`"${studentNamee} ${studentLastNamee}" is absent so you can not Dismiss him.`);
           } else {
             const request = axios({
               method: "post",
@@ -1322,7 +1306,7 @@ export default function EnhancedTable(props) {
                                       </span>
                                       {row &&
                                       row.attaindence &&
-                                      row.attaindence.attendence === null ? (
+                                      row.attaindence.attendence === null || row.attaindence.attendence === '0' ? (
                                         <span
                                           style={{ marginRight: "30px" }}
                                         ></span>

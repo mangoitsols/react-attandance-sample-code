@@ -27,6 +27,9 @@ const SchoolDetails = () => {
   const [updateFile,setUpdateFile] = useState('')
   const [updateCountry,setUpdateCountry] = useState('')
   const [updateName,setUpdateName] = useState('')
+  const [updateCity,setUpdateCity] = useState('')
+  const [updateState,setUpdateState] = useState('')
+  const [updateZipcode,setUpdateZipcode] = useState('')
   const [updateAddress,setUpdateAddress] = useState('')
   const [state, setState] = useState('');
   const [city, setCity] = useState('');
@@ -34,12 +37,6 @@ const SchoolDetails = () => {
   const [stateByCountry, setStateByCountry] = useState([]);
   
   const Manager_ID = localStorage.getItem("id");
-
-  $('input[name="city"]').keyup(function (e) {
-    if (/[^a-zA-Z]/g.test(this.value)) {
-      this.value = this.value.replace(/[^a-zA-Z]/g, "");
-    }
-  });
 
   $(document).ready(function () {
     $("#regvalidation").validate({
@@ -102,7 +99,7 @@ const SchoolDetails = () => {
           required: "<p style='color:red'>Please select your country</p>",
         },
         state: {
-          required:"<p style='color:red>Please select your state </p>",
+          required:"<p style='color:red'>Please select your state</p>",
         },
         city:{
             required: "<p style='color:red'>Please provide your city</p>",
@@ -125,7 +122,7 @@ const SchoolDetails = () => {
           required: "<p style='color:red'>Please select your country</p>",
         },
         updateState: {
-          required:"<p style='color:red> Please select your state </p>",
+          required:"<p style='color:red'> Please select your state </p>",
         },
         updateCity:{
           required: "<p style='color:red'>Please provide your city</p>",
@@ -177,7 +174,6 @@ const SchoolDetails = () => {
             reader.onloadend = () => {
                     setFile(file)
                     setImagePreviewUrl(reader.result)
-
             };
             reader.readAsDataURL(file);
         }
@@ -198,9 +194,9 @@ console.log(e.target.name,"55555555555555555")
       }else if(e.target.name === "updateAddress"){
         setUpdateAddress(e.target.value)
       }else if(e.target.name === "updateCity"){
-        setCity(e.target.value)
+        setUpdateCity(e.target.value)
     }else if(e.target.name === "updateZipcode"){
-      setZipcode(e.target.value)
+      setUpdateZipcode(e.target.value)
   }
 
         $('input[name="name"]').keyup(function (e) {
@@ -216,6 +212,18 @@ console.log(e.target.name,"55555555555555555")
               this.value = this.value.replace(/[^A-Za-z\s]/g, "");
           }
       });
+
+      $('input[name="city"]').keyup(function (e) {
+        if (/[^a-zA-Z]/g.test(this.value)) {
+          this.value = this.value.replace(/[^a-zA-Z]/g, "");
+        }
+      });
+    
+      $('input[name="updateCity"]').keyup(function (e) {
+        if (/[^a-zA-Z]/g.test(this.value)) {
+          this.value = this.value.replace(/[^a-zA-Z]/g, "");
+        }
+      });
        
       }
 
@@ -230,6 +238,10 @@ console.log(e.target.name,"55555555555555555")
           setUpdateAddress(res.data.address)
           setUpdateName(res.data.name)
           setUpdateCountry(res.data.country)
+          setUpdateState(res.data.state)
+          setUpdateCity(res.data.city)
+          setUpdateZipcode(res.data.zip_code)
+          handleState(res.data.country)
           setData(res.data)
         })
         .catch((err) => {
@@ -295,6 +307,9 @@ console.log(e.target.name,"55555555555555555")
       name:updateName,
       address:updateAddress,
       country:updateCountry,
+      state:updateState,
+      zip_code:updateZipcode,
+      city:updateCity,
       managerId:Manager_ID,
       logo: file,
     }
@@ -332,8 +347,6 @@ console.log(e.target.name,"55555555555555555")
         getCountry()
         handleGetSchoolInfo()
       }, [])
-      
-
 
   return (
     <>
@@ -447,7 +460,7 @@ console.log(e.target.name,"55555555555555555")
                     >
                       {getCountryValue.map((item) => {
                         return (
-                          <option value={item._id}>{item.name}</option>
+                          <option key={item._id} value={item._id}>{item.name}</option>
                         );
                       })}
                     </select>
@@ -464,7 +477,7 @@ console.log(e.target.name,"55555555555555555")
                           name="updateCity"
                           className="form-control"
                           placeholder="Please provide school city"
-                          value={city}
+                          value={updateCity}
                           onChange={(e) => setOnChange(e)}
                         />
                       </div>
@@ -473,21 +486,20 @@ console.log(e.target.name,"55555555555555555")
                         <label htmlFor="updateState" className="w-100">
                         School State
                         </label>
-
                         <FormControl
                     sx={{ m: 0, minWidth: 120 }}
                     className="filterbox w-100"
-                  >
+                    >
                     <select
                       name="updateState"
                       labelId="demo-simple-select-helper-label state"
                       id="demo-simple-select-helper state"
-                      value={state}
+                      value={updateState}
                       label="updateState"
-                      onChange={(e) => setState(e.target.value)}
+                      onChange={(e) => setUpdateState(e.target.value)}
                       inputProps={{ "aria-label": "Without label" }}
                       className="form-control"
-                    >
+                      >
                       <option value="" disabled>select</option>
                       {stateByCountry.map((item) => {
                         return (
@@ -508,7 +520,7 @@ console.log(e.target.name,"55555555555555555")
                           name="zipcode"
                           className="form-control"
                           placeholder="Please provide school area zipcode"
-                          value={zipcode}
+                          value={updateZipcode}
                           onChange={(e) => setOnChange(e)}
                         />
                       </div>
@@ -549,30 +561,24 @@ console.log(e.target.name,"55555555555555555")
                             ? (
                                 <div className="previewText">
                                   {" "}
-                                  <Avatar
+                                  <img
                                     alt={"School Logo"}
                                     src={imagePreviewUrl}
-                                    sx={{ width: 80, height: 80 }}
-                                  />{" "}
-                                  <i
-                                    className="fa fa-camera"
-                                    style={{ fontSize: "35px" }}
-                                  ></i>
+                                    style={{ width: 80, height: 40 }}
+                                    />{" "}
+                                    <i
+                                      className="fa fa-camera"
+                                      style={{ fontSize: "35px" }}
+                                    ></i>
                                 </div>
                               )
                             : (
-                                <div className="previewText">
-                                  {" "}
-                                  <Avatar
-                                    alt={"School Logo"}
-                                    src={`${BASE_URL}/${"image"}`}
-                                    sx={{ width: 80, height: 80 }}
-                                  />{" "}
-                                  <i
-                                    className="fa fa-camera"
-                                    style={{ fontSize: "35px", right: "16px" }}
-                                  ></i>
-                                </div>
+                                
+                                  <div className="previewText1">
+                              {" "}
+                              <strong>Upload image</strong>
+                            </div>
+                            
                               )}
                         </label>
                         <input

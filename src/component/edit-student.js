@@ -47,7 +47,6 @@ const EditStudent = () => {
   const [lastname, setLastName] = useState("");
   const [fatherName, setFatherName] = useState("");
   const [dob, setDob] = useState("");
-  const [dateError, setDateError] = useState("");
   const [database, setDatabase] = useState([]);
   const [nameC, setNameC] = useState("");
   const [file, setFile] = useState("");
@@ -443,16 +442,8 @@ const EditStudent = () => {
   };
 
   const handleDate = (e) => {
-    var now = new Date();
-    var a = now.getFullYear();
-    var yyyy = e.getFullYear();
-
-    var date = a - 2;
-    if (yyyy > date) {
-      setDateError("Student age must be greater than 2 year");
-    } else {
+    if (e){
       setDob(e);
-      setDateError("");
     }
   };
 
@@ -481,6 +472,10 @@ const EditStudent = () => {
   });
 }
 
+const now = new Date();
+const currentYear = now?.getFullYear();
+const date = currentYear - 2;
+const dateendd = (moment(now).format('DD/MMM')+'/'+date)
 
   return (
     <>
@@ -660,14 +655,12 @@ const EditStudent = () => {
                             dateFormat="dd/MM/yyyy"
                             selected={new Date(dob)}
                             onChange={(date) => handleDate(date)}
+                            maxDate={moment(dateendd).toDate()}
                             peekNextMonth
                             showMonthDropdown
                             showYearDropdown
                             dropdownMode="select"
                          />
-                          <p style={{ color: "red", fontSize: "12px" }}>
-                            {dateError}
-                          </p>
                         </div>
                       </div>
                       <div className="row">

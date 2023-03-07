@@ -27,6 +27,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { API } from "../config/config";
 import { authHeader } from "../comman/authToken";
+import moment from "moment";
 
 toast.configure();
 
@@ -60,7 +61,6 @@ class AddStudent extends Component {
     database: [],
     checked: false,
     startDate: "",
-    dateError: "",
     Submitloading: false,
     AddClassloading: false,
     getClassloading: false,
@@ -489,21 +489,8 @@ class AddStudent extends Component {
   }
 
   HandleDate(e) {
-    const now = new Date();
-    const currentYear = now?.getFullYear();
-    const yyyy = e?.getFullYear();
-
-    const date = currentYear - 2;
-
-    if (yyyy > currentYear) {
+    if(e) {
       this.setState({ startDate: e });
-      this.setState({ dateError: "Date of birth cannot be a future date" });
-    } else if (yyyy >= date) {
-      this.setState({ startDate: e });
-      this.setState({ dateError: "Student should be over 2 years old" });
-    } else {
-      this.setState({ startDate: e });
-      this.setState({ dateError: "" });
     }
   }
 
@@ -589,6 +576,10 @@ class AddStudent extends Component {
       });
       this.setState({ addName: e.target.value });
     };
+    const now = new Date();
+    const currentYear = now?.getFullYear();
+    const date = currentYear - 2;
+    const dateendd = (moment(now).format('DD/MMM')+'/'+date)
 
     return (
       <>
@@ -779,13 +770,11 @@ class AddStudent extends Component {
                       peekNextMonth
                       showMonthDropdown
                       showYearDropdown
+                      maxDate={moment(dateendd).toDate()}
                       dateFormat="dd/MM/yyyy"
                       dropdownMode="select"
                       className="form-control"
                     />
-                    <p style={{ color: "red", fontSize: "12px" }}>
-                      {this.state.dateError}
-                    </p>
                   </div>
                 </div>
               </div>

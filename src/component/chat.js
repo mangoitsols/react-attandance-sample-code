@@ -688,7 +688,10 @@ const Chat = () => {
         }
       });
   };
-
+  
+  const ids = statusData.map(o => o.userId)
+  const filtered = statusData.filter(({userId}, index) => !ids.includes(userId, index + 1))
+  
   return (
     <React.Fragment>
       <Sidebar />
@@ -713,7 +716,7 @@ const Chat = () => {
                 value={search}
                 onChange={(newValue) => handleGetGruops(newValue)}
                 placeholder="Search Counsellor"
-              />
+                />
             </div>
             <div className="createpersonal">
               <ul>
@@ -731,14 +734,14 @@ const Chat = () => {
                               highlightId === item._id
                                 ? "avatar-image bg-secondary"
                                 : "avatar-image "
-                            }
-                            onClick={() => {
-                              handleSelectChatUser(item);
-                              handleSeenGroupMessage(
-                                item._id,
-                                localStorage.getItem("id")
-                              );
-                            }}
+                              }
+                              onClick={() => {
+                                handleSelectChatUser(item);
+                                handleSeenGroupMessage(
+                                  item._id,
+                                  localStorage.getItem("id")
+                                  );
+                                }}
                           >
                             {
                               <Box>
@@ -746,17 +749,17 @@ const Chat = () => {
                                   alt={item.name ? item.name : item.chatName}
                                   src={`${BASE_URL}/${item?.image}`}
                                   sx={{ width: 56, height: 56 }}
-                                />
-                                {statusData.map((status) => {
+                                  />
+                                {filtered.map((status) => {
                                   return status.userId === item._id &&
-                                    status.status === "online" ? (
+                                  status.status === "online" ? (
                                     <i
                                       sx={{
                                         position: "relative",
                                         top: "-19px",
                                         left: "38px",
                                       }}
-                                    >
+                                      >
                                       <CircleIcon
                                         sx={{
                                           color: "green",

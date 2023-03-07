@@ -1,6 +1,6 @@
 import React, { Component,useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import logo from "../images/logo-2.png";
+import logo from "./images/defaultSchoolLogo.png";
 import student from "../images/student.svg";
 import counsellor from "../images/counsellor.svg";
 import pin from "../images/pin.svg";
@@ -71,9 +71,9 @@ class Sidebar extends Component {
             >
               <a
                 href="#"
-                className="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none logo"
+                className="d-flex align-items-center mb-2 link-dark text-decoration-none logo"
               >
-                {localData ? <img src={BASE_URL+'/'+localData} className="" alt="local_logo" width={'270px'} height={'58px'}/> : !data ? <img src={logo} className="" alt="db_logo" width={'270px'} height={'58px'}/> :  <img src={BASE_URL+'/'+data.logo} className="" alt="demo_logo" width={'270px'} height={'58px'}/> }
+                {localData ? <img src={BASE_URL+'/'+localData} className="" alt="local_logo" width={'270px'} height={'80px'}/> : !data.logo ? <img src={logo} className="" alt="db_logo" width={'270px'} height={'80px'}/> :  <img src={BASE_URL+'/'+data.logo} className="" alt="db_logo" width={'270px'} height={'80px'}/> }
               </a>
 
               <ul className="nav nav-pills flex-column mb-auto">
