@@ -762,11 +762,12 @@ const CounsellorDashboard = (props) => {
                                     padding="none"
                                     style={{ width: "150px" }}
                                   >
-                                    {toggleRowId === row._id &&
-                                    row &&
+                                    {console.log(toggleRowId , row._id ,"rrrrrrrrrrrr",rows)}
+                                    { row &&
                                     row.dismiss ? (
                                       "Dismissed"
-                                    ) : row &&
+                                    ) :
+                                     row &&
                                       row.attaindence &&
                                       row.attaindence.attendence === "1" ? (
                                       <Switch
@@ -805,7 +806,7 @@ const CounsellorDashboard = (props) => {
                                       <Switch
                                         className="attendace-type"
                                         checked={
-                                          toggleRowId === row._id ? true : false
+                                           false
                                         }
                                         onChange={(e) => {
                                           handleChangeToggleChecked(e, row);
