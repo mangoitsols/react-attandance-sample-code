@@ -165,13 +165,16 @@ class AddCounsellor extends Component {
     const DuplicateClassFinder = setCounsellorDetail.filter((fil) => {
       return fil.classId._id === classSelect;
     });
+
+    console.log(DuplicateClassFinder,"DuplicateClassFinder")
+
     const GettingClassName = getclasses.find((filClassName) => {
       return filClassName._id === classSelect;
     });
 
     if (mobile === "") {
       this.setState({ mobileError: "The mobile number field is required." });
-    } else if (DuplicateClassFinder.length > 0) {
+    } else if (DuplicateClassFinder.length > 0 && DuplicateClassFinder[0].classId.className !== 'class unassigned') {
       toast.error(
         `Another counsellor was assigned to the ${GettingClassName.className}`
       );
@@ -211,9 +214,9 @@ class AddCounsellor extends Component {
               name: "",
               classSelect: "",
             });
-            setTimeout(() => {
-              window.location.replace("/counsellor");
-            }, 500);
+            // setTimeout(() => {
+            //   window.location.replace("/counsellor");
+            // }, 500);
             this.setState({ loading: false });
           } else {
             this.setState({ loading: false });
@@ -255,7 +258,7 @@ class AddCounsellor extends Component {
             <form id="regvalidation" onSubmit={this.handleSubmit}>
               <div className="row">
                 <div className="form-outline mb-4 col-md-6">
-                  <label for="name">First Name</label>
+                  <label htmlFor="name">First Name</label>
                   <input
                     type="text"
                     id="name"
@@ -267,7 +270,7 @@ class AddCounsellor extends Component {
                   />
                 </div>
                 <div className="form-outline mb-4 col-md-6">
-                  <label for="lastname">Last Name</label>
+                  <label htmlFor="lastname">Last Name</label>
                   <input
                     type="text"
                     id="lastname"
@@ -283,11 +286,11 @@ class AddCounsellor extends Component {
               </div>
               <div className="row">
                 <div className="form-outline mb-4 col-md-6">
-                  <label for="mobile">Mobile Number</label>
+                  <label htmlFor="mobile">Mobile Number</label>
 
                   <PhoneInput
                     country={`${
-                      schoolLocation && schoolLocation.toLowerCase() === "usa"
+                      schoolLocation.toLowerCase() === "usa"
                         ? "us"
                         : currentLocation.toLowerCase()
                     }`}
@@ -309,7 +312,7 @@ class AddCounsellor extends Component {
                       )}
                 </div>
                 <div className="form-outline mb-4 col-md-6">
-                  <label for="assign" className="w-100">
+                  <label htmlFor="assign" className="w-100">
                     Assign Class
                   </label>
                   <FormControl
@@ -318,20 +321,20 @@ class AddCounsellor extends Component {
                   >
                     <select
                       name="assignclass"
-                      labelId="demo-simple-select-helper-label"
+                      labelid="demo-simple-select-helper-label"
                       id="demo-simple-select-helper"
                       value={this.state.classSelect}
                       label="Filter"
                       onChange={(e) =>
                         this.setState({ classSelect: e.target.value })
                       }
-                      inputProps={{ "aria-label": "Without label" }}
+                      inputprops={{ "aria-label": "Without label" }}
                       className="form-control "
                     >
                       <option value="">select</option>
                       {this.state.getclasses.map((item) => {
                         return (
-                          <option value={item._id}>{item.className?.slice(6)}</option>
+                          <option key={item._id} value={item._id}>{item.className?.slice(6)}</option>
                         );
                       })}
                     </select>
@@ -341,7 +344,7 @@ class AddCounsellor extends Component {
               <div className="row">
                 {" "}
                 <div className="form-outline mb-4 col-md-6">
-                  <label for="uname">User Name</label>
+                  <label htmlFor="uname">User Name</label>
                   <input
                     type="text"
                     id="uname"
@@ -353,7 +356,7 @@ class AddCounsellor extends Component {
                   />
                 </div>
                 <div className="form-outline mb-4 col-md-6">
-                  <label for="password">Password</label>
+                  <label htmlFor="password">Password</label>
 
                   <TextField
                     type={this.state.show ? 'text' : 'password'}

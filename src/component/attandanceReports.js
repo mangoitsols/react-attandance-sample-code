@@ -164,9 +164,8 @@ export default function AttandanceReport(props) {
 													{ 
 													(
 														item.attandan.map((e) => {
-															
 															if(moment(e.createdAt).format("YYYY-MM-DD") === moment(week.key).format("YYYY-MM-DD")){
-																return e.attendence === null || e.attendence === "0" || e.dismiss === null ? "A" : e.attendence === "1" ? "P" : "";
+																return item.studentId.dismiss !== null ? "D" : e.attendence === null || e.attendence === "0" ? "A" : e.attendence === "1" ? "P" : "";
 															}
 															// else{
 															// 	return "no"; 

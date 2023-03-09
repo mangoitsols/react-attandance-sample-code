@@ -44,6 +44,7 @@ import Switch from "@mui/material/Switch";
 import { handleLogout } from "../header";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import Example1 from "../../comman/loader1";
+import moment from "moment";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -150,7 +151,7 @@ const CounsellorDashboard = (props) => {
   const [loading2, setLoading2] = React.useState(false);
   const [timer, setTimer] = useState(0);
   const [start, setStart] = useState(
-    JSON.parse(localStorage?.getItem("selectTimerIdArray"))?.length > 0
+    localStorage?.getItem("selectTimerIdArray")
       ? true
       : false
   );
@@ -384,7 +385,10 @@ const CounsellorDashboard = (props) => {
     setOpenModel(false);
   };
 
+
+  const today = moment().format();
   const handleOnChangeSelect = async (e, row) => {
+
     if (row.attaindence === null) {
       toast.warning("First you have to mark attandance");
     } else if (row.attaindence && row.attaindence.attendence === "0") {
@@ -396,6 +400,7 @@ const CounsellorDashboard = (props) => {
     } else {
       const requestData = {
         out_of_class: e.target.value,
+        outclassDateTime:today
       };
 
       const res = axios({
@@ -410,7 +415,7 @@ const CounsellorDashboard = (props) => {
       });
       if (res) {
         if (e.target.value !== "no") {
-          toggleStart(row._id);
+          toggleStart(row._id,0);
           setCheckToggleStartOrStop(true);
         } else {
           toggleStop(row._id);
@@ -425,7 +430,7 @@ const CounsellorDashboard = (props) => {
   };
 
   // Timer Functionality start
-  const toggleStart = async (id) => {
+  const toggleStart = async (id,timerSecondd) => {
     setStart(true);
     setLoading1(true);
     await axios({
@@ -434,7 +439,7 @@ const CounsellorDashboard = (props) => {
       headers: authHeader(),
     })
       .then((res) => {
-        setTimer(0);
+        setTimer(timerSecondd);
         setSelectedTimerId(id);
         selectTimerIdArray.push(id);
         setLoading1(false);
@@ -528,7 +533,7 @@ const CounsellorDashboard = (props) => {
     );
   };
 
-  function hmsToSecondsOnly(str) {
+  const  hmsToSecondsOnly = (id,str) => {
     var p = str?.split(":"),
       s = 0,
       m = 1;
@@ -537,6 +542,8 @@ const CounsellorDashboard = (props) => {
       s += m * parseInt(p?.pop(), 10);
       m *= 60;
     }
+
+    // toggleStart(id,s)
     return dispSecondsAsMins(s);
     // return s;
   }
@@ -571,7 +578,7 @@ const CounsellorDashboard = (props) => {
           <div className="heading">
             <h1 className="mb-5">
               Today Attendance for{" "}
-              {className && className.assignClass?.className}
+              {className && className.assignClass?.className?.slice(6)}
             </h1>
           </div>
 
@@ -762,7 +769,6 @@ const CounsellorDashboard = (props) => {
                                     padding="none"
                                     style={{ width: "150px" }}
                                   >
-                                    {console.log(toggleRowId , row._id ,"rrrrrrrrrrrr",rows)}
                                     { row &&
                                     row.dismiss ? (
                                       "Dismissed"
@@ -896,7 +902,7 @@ const CounsellorDashboard = (props) => {
                                               {selectTimerIdArray.includes(
                                                 row._id
                                               )
-                                                ? hmsToSecondsOnly(
+                                                ? hmsToSecondsOnly(row._id,
                                                     localStorage.getItem(
                                                       row._id
                                                     )

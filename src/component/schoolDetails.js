@@ -179,25 +179,6 @@ const SchoolDetails = () => {
         }
       }
 
-    const setOnChange = (e) => {
-console.log(e.target.name,"55555555555555555")
-        if(e.target.name === "name"){
-            setName(e.target.value)
-        }else if(e.target.name === "address"){
-            setAddress(e.target.value)
-        }else if(e.target.name === "city"){
-          setCity(e.target.value)
-      }else if(e.target.name === "zipcode"){
-        setZipcode(e.target.value)
-    }else if(e.target.name === "updateName"){
-          setUpdateName(e.target.value)
-      }else if(e.target.name === "updateAddress"){
-        setUpdateAddress(e.target.value)
-      }else if(e.target.name === "updateCity"){
-        setUpdateCity(e.target.value)
-    }else if(e.target.name === "updateZipcode"){
-      setUpdateZipcode(e.target.value)
-  }
 
         $('input[name="name"]').keyup(function (e) {
             if (/[^A-Za-z\s]/g.test(this.value)) {
@@ -224,8 +205,7 @@ console.log(e.target.name,"55555555555555555")
           this.value = this.value.replace(/[^a-zA-Z]/g, "");
         }
       });
-       
-      }
+      
 
     const handleGetSchoolInfo = async() =>{
 
@@ -248,7 +228,6 @@ console.log(e.target.name,"55555555555555555")
           if (err.response.status === 401) {
             handleLogout()
           }else if(err.response.data.message === "Data not found"){
-            localStorage.setItem('logoImage','')
           }
           setData('')
           setLoading(false);
@@ -282,8 +261,10 @@ console.log(e.target.name,"55555555555555555")
       }).then((response) => {
         toast.success('School info added successfully')
         handleGetSchoolInfo()
+      window.location.reload()
+     const countryname =  getCountryValue.filter((value) => value._id === response.data.data.country)
         localStorage.setItem("logoImage", response.data.data.logo);
-        localStorage.setItem("schoolLocation", response.data.data.country);
+        localStorage.setItem("schoolLocation",countryname && countryname[0]?.name);
         
       }).catch((error) => {
           if (error.response.status === 401) {
@@ -327,8 +308,10 @@ console.log(e.target.name,"55555555555555555")
       setImagePreviewUrl('')
       toast.success('School info updated successfully')
       handleGetSchoolInfo()
+      const countryname =  getCountryValue.filter((value) => value._id === response.data.data.country)
       localStorage.setItem("logoImage", response.data.data.logo);
-      localStorage.setItem("schoolLocation", response.data.data.country);
+      localStorage.setItem("schoolLocation", countryname[0]?.name);
+      window.location.reload()
 
     }).catch((error) => {
         if (error.response.status === 401) {
@@ -420,7 +403,7 @@ console.log(e.target.name,"55555555555555555")
                           className="form-control"
                           placeholder="Please provide school name"
                           value={updateName}
-                          onChange={(e) => setOnChange(e)}
+                          onChange={(e) => setUpdateName(e.target.value)}
                         />
                       </div>
                       </div>
@@ -434,7 +417,7 @@ console.log(e.target.name,"55555555555555555")
                           className="form-control"
                           placeholder="Please provide school address"
                           value={updateAddress}
-                          onChange={(e) => setOnChange(e)}
+                          onChange={(e) => setUpdateAddress(e.target.value)}
                         />
                       </div>
             
@@ -478,7 +461,7 @@ console.log(e.target.name,"55555555555555555")
                           className="form-control"
                           placeholder="Please provide school city"
                           value={updateCity}
-                          onChange={(e) => setOnChange(e)}
+                          onChange={(e) => setUpdateCity(e.target.value)}
                         />
                       </div>
                       
@@ -513,15 +496,15 @@ console.log(e.target.name,"55555555555555555")
                       </div>
                     <div className="row">
                       <div className="form-outline mb-4 col-md-6 profileName">
-                        <label htmlFor="zipcode">School Area Zipcode</label>
+                        <label htmlFor="updateZipcode">School Area Zipcode</label>
                         <input
-                          type="text"
-                          id="zipcode"
-                          name="zipcode"
+                          type="number"
+                          id="updateZipcode"
+                          name="updateZipcode"
                           className="form-control"
                           placeholder="Please provide school area zipcode"
                           value={updateZipcode}
-                          onChange={(e) => setOnChange(e)}
+                          onChange={(e) => setUpdateZipcode(e.target.value)}
                         />
                       </div>
                       </div>
@@ -599,7 +582,7 @@ console.log(e.target.name,"55555555555555555")
                           className="form-control"
                           placeholder="Please provide school name"
                           value={name}
-                          onChange={(e) => setOnChange(e)}
+                          onChange={(e) => setName(e.target.value)}
                         />
                       </div>
                       </div>
@@ -613,7 +596,7 @@ console.log(e.target.name,"55555555555555555")
                           className="form-control"
                           placeholder="Please provide school address"
                           value={address}
-                          onChange={(e) => setOnChange(e)}
+                          onChange={(e) => setAddress(e.target.value)}
                         />
                       </div>                                   
                       <div className="form-outline mb-4 col-md-6 addressProfileFields">
@@ -656,7 +639,7 @@ console.log(e.target.name,"55555555555555555")
                           className="form-control"
                           placeholder="Please provide school city"
                           value={city}
-                          onChange={(e) => setOnChange(e)}
+                          onChange={(e) => setCity(e.target.value)}
                         />
                       </div>
                       
@@ -695,13 +678,13 @@ console.log(e.target.name,"55555555555555555")
                       <div className="form-outline mb-4 col-md-6 profileName">
                         <label htmlFor="zipcode">School Area Zipcode</label>
                         <input
-                          type="text"
+                          type="number"
                           id="zipcode"
                           name="zipcode"
                           className="form-control"
                           placeholder="Please provide school area zipcode"
                           value={zipcode}
-                          onChange={(e) => setOnChange(e)}
+                          onChange={(e) => setZipcode(e.target.value)}
                         />
                       </div>
                       </div>

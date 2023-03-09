@@ -378,7 +378,7 @@ const EditStudent = () => {
         name: name,
         lastName: lastname,
         fatherName: fatherName,
-        DOB: dob,
+        DOB: moment(dob).format(),
         street_Address: address,
         image: file,
         assignClass: classSelect,
@@ -564,7 +564,7 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                     placeholder="Please enter your number"
                     enaableAreaCodes
                     value={`${addNumber}`}
-                    countryCodeEditable={false}
+                    
                     onChange={(phone) => setAddNumber(phone)}
                     enableAreaCodes
                     enableSearch="true"

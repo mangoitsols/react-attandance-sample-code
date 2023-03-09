@@ -273,7 +273,6 @@ const EditCounsellor = () => {
                         : currentLocation.toLowerCase()
                     }`}
                     enaableAreaCodes
-                    countryCodeEditable={false}
                     onChange={(phone) => setMobile(phone)}
                     value={`${mobile}`}
                     enableAreaCodes

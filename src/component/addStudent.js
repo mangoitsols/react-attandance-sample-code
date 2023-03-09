@@ -28,6 +28,7 @@ import "react-phone-input-2/lib/style.css";
 import { API } from "../config/config";
 import { authHeader } from "../comman/authToken";
 import moment from "moment";
+import Example from "../comman/loader";
 
 toast.configure();
 
@@ -330,7 +331,7 @@ class AddStudent extends Component {
           name: name,
           lastName: lastname,
           fatherName: fatherName,
-          DOB: this.state.startDate,
+          DOB: moment(this.state.startDate).format(),
           street_Address: address,
           image: file,
           assignClass: classSelect,
@@ -338,7 +339,7 @@ class AddStudent extends Component {
           country: country,
         city: city,
         state: state,
-          zipcode:zipcode,
+        zip_code:zipcode,
           emergency: JSON.stringify(emergency),
         };
 
@@ -589,6 +590,7 @@ class AddStudent extends Component {
             {" "}
             <ImageAvatars />
           </div>
+          {!getClassloading ? <>
           <Modal
             aria-labelledby="transition-modal-title"
             aria-describedby="transition-modal-description"
@@ -684,7 +686,6 @@ class AddStudent extends Component {
                       value={`${this.state.addNumber}`}
                       enableAreaCodes
                       enableSearch="true"
-                      countryCodeEditable={false}
                       onChange={(e) => this.modelEmergency(e)}
                       inputProps={{
                         name: "addphone",
@@ -910,14 +911,14 @@ class AddStudent extends Component {
                           inputProps={{ "aria-label": "Without label" }}
                           className="w-100 form-control "
                         >
-                          {!getClassloading  ? <>
+                          
                           <option value="">select</option>
                           {getclasses.map((item) => {
                             return (
                               <option key={item._id} value={item._id}>
                                 {item.className?.slice(6)}
                               </option>
-                          )})}</>:<option value="">Loading...</option>}
+                          )})}
                          
                         </select>
                       </FormControl>
@@ -955,7 +956,6 @@ class AddStudent extends Component {
                         value={`${phone}`}
                         enableAreaCodes
                         enableSearch="true"
-                        countryCodeEditable={false}
                         onChange={(phone) => this.setOnChangeForPhone(phone)}
                         inputProps={{
                           name: "phone",
@@ -995,7 +995,6 @@ class AddStudent extends Component {
                             : currentLocation.toLowerCase()
                         }`}
                         value={`${phone1}`}
-                        countryCodeEditable={false}
                         enableAreaCodes
                         enableSearch="true"
                         onChange={(phone) => this.setOnChangeForPhone1(phone)}
@@ -1033,7 +1032,6 @@ class AddStudent extends Component {
                               disableAreaCodes
                               disableCountryCode
                               disableDropdown
-                              countryCodeEditable={false}
                               enableAreaCodes
                               enableSearch="true"
                             />
@@ -1139,6 +1137,7 @@ class AddStudent extends Component {
               </div>
             </form>
           </Container>
+          </>:<Example/>}
         </div>
       </>
     );

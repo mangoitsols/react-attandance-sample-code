@@ -112,6 +112,7 @@ const DashBoard1 = () => {
   );
 
   const AbsConcatNull = filterDataAbs.concat(filterDataNull);
+  console.log(AbsConcatNull,"absent",filterDataAbs,"nulldata",filterDataNull,filterr)
 
   const filterDataPre =
     filterr &&

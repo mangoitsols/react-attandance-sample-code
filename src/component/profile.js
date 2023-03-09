@@ -28,7 +28,6 @@ import SimpleReactValidator from "simple-react-validator";
 import { Link } from "react-router-dom";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 
 toast.configure();
 
@@ -268,7 +267,7 @@ class Profile extends Component {
               <React.Fragment>
                     <div className='heading'>
                         <h1>
-                            <span className='counsellor-logo'><AssignmentIndIcon/>  </span>
+                          
                              My Profile
                         </h1>
                     </div>

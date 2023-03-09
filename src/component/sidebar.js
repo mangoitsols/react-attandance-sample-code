@@ -28,9 +28,25 @@ class Sidebar extends Component {
     this.state = {
       data:'',
       loading:false,
+      getCountryValue:[]
     }
   }
 
+ getCountry = async() => {
+  this.setState({loading:true});
+    await axios
+    .get(`${API.getAllCountry}`, { headers: authHeader() })
+    .then((data) => {
+      this.setState({loading:false});
+      this.setState({getCountryValue:data.data.country});
+      this.handleGetSchoolInfo()
+    }).catch((err) => {
+      this.setState({loading:false});
+      if (err.response.status === 401) {
+        handleLogout()
+      }
+    })
+};
   
   handleGetSchoolInfo = async() =>{
 
@@ -42,24 +58,28 @@ class Sidebar extends Component {
     .then((res) => {
       this.setState({loading:false});
       this.setState({data:res.data});
+      const countryname =  this.state.getCountryValue.filter((value) => value._id === res.data.country)
+      localStorage.setItem("schoolLocation", countryname[0]?.name);
+
     })
     .catch((err) => {
       if (err.response.status === 401) {
         handleLogout()
       }
+      localStorage.setItem("schoolLocation",'');
       this.setState({data:''});
       this.setState({loading:false});
     });
   }
   
   componentDidMount() {
-    this.handleGetSchoolInfo()
+    this.getCountry()
   }
   
   render() {
     const {data} = this.state
     const localData = localStorage.getItem('logoImage')
-  
+
     return (
       <React.Fragment>
         
@@ -73,7 +93,7 @@ class Sidebar extends Component {
                 href="#"
                 className="d-flex align-items-center mb-2 link-dark text-decoration-none logo"
               >
-                {localData ? <img src={BASE_URL+'/'+localData} className="" alt="local_logo" width={'270px'} height={'80px'}/> : !data.logo ? <img src={logo} className="" alt="db_logo" width={'270px'} height={'80px'}/> :  <img src={BASE_URL+'/'+data.logo} className="" alt="db_logo" width={'270px'} height={'80px'}/> }
+                {localData ? <img src={BASE_URL+'/'+localData} className="" alt="local_logo" width={'200px'} height={'80px'}/> : !data.logo ? <img src={logo} className="" alt="db_logo" width={'200px'} height={'80px'}/> :  <img src={BASE_URL+'/'+data.logo} className="" alt="db_logo" width={'200px'} height={'80px'}/> }
               </a>
 
               <ul className="nav nav-pills flex-column mb-auto">

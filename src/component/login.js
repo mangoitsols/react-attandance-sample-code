@@ -116,25 +116,7 @@ class Login extends Component {
         }
       });
   }
-
-  handleGetSchoolInfo = async() =>{
-
-    const Manager_ID = localStorage.getItem("id");
-    await axios
-      .get(`${API.getSchoolInfo}/${Manager_ID}`, { headers: authHeader() })
-      .then((res) => {
-        localStorage.setItem("schoolLocation", res.data.country);
-        localStorage.setItem("logoImage", res.data.logo);
-      })
-      .catch((err) => {
-        if (err.response.status === 401) {
-          handleLogout()
-        }
-        localStorage.setItem("logoImage", '');
-        localStorage.setItem("schoolLocation",'');
-      });
-  }
-
+  
   handleSubmit = (e) => {
     e.preventDefault();
 
@@ -164,7 +146,7 @@ class Login extends Component {
         this.he();
         this.getCurrentLocation();
         if(res.data.role === 'manager'){
-        this.handleGetSchoolInfo();
+        // this.handleGetSchoolInfo();
         }      
         this.handleAddLoginStatus(res.data._id)
 

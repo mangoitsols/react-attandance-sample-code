@@ -1148,7 +1148,7 @@ const Chat = () => {
                               
                             />
                           <Typography id="modal-modal-title" component="h6" sx={{mb:3,fontWeight: 'bold',fontSize:' 20px'}}>
-                            Group Members
+                          {chatId ? chatId.chatName.charAt(0).toUpperCase() + chatId.chatName.slice(1) : ""} ({chatId?.users?.length} participants)
                           </Typography>
                           </Box>
                           <Box>
