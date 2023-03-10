@@ -166,8 +166,6 @@ class AddCounsellor extends Component {
       return fil.classId._id === classSelect;
     });
 
-    console.log(DuplicateClassFinder,"DuplicateClassFinder")
-
     const GettingClassName = getclasses.find((filClassName) => {
       return filClassName._id === classSelect;
     });
@@ -214,9 +212,9 @@ class AddCounsellor extends Component {
               name: "",
               classSelect: "",
             });
-            // setTimeout(() => {
-            //   window.location.replace("/counsellor");
-            // }, 500);
+            setTimeout(() => {
+              window.location.replace("/counsellor");
+            }, 500);
             this.setState({ loading: false });
           } else {
             this.setState({ loading: false });

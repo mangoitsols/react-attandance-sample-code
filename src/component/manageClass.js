@@ -306,6 +306,7 @@ toast.configure();
                                        const counDetail = counsellorDetail.filter((ccitem) => {return ccitem.classId._id === item._id})
                                     const classnamee = item.className?.slice(6)
                                         return (
+                                            classnamee !== 'unassigned' ?
                                             <TableRow key={item && item._id}>
                                                 
                                                  <TableCell  > {" "}{classnamee?.charAt(0).toUpperCase() + classnamee.slice(1)}</TableCell>
@@ -362,7 +363,7 @@ toast.configure();
                                         }
             
                                             </TableRow>
-                                        )
+                                     :'')
                                     }):  <Typography> Record Not found </Typography>}
                                     {emptyRows > 0 && (
                                         <TableRow
@@ -379,7 +380,7 @@ toast.configure();
                         <TablePagination
                             rowsPerPageOptions={[5, 10, 15]}
                             component="div"
-                            count={classDetail.length}
+                            count={classDetail.length-1}
                             rowsPerPage={rowsPerPage}
                             page={page}
                             rows={classDetail}

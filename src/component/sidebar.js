@@ -114,6 +114,18 @@ class Sidebar extends Component {
                   </Link>
                 </li>
                 <li>
+                  <Link
+                    to="/school"
+                    className="nav-link link-dark"
+                  >
+                    <span className="icon">
+                      <MapsHomeWorkIcon/>
+                     
+                    </span>
+                    School Info
+                  </Link>
+                </li>
+                <li>
                   <Link to="/student" className="nav-link link-dark">
                     <span className="icon">
                       {" "}
@@ -129,6 +141,17 @@ class Sidebar extends Component {
                       <img src={counsellor} className="" alt="logo" />{" "}
                     </span>
                     Counsellor
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/class"
+                    className="nav-link link-dark"
+                  >
+                    <span className="icon">
+                      <img src={manageclass} className="" alt="mangeclass" />
+                    </span>
+                    Manage Classes
                   </Link>
                 </li>
                 <li>
@@ -156,29 +179,8 @@ class Sidebar extends Component {
                     Chat
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    to="/class"
-                    className="nav-link link-dark"
-                  >
-                    <span className="icon">
-                      <img src={manageclass} className="" alt="mangeclass" />
-                    </span>
-                    Manage Classes
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/school"
-                    className="nav-link link-dark"
-                  >
-                    <span className="icon">
-                      <MapsHomeWorkIcon/>
-                     
-                    </span>
-                    School Info
-                  </Link>
-                </li>
+               
+               
               </ul>
             </div>
           </div>

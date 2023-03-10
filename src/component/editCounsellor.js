@@ -179,7 +179,7 @@ const EditCounsellor = () => {
       return filClassName._id === classSelect;
     });
 
-    if (!equalsCheck(findClassId, manageCouncellor)) {
+    if (!equalsCheck(findClassId, manageCouncellor) && findClassId[0].classId.className !== 'class unassigned') {
       toast.error(
         `Another counsellor was assigned to the ${GettingClassName.className?.slice(6)}`
       );

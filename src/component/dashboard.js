@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useRef,useEffect } from "react";
 import ImageAvatars, { handleLogout } from "./header";
 import {
   Container,
@@ -40,8 +40,85 @@ const DashBoard1 = () => {
   const [filterr, setFilter] = React.useState([]);
   const [classNameOnChange, setclassNameOnChange] = React.useState("");
   const [classNameIdOnChange, setclassNameIdOnChange] = React.useState("");
+  const [timer, setTimer] = useState(0);
+  const [start, setStart] = useState(false);
+  const firstStart = useRef(true);
 
-  var socket;
+  const tick = useRef();
+
+  // timer useeffect start
+
+  useEffect(() => {
+    if (firstStart.current) {
+      firstStart.current = !firstStart.current;
+      return;
+    }
+    if (start) {
+      tick.current = setInterval(() => {
+        setTimer((timer) => timer + 1);
+      }, 1000);
+    } else {
+      clearInterval(tick.current);
+    }
+
+    return () => clearInterval(tick.current);
+  }, [start]);
+
+  const dispSecondsAsMins = (seconds) => {
+    let divisor_for_minutes = seconds % (60 * 60);
+    const mins = Math.floor(divisor_for_minutes / 60);
+
+    let divisor_for_seconds = divisor_for_minutes % 60;
+    const seconds_ = Math.ceil(divisor_for_seconds);
+
+    return (
+      (mins === 0
+        ? "00"
+        : mins === 1
+        ? "01"
+        : mins === 2
+        ? "02"
+        : mins === 3
+        ? "03"
+        : mins === 4
+        ? "04"
+        : mins === 5
+        ? "05"
+        : mins === 6
+        ? "06"
+        : mins === 7
+        ? "07"
+        : mins === 8
+        ? "08"
+        : mins === 9
+        ? "09"
+        : mins.toString()) +
+      ":" +
+      (seconds_ === 0
+        ? "00"
+        : seconds_ === 1
+        ? "01"
+        : seconds_ === 2
+        ? "02"
+        : seconds_ === 3
+        ? "03"
+        : seconds_ === 4
+        ? "04"
+        : seconds_ === 5
+        ? "05"
+        : seconds_ === 6
+        ? "06"
+        : seconds_ === 7
+        ? "07"
+        : seconds_ === 8
+        ? "08"
+        : seconds_ === 9
+        ? "09"
+        : seconds_.toString())
+    );
+  };
+
+  //timer useeffect end
 
   React.useEffect(() => {
     GetStudentData();
@@ -55,6 +132,11 @@ const DashBoard1 = () => {
         setLoading(false);
         setStudentDetail(response.data);
         setFilter(response.data.data);
+        response.data.data.filter((student) => {
+          if(student.attaindence.out_of_class !== 'no'){
+            setStart(true)
+          }
+        });
       })
       .catch((err) => {
         if (err.response.status === 401) {
@@ -329,26 +411,11 @@ const DashBoard1 = () => {
                   ) : (
                     filteroutofClass.length &&
                     filteroutofClass.map((item) => {
-                      const inTime = moment(
-                        item.attaindence.inclassDateTime
-                      ).format("DD/MM/YYYY HH:mm:ss");
-                      const outTime = moment(
-                        item.attaindence.outclassDateTime
-                      ).format("DD/MM/YYYY HH:mm:ss");
-                      var timee,
-                        timeetimer = false;
-                      if (inTime.toString() > outTime.toString()) {
-                        timee = moment
-                          .utc(
-                            moment(inTime, "DD/MM/YYYY HH:mm:ss").diff(
-                              moment(outTime, "DD/MM/YYYY HH:mm:ss")
-                            )
-                          )
-                          .format("mm:ss");
-                        timeetimer = false;
-                      } else {
-                        timeetimer = true;
-                      }
+
+                      const startDate = new Date(item?.attaindence?.outclassDateTime);
+                      // Do your operations
+                      const endDate   = new Date();
+                      const seconds = (endDate.getTime() - startDate.getTime()) / 1000; 
 
                       return (
                         <Stack direction="row" spacing={2} key={item._id}>
@@ -361,12 +428,8 @@ const DashBoard1 = () => {
                               <strong>{item.name}</strong>
                               <small>{item.attaindence.out_of_class}</small>
                             </span>
-                            <span className="timer">
-                              {item.attaindence.outclassDateTime &&
-                              item.attaindence.inclassDateTime &&
-                              !timeetimer
-                                ? timee + "min"
-                                : "00:00 min"}{" "}
+                            <span className="timer">                         
+                                {dispSecondsAsMins(seconds) + "min"}
                             </span>
                           </div>
                         </Stack>

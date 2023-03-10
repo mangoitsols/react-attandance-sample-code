@@ -150,28 +150,19 @@ const CounsellorDashboard = (props) => {
   const [loading1, setLoading1] = React.useState(false);
   const [loading2, setLoading2] = React.useState(false);
   const [timer, setTimer] = useState(0);
-  const [start, setStart] = useState(
-    localStorage?.getItem("selectTimerIdArray")
-      ? true
-      : false
-  );
+  const [start, setStart] = useState(JSON.parse(localStorage.getItem("selectTimerIdArray"))?.length > 0  ? true : false);
   const firstStart = useRef(true);
-  const [checkToggleStartOrStop, setCheckToggleStartOrStop] = useState(false);
   const [toggleRowId, setToggleRowId] = useState("");
   const [selectTimerId, setSelectedTimerId] = useState("");
-  const [selectTimerIdArray, setSelectedTimerIdArray] = useState(
-    localStorage.getItem("selectTimerIdArray")
-      ? JSON.parse(localStorage.getItem("selectTimerIdArray"))
-      : []
-  );
+  var selectTimerIdArray = (localStorage.getItem("selectTimerIdArray")
+  ? JSON.parse(localStorage.getItem("selectTimerIdArray"))
+  : [])
 
   const tick = useRef();
 
   useEffect(() => {
     GetCounsellorData();
 
-    if (JSON.parse(localStorage.getItem("selectTimerIdArray"))?.length > 0) {
-    }
   }, []);
 
   // timer useeffect start
@@ -204,9 +195,11 @@ const CounsellorDashboard = (props) => {
       .get(`${API.getCounsellorStudent}/${id}`, { headers: authHeader() })
       .then((response) => {
         const filteredPersons = response.data.data.filter((person) => {
+          if(person.attaindence.out_of_class !== 'no'){
+            setStart(true)
+          }
           return person.name.toLowerCase().includes(dataa.toLowerCase());
         });
-
         setLoading(false);
         setCounsellorDetail({ ...response.data, data: filteredPersons });
         setClassName(response.data.data[0]);
@@ -389,6 +382,14 @@ const CounsellorDashboard = (props) => {
   const today = moment().format();
   const handleOnChangeSelect = async (e, row) => {
 
+var seconds;
+
+  var startDate = new Date(row?.attaindence?.outclassDateTime);
+  // Do your operations
+  var endDate   = new Date();
+  seconds = (endDate.getTime() - startDate.getTime()) / 1000; 
+  // }
+  
     if (row.attaindence === null) {
       toast.warning("First you have to mark attandance");
     } else if (row.attaindence && row.attaindence.attendence === "0") {
@@ -414,12 +415,13 @@ const CounsellorDashboard = (props) => {
         }
       });
       if (res) {
+        const secondGet = seconds && row?.attaindence?.out_of_class === e.target.value ? seconds : 0
         if (e.target.value !== "no") {
-          toggleStart(row._id,0);
-          setCheckToggleStartOrStop(true);
+          toggleStart(row._id,secondGet);
         } else {
           toggleStop(row._id);
-          setCheckToggleStartOrStop(false);
+          toggleStart(row._id,secondGet);
+
         }
         setSelectCheck([...selectCheck, row._id]);
         GetCounsellorData();
@@ -532,21 +534,6 @@ const CounsellorDashboard = (props) => {
         : seconds_.toString())
     );
   };
-
-  const  hmsToSecondsOnly = (id,str) => {
-    var p = str?.split(":"),
-      s = 0,
-      m = 1;
-
-    while (p?.length > 0) {
-      s += m * parseInt(p?.pop(), 10);
-      m *= 60;
-    }
-
-    // toggleStart(id,s)
-    return dispSecondsAsMins(s);
-    // return s;
-  }
 
   const handleChangeToggleChecked = (event, row) => {
     setToggleRowId(row._id);
@@ -700,6 +687,13 @@ const CounsellorDashboard = (props) => {
                               (ele) => ele._id === row._id
                             );
 
+                            const startDate = new Date(row?.attaindence?.outclassDateTime);
+                            // Do your operations
+                            const endDate   = new Date();
+                            var seconds = (endDate.getTime() - startDate.getTime()) / 1000; 
+                            const secondGet = seconds ? seconds : 0
+
+
                             return (
                               <React.Fragment key={row._id}>
                                 <Modal
@@ -849,12 +843,16 @@ const CounsellorDashboard = (props) => {
                                       className="filter ml-0 mb-3 w-100 select-box"
                                     >
                                       <NativeSelect
+                                          onClick={(e) => 
+                                            e.target.value = null
+                                          }
                                         onChange={(e) =>
                                           handleOnChangeSelect(e, row)
                                         }
                                         value={
                                           row &&
                                           row.attaindence &&
+                                          row.dismiss ? 'no'  :
                                           row.attaindence.out_of_class
                                             ? row.attaindence.out_of_class
                                             : "no"
@@ -872,8 +870,7 @@ const CounsellorDashboard = (props) => {
                                         }
                                         inputProps={{
                                           name: "no",
-                                          id: "uncontrolled-native",
-                                        }}
+                                          id: "",                                        }}
                                       >
                                         <option value="no">No</option>
                                         <option value="in Rest Room">
@@ -884,9 +881,9 @@ const CounsellorDashboard = (props) => {
                                         </option>
                                         <option value="in Camp">In camp</option>
                                       </NativeSelect>
-                                      {row &&
-                                      row.attaindence &&
-                                      row.attaindence.out_of_class &&
+                                      {row && row.dismiss ? '' :
+                                      row.attaindence && 
+                                      row.attaindence.out_of_class && 
                                       row.attaindence.attendence === "1" ? (
                                         handleNoStatus.attaindence &&
                                         handleNoStatus.attaindence
@@ -901,13 +898,8 @@ const CounsellorDashboard = (props) => {
                                             >
                                               {selectTimerIdArray.includes(
                                                 row._id
-                                              )
-                                                ? hmsToSecondsOnly(row._id,
-                                                    localStorage.getItem(
-                                                      row._id
-                                                    )
-                                                  )
-                                                : dispSecondsAsMins(timer)}
+                                              )?dispSecondsAsMins(secondGet) :
+                                                dispSecondsAsMins(secondGet)}
                                             </span>
                                           ) : (
                                             ""

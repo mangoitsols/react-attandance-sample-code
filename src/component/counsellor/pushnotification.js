@@ -1,4 +1,4 @@
-import { io } from "socket.io-client";
+import  io  from "socket.io-client";
 import React, { useEffect, useRef, useState } from 'react';
 import {Box,FormControl,styled,Grid, Container,Modal,Button,FormControlLabel,Table,TableBody,TableCell,TableContainer,TableHead,TablePagination,TableRow,TableSortLabel,Typography,Paper,Switch, NativeSelect, Avatar} from '@mui/material';
 import alert1 from '../../images/white-alert.svg';
@@ -11,8 +11,21 @@ import { authHeader } from "../../comman/authToken";
 import { handleLogout } from "../header";
 
 const PushNotification = () => {
+
+  const [socketConnecttion, setSocketConnected] = useState(false);
+
+  var socket;
+
+  useEffect(() => {
+    socket = io.connect(SOCKET_URL);
+    socket.on("connected", () => setSocketConnected(true));
+ 
+    return () => {
+      socket.disconnect();
+    };
+  }, [socket]);
   
-    const socket = useRef(io(SOCKET_URL), { transports: ['websocket'] });
+    // const socket = useRef(io(SOCKET_URL), { transports: ['websocket'] });
     const [red, setRed] = useState(false);
     const [yellow, setYellow] = useState(false);
     const [dismiss, setDismiss] = useState(false);
@@ -23,20 +36,20 @@ const PushNotification = () => {
 
     useEffect(() =>
    {
-    socket.current.on("noty", () => {
+    socket.on("noty", () => {
       setRed(true);
     });
-    socket.current.on("yellownoty", () => {
+    socket.on("yellownoty", () => {
       setYellow(true);
     });
-    socket.current.on("blacknoty", () => {
+    socket.on("blacknoty", () => {
       setBlack(true);
     });
-    socket.current.on("dismissNotication", (res) => {
+    socket.on("dismissNotication", (res) => {
       setData(res);
       setDismiss(true);
     });
-    socket.current.on("dismissAllNotication", (ress) => {
+    socket.on("dismissAllNotication", (ress) => {
       
        axios.get(`${API.getStudent}`, { headers: authHeader() }).then((res)=>{
         for(var i=0;i < (ress.selectedRow.length);i++){ 
@@ -54,7 +67,7 @@ const PushNotification = () => {
       });
     });
     
-  }, []);
+  }, [socket]);
 
   const handleRed = () => {
     setRed(false);

@@ -47,7 +47,7 @@ export default function AttandanceReport(props) {
 	const [attandanceData, setattandanceData] = useState([]);
 	const [classData, setClassData] = useState([]);
 	const [onSelectData, setOnSelectData] = useState("");
-	const [monthData, setMonthData] = useState(false);
+	const [monthData, setMonthData] = useState('week');
 	const [counsellorName, setCounsellorName] = useState("");
 	const [currentMonth, setCurrentMonth] = useState(new Date());
 	const [currentMonthNew, setCurrentMonthNew] = useState(new Date());
@@ -66,7 +66,65 @@ export default function AttandanceReport(props) {
 
 	let finalId = id ? id : classNameId;
 
-	// Week Data render 
+	// Today Data render start
+	const renderCellsToday = () => {
+
+		const todayDate = moment().format('DD/MM/YYYY')
+		console.log(todayDate)
+		return(
+			<div id="weekpdf" className="counselloTabel" style={{ width: "100%" }}>
+				<TableContainer>
+					<Table >
+						<TableHead>
+							<TableRow>
+								<TableCell style={{ textAlign: "center" }}>
+									Student Name
+								</TableCell>
+								<TableCell style={{ textAlign: "center" }}>
+									Attendence
+								</TableCell>
+								<TableCell style={{ textAlign: "center" }}>
+									Action
+								</TableCell>
+							</TableRow>
+						</TableHead>
+						<TableBody>
+							{attandanceData && attandanceData.length > 0 ? attandanceData.map((item) => {
+								
+								return (
+									<TableRow >
+										<TableCell style={{ textAlign: "center" }}>
+										{item.studentId && item.studentId.name}{" "}{item.studentId && item.studentId.lastName}
+										</TableCell>
+
+										{item.attandan.map((attn)=> { 
+										const dateCreated = moment(attn.createdAt).format('DD/MM/YYYY')
+										return(
+											todayDate === dateCreated ? 
+										<TableCell style={{ textAlign: "center" }}>
+										{item.studentId.dismiss !== null ? "D" : attn.attendence === null || attn.attendence === "0" ? "A" : attn.attendence === "1" ? "P" : null }
+										</TableCell>:null	
+
+										)})}
+
+										<TableCell style={{ textAlign: "center" }}>
+										dismiss
+										</TableCell>
+									</TableRow>
+								)}
+							):<TableRow colspan={3} style={{ textAlign: "center" }} >Record not founiid</TableRow>}
+						</TableBody>
+					</Table>
+				</TableContainer>
+
+			</div>
+
+		)
+	}
+
+	// Today data render end
+
+	// Week Data render start
 	function getFirstDayOfWeek(d) {
 		const date = new Date(d);
 		const day = date.getDay(); // 👉️ get day of week
@@ -185,8 +243,9 @@ export default function AttandanceReport(props) {
 
 			</div>
 		)};
+	//week data render end
 
-	//Month data render
+	//Month data render start
 	function daysInMonth(iMonth, iYear) {
 		return new Date(iYear, iMonth, 0).getDate();
 	}
@@ -303,6 +362,8 @@ export default function AttandanceReport(props) {
 			</div>
 		)};
 
+	//month data render end
+
 	const GetClassData = async () => {
 		await axios.get(`${API.getClass}`).then((response)=>{
 			if (response.status === 200) {
@@ -364,6 +425,28 @@ export default function AttandanceReport(props) {
 				  }
 				toast.error("Failed to fetch month of data")
 			 });
+		}else if(byWhich === "today"){
+
+			const requestData = {
+				fromDate: moment().format(),
+				toDate:	moment().format(),
+				searchName:data
+			}
+			await axios({
+				method: "post",
+				url: `${API.previousAttendanceReport}/${idd}`,
+				data: requestData,
+				headers: authHeader(),
+			  }).then((res)=> {
+				setLoading(false);
+				setattandanceData(res.data);
+			}).catch((err) => {
+				if (err.response.status === 401) {
+					handleLogout()
+				  }
+				toast.error("Failed to fetch week of data")
+			 });
+
 		}
 	};
 
@@ -378,11 +461,12 @@ export default function AttandanceReport(props) {
 
 	const handleDataAccWeekAndMonth = (data) => {
 		if (data === "month") {
-			setMonthData(true);
-
-		} else {
-			setMonthData(false);
-			window.location.reload();
+			setMonthData('month');
+		} else if(data === 'today'){
+			setMonthData('today');
+		}else if(data === 'week'){
+			setMonthData('week');
+			// window.location.reload();
 		}
 		handleAttandanceReport(onSelectData ? onSelectData : id, data);
 	};
@@ -526,7 +610,7 @@ export default function AttandanceReport(props) {
 								</div>
 								<div>
 								<div>
-									<span onClick={() => handleDataAccWeekAndMonth("week")}> Week{" "}  </span> | <span onClick={() => handleDataAccWeekAndMonth("month")}>{" "} Month </span>
+								<span onClick={() => handleDataAccWeekAndMonth("week")}> Week{" "}  </span> | <span onClick={() => handleDataAccWeekAndMonth("month")}>{" "} Month </span> | <span onClick={() => handleDataAccWeekAndMonth("today")}> Today{" "}  </span>
 								</div>
 								<SearchBar
 									value={search}
@@ -537,11 +621,13 @@ export default function AttandanceReport(props) {
 							</div>
 							<div >
 							</div>
-							{monthData ? (
+							{monthData === 'month'? (
 								<div>{renderCellsMonth()} </div>
-							) : (
+							) : monthData === 'week' ?(
 								<div>{renderCellsWeek()}</div>
-							)}
+							) : monthData === 'today' ? (
+								<div>{renderCellsToday()}</div>
+							): null}
 						</Container>
 					</div>
 				) : (

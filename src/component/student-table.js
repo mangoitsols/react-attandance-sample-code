@@ -783,6 +783,7 @@ export default function EnhancedTable(props) {
   };
 
   const handleStuDismiss = (row) => {
+    console.log(row,"$$$$$$$$$$44")
     setDismissId(row._id);
     var date = new Date();
     var hours = date.getHours() > 12 ? date.getHours() - 12 : date.getHours();
