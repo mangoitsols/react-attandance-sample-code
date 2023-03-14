@@ -201,7 +201,7 @@ class AddStudent extends Component {
             required: "<p style='color:red'>Street address is required</P>",
           },
           zipcode: {
-            required: "<p style='color:red'>zipcode is required</P>",
+            required: "<p style='color:red'>Zipcode is required</P>",
 			minlength:
               "<p style='color:red'>zipcode must consist of at least 5 characters</p>",
 			maxlength:
@@ -271,7 +271,8 @@ class AddStudent extends Component {
     this.setState({getClassloading:true})
     this.props.getClass((res) => {
       this.setState({getClassloading:false})
-      this.setState({ getclasses: res.data.data });
+      const filterData = res.data.data.filter((fil) => fil.className !== 'class unassigned')
+      this.setState({ getclasses: filterData });
     });
   };
 
@@ -590,7 +591,7 @@ class AddStudent extends Component {
             {" "}
             <ImageAvatars />
           </div>
-          {!getClassloading ? <>
+         
           <Modal
             aria-labelledby="transition-modal-title"
             aria-describedby="transition-modal-description"
@@ -721,6 +722,7 @@ class AddStudent extends Component {
               <h1>Add Student</h1>
             </div>
             <form id="myform" onSubmit={this.handleSubmit}>
+           {getClassloading ? <Example/>:<>
               <div className="row">
                 <div className="form-outline mb-4 col-md-6">
                   <label htmlFor="name">First Name</label>
@@ -914,9 +916,11 @@ class AddStudent extends Component {
                           
                           <option value="">select</option>
                           {getclasses.map((item) => {
+                             const renameClassName = item.className?.slice(6);
+                             const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
                             return (
                               <option key={item._id} value={item._id}>
-                                {item.className?.slice(6)}
+                                {capitalFirstLetterClassName}
                               </option>
                           )})}
                          
@@ -1135,9 +1139,9 @@ class AddStudent extends Component {
                   </button>
                 )}
               </div>
+              </>}
             </form>
           </Container>
-          </>:<Example/>}
         </div>
       </>
     );

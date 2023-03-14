@@ -3,7 +3,7 @@ import Sidebar from "./sidebar";
 import ImageAvatars, { handleLogout } from "./header";
 import Container from "@mui/material/Container";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import { API } from "../config/config";
+import { API, SOCKET_URL } from "../config/config";
 import { Link, useParams ,useNavigate} from "react-router-dom";
 import Loader from "../comman/loader";
 import { toast } from "react-toastify";
@@ -18,6 +18,7 @@ import {
 	TableHead,
 	TableBody,
 	Table,
+	Tooltip,
 } from "@mui/material";
 import moment from "moment";
 import { authHeader } from "../comman/authToken";
@@ -39,16 +40,21 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import SearchBar from "material-ui-search-bar";
 import html2pdf from "html2pdf-jspdf2";
+import Example1 from "../comman/loader1";
+import  io  from "socket.io-client";
 toast.configure();
 
 export default function AttandanceReport(props) {
 
+	const [loadingDismiss, setLoadingDismiss] = useState(false);
+	const [loadingAttendance, setLoadingAttendance] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [attandanceData, setattandanceData] = useState([]);
 	const [classData, setClassData] = useState([]);
 	const [onSelectData, setOnSelectData] = useState("");
-	const [monthData, setMonthData] = useState('week');
+	const [monthData, setMonthData] = useState('today');
 	const [counsellorName, setCounsellorName] = useState("");
+	const [calenderDate, setCalenderDate] = useState(new Date());
 	const [currentMonth, setCurrentMonth] = useState(new Date());
 	const [currentMonthNew, setCurrentMonthNew] = useState(new Date());
 	const [startDate, setStartDate] = useState(getFirstDayOfWeek(new Date()));
@@ -57,7 +63,7 @@ export default function AttandanceReport(props) {
 	let classNameId = localStorage.getItem("className");
 
 	useEffect(() => {
-		handleAttandanceReport(finalId, "week");
+		handleAttandanceReport(finalId, "week",'','','',calenderDate);
 		GetClassData();
 		handleCounsellorNameByClassId(finalId);
 	}, []);
@@ -67,10 +73,53 @@ export default function AttandanceReport(props) {
 	let finalId = id ? id : classNameId;
 
 	// Today Data render start
-	const renderCellsToday = () => {
 
-		const todayDate = moment().format('DD/MM/YYYY')
-		console.log(todayDate)
+	const handleStuDismiss = async(row) => {
+
+		var socket = io.connect(SOCKET_URL);
+		socket.on("connected", () => {});
+
+		var date = new Date();
+		var hours = date.getHours() > 12 ? date.getHours() - 12 : date.getHours();
+		var am_pm = date.getHours() >= 12 ? "PM" : "AM";
+		hours = hours < 10 ? "0" + hours : hours;
+		var minutes =
+		  date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
+		var seconds =
+		  date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+		var time = hours + ":" + minutes + ":" + seconds + " " + am_pm;
+	
+		if (row && row.dismiss) {
+			toast.error(`${row && row.name} ${row && row.lastName} is already dismissed`);
+		} else {
+		  const reqData = {
+			id: [row._id],
+			time: new Date(),
+		  };
+		  setLoadingDismiss(true);
+		  await axios({
+			method: "post",
+			url: `${API.studentDismiss}`,
+			data: reqData,
+			headers: authHeader(),
+		  }).then((request) => {
+			socket.emit("sendNotificationDismiss", {row});
+			setLoadingDismiss(false);
+			toast.success(`Student Dismissed`);
+			handleAttandanceReport(row.assignClass,'today','','','',calenderDate);
+			}).catch((err) => {
+			  if (err?.response?.status === 401) {
+				handleLogout();
+			  }
+			  setLoadingDismiss(false);
+			  toast.error(`${row && row.name} ${row && row.lastName} Dismissed Failed`);
+			});
+		}
+	  };
+
+	const renderCellsToday = () => {
+		
+		const todayDate = moment(calenderDate).format('DD/MM/YYYY')
 		return(
 			<div id="weekpdf" className="counselloTabel" style={{ width: "100%" }}>
 				<TableContainer>
@@ -89,30 +138,42 @@ export default function AttandanceReport(props) {
 							</TableRow>
 						</TableHead>
 						<TableBody>
-							{attandanceData && attandanceData.length > 0 ? attandanceData.map((item) => {
+							{!loadingAttendance ? attandanceData && attandanceData.length > 0 ? attandanceData.map((item) => {
+				
 								
 								return (
+									
 									<TableRow >
+										
+
 										<TableCell style={{ textAlign: "center" }}>
 										{item.studentId && item.studentId.name}{" "}{item.studentId && item.studentId.lastName}
 										</TableCell>
-
-										{item.attandan.map((attn)=> { 
+										{item.attandan.length > 0 ? item.attandan?.map((attn)=> { 
 										const dateCreated = moment(attn.createdAt).format('DD/MM/YYYY')
 										return(
-											todayDate === dateCreated ? 
+											<>
+											{todayDate === dateCreated ? 
 										<TableCell style={{ textAlign: "center" }}>
-										{item.studentId.dismiss !== null ? "D" : attn.attendence === null || attn.attendence === "0" ? "A" : attn.attendence === "1" ? "P" : null }
-										</TableCell>:null	
-
-										)})}
-
-										<TableCell style={{ textAlign: "center" }}>
-										dismiss
+										{ moment(item.studentId.dismiss).format('DD/MM/YYYY') === dateCreated && item.studentId.dismiss !== null ? "D" : attn.attendence === null || attn.attendence === "0" ? "A" : attn.attendence === "1" ? "P" : '-' }
 										</TableCell>
+										
+										:search !== ''?<TableCell style={{ textAlign: "center" }}>-</TableCell>:null}
+
+										</> 
+										)}):<TableCell style={{ textAlign: "center" }}>- </TableCell>}
+
+										 {item.attandan.length > 0 ? item.attandan.map((attn)=> { 
+										const dateCreated = moment(attn.createdAt).format('DD/MM/YYYY')
+											 return ( 
+												todayDate === dateCreated ? 
+												attn &&  attn.attendence &&  (attn.attendence !== null || attn.attendence !== "0") ? 
+												<TableCell style={{ textAlign: "center" }}>	<span onClick={() => handleStuDismiss(item.studentId)}  > <img  src={require("./images/dismiss.png")}  alt="dismiss icon"/> </span></TableCell>
+											   :<TableCell style={{ textAlign: "center" }}> </TableCell>:null
+									  	 )}): <TableCell style={{ textAlign: "center" }}> </TableCell>} 
 									</TableRow>
 								)}
-							):<TableRow colspan={3} style={{ textAlign: "center" }} >Record not founiid</TableRow>}
+							):<TableRow><TableCell colspan={3} style={{ textAlign: "center" }}>Record not found</TableCell></TableRow>:<Example1/>}
 						</TableBody>
 					</Table>
 				</TableContainer>
@@ -140,7 +201,7 @@ export default function AttandanceReport(props) {
 			let sd = subDays(startDate, 7);
 			let ld = addDays(sd, 6);
 			setCurrentMonth(subWeeks(currentMonth, 1));
-			handleAttandanceReport(onSelectData? onSelectData: id, "week",sd,ld);
+			handleAttandanceReport(onSelectData? onSelectData: id, "week",sd,ld,'',calenderDate);
 		}
 		if (btnType === "next") {
 			setStartDate((date) => {
@@ -149,7 +210,7 @@ export default function AttandanceReport(props) {
 			let sd = addDays(startDate, 7);
 			let ld = addDays(sd, 6);
 			setCurrentMonth(addWeeks(currentMonth, 1));
-			handleAttandanceReport(onSelectData? onSelectData: id, "week",sd,ld);
+			handleAttandanceReport(onSelectData? onSelectData: id, "week",sd,ld,'',calenderDate);
 		}
 	};
 	const ExampleCustomInput = ({ value, onClick }) => {
@@ -206,8 +267,9 @@ export default function AttandanceReport(props) {
 							</TableRow>
 						</TableHead>
 						<TableBody>
-							{attandanceData && attandanceData.length > 0 ? attandanceData.map((item) => {
+							{!loadingAttendance ? attandanceData && attandanceData.length > 0 ? attandanceData.map((item) => {
 								return (
+									
 									<TableRow >
 										<TableCell style={{ textAlign: "center" }}>
 										{item.studentId && item.studentId.name}{" "}{item.studentId && item.studentId.lastName}
@@ -223,7 +285,7 @@ export default function AttandanceReport(props) {
 													(
 														item.attandan.map((e) => {
 															if(moment(e.createdAt).format("YYYY-MM-DD") === moment(week.key).format("YYYY-MM-DD")){
-																return item.studentId.dismiss !== null ? "D" : e.attendence === null || e.attendence === "0" ? "A" : e.attendence === "1" ? "P" : "";
+																return moment(item.studentId.dismiss).format('YYYY-MM-DD') === moment(e.createdAt).format("YYYY-MM-DD") && item.studentId.dismiss !== null ? "D" : e.attendence === null || e.attendence === "0" ? "A" : e.attendence === "1" ? "P" : "";
 															}
 															// else{
 															// 	return "no"; 
@@ -236,7 +298,7 @@ export default function AttandanceReport(props) {
 											)})}
 									</TableRow>
 								)}
-							):<TableRow style={{ textAlign: "center" }} >Record not found</TableRow>}
+							):<TableRow ><TableCell colspan={8} style={{ textAlign: "center" }}>Record not found</TableCell></TableRow>:<Example1/>}
 						</TableBody>
 					</Table>
 				</TableContainer>
@@ -277,7 +339,7 @@ export default function AttandanceReport(props) {
 			});
 			let sd = subDays(startDateOfMonth, daysCount);
 			let ld = addDays(sd, daysCount);
-			handleAttandanceReport(onSelectData? onSelectData: id, "month",sd,ld);
+			handleAttandanceReport(onSelectData? onSelectData: id, "month",sd,ld,'',calenderDate);
 		} else if (btnType === "next") {
 			setCurrentMonthNew(addMonths(currentMonthNew, 1));
 			daysCount = daysInMonth(
@@ -290,7 +352,7 @@ export default function AttandanceReport(props) {
 			let sd = addDays(startDateOfMonth, daysCount);
 			let ld = addDays(sd, daysCount-1);
 
-			handleAttandanceReport(onSelectData? onSelectData: id, "month",sd,ld);
+			handleAttandanceReport(onSelectData? onSelectData: id, "month",sd,ld,'',calenderDate);
 		} else if (btnType === undefined) {
 			daysCount = daysInMonth(
 				format(currentMonthNew, "M"),
@@ -318,6 +380,7 @@ export default function AttandanceReport(props) {
 
 
 		return (
+			
 			<div className="counselloTabel" style={{ width: "100%" }}>
 				<TableContainer>
 					<Table >
@@ -330,7 +393,7 @@ export default function AttandanceReport(props) {
 							</TableRow>
 						</TableHead>
 						<TableBody>
-							{attandanceData && attandanceData.length > 0 ? attandanceData.map((item) => {
+							{!loadingAttendance ? attandanceData && attandanceData.length > 0 ? attandanceData.map((item) => {
 									return (
 										<>
 											<TableRow key={item._id}>
@@ -345,17 +408,18 @@ export default function AttandanceReport(props) {
 														<TableCell  style={{ textAlign: "center" }}>															
 																{item.attandan.map((e) => {
 																	if (moment(e.createdAt).format("YYYY-MM-DD") === moment(month.key).format("YYYY-MM-DD")) {
-																 		return e.attendence === null || e.attendence === "0" ? "A" : e.attendence === "1" ? "P" : "";
+																 		return  moment(item.studentId.dismiss).format('YYYY-MM-DD') === moment(e.createdAt).format("YYYY-MM-DD")  && item.studentId.dismiss !== null ? "D" : e.attendence === null || e.attendence === "0" ? "A" : e.attendence === "1" ? "P" : "-";
 																	}
 																})
 															}
-														</TableCell>)
+														</TableCell>
+														)
 								 					)
 												})}
 											</TableRow>
 										</>
 									);
-								}):<TableRow style={{ textAlign: "center" }} >Record not found</TableRow>}	
+								}):<TableRow ><TableCell colspan={32} style={{ textAlign: "center" }}>Record not found</TableCell></TableRow>:<Example1/>}	
 						</TableBody>
 					</Table>
 				</TableContainer>
@@ -368,7 +432,8 @@ export default function AttandanceReport(props) {
 		await axios.get(`${API.getClass}`).then((response)=>{
 			if (response.status === 200) {
 				setLoading(false);
-				setClassData(response.data.data);
+				const filterData = response.data.data.filter((fil) => fil.className !== 'class unassigned')
+				setClassData(filterData);
 			} else {
 				setLoading(true);
 			}
@@ -380,12 +445,13 @@ export default function AttandanceReport(props) {
 		 });
 	};
 
-	const handleAttandanceReport = async (idd, byWhich,strd,endd,data) => {
+	const handleAttandanceReport = async (idd, byWhich,strd,endd,data,calenderDatee) => {
+		console.log(idd,byWhich,strd,endd,data,calenderDatee)
 		setSearch(data);
 
 		setattandanceData([])
 		if(byWhich === "week"){
-
+			setLoadingAttendance(true)
 			const requestData = {
 				fromDate: moment(strd? strd:startDate).format("YYYY-MM-DD"),
 				toDate:	moment(endd ? endd : lastDayOfWeek(currentMonth, { weekStartsOn: 1 })).format("YYYY-MM-DD"),
@@ -397,39 +463,21 @@ export default function AttandanceReport(props) {
 				data: requestData,
 				headers: authHeader(),
 			  }).then((res)=> {
-				setLoading(false);
+				setLoadingAttendance(false);
 				setattandanceData(res.data);
 			}).catch((err) => {
 				if (err.response.status === 401) {
 					handleLogout()
 				  }
+				  setLoadingAttendance(false);
 				toast.error("Failed to fetch week of data")
 			 });
 
 		}else if(byWhich === "month"){
+			setLoadingAttendance(true);
 			const requestData = {
 				fromDate: moment(strd ? strd : startDateOfMonth).format("YYYY-MM-DD"),
-				toDate:	moment(endd ? endd : lastDayOfMonth(currentMonthNew, { weekStartsOn: 1 })).format("YYYY-MM-DD")
-			}
-			await axios({
-				method: "post",
-				url: `${API.previousAttendanceReport}/${idd}`,
-				data: requestData,
-				headers: authHeader(),
-			  }).then((res)=> {
-				setLoading(false);
-				setattandanceData(res.data);
-			}).catch((err) => {
-				if (err.response.status === 401) {
-					handleLogout()
-				  }
-				toast.error("Failed to fetch month of data")
-			 });
-		}else if(byWhich === "today"){
-
-			const requestData = {
-				fromDate: moment().format(),
-				toDate:	moment().format(),
+				toDate:	moment(endd ? endd : lastDayOfMonth(currentMonthNew, { weekStartsOn: 1 })).format("YYYY-MM-DD"),
 				searchName:data
 			}
 			await axios({
@@ -438,12 +486,36 @@ export default function AttandanceReport(props) {
 				data: requestData,
 				headers: authHeader(),
 			  }).then((res)=> {
-				setLoading(false);
+				setLoadingAttendance(false);
 				setattandanceData(res.data);
 			}).catch((err) => {
 				if (err.response.status === 401) {
 					handleLogout()
 				  }
+				  setLoadingAttendance(false);
+				toast.error("Failed to fetch month of data")
+			 });
+		}else if(byWhich === "today"){
+			setLoadingAttendance(true);
+			const TomorrowDate = moment(calenderDatee).add(1,'days').format("YYYY-MM-DD")
+			const requestData = {
+				fromDate: moment(calenderDatee).format("YYYY-MM-DD"),
+				toDate:	TomorrowDate,
+				searchName:data
+			}
+			await axios({
+				method: "post",
+				url: `${API.previousAttendanceReport}/${idd}`,
+				data: requestData,
+				headers: authHeader(),
+			  }).then((res)=> {
+				setLoadingAttendance(false);
+				setattandanceData(res.data);
+			}).catch((err) => {
+				if (err.response.status === 401) {
+					handleLogout()
+				  }
+				  setLoadingAttendance(false);
 				toast.error("Failed to fetch week of data")
 			 });
 
@@ -453,8 +525,9 @@ export default function AttandanceReport(props) {
 	const SelectOnChange = async (ele) => {
 		setOnSelectData(ele);
 		localStorage.setItem("className", ele);
+
 		if (ele === ele) {
-			handleAttandanceReport(ele, "week");
+			handleAttandanceReport(ele, monthData,'','','',calenderDate);
 			handleCounsellorNameByClassId(ele);
 		}
 	};
@@ -464,11 +537,12 @@ export default function AttandanceReport(props) {
 			setMonthData('month');
 		} else if(data === 'today'){
 			setMonthData('today');
+		setCalenderDate(calenderDate);
 		}else if(data === 'week'){
 			setMonthData('week');
-			// window.location.reload();
 		}
-		handleAttandanceReport(onSelectData ? onSelectData : id, data);
+		handleAttandanceReport(onSelectData ? onSelectData : id, data,'','','',calenderDate);
+
 	};
 
 	const handleCounsellorNameByClassId = async (idd) => {
@@ -491,7 +565,7 @@ export default function AttandanceReport(props) {
 	});
 
 	const pdfClick = () => {
-		if(monthData){
+		if(monthData === 'month'){
 			var opt = {
 				margin:       1,
 				filename:     'Attandance_report.pdf',
@@ -514,6 +588,16 @@ export default function AttandanceReport(props) {
 		}
 		
 	}
+
+	const HandleDate = (e)=> {
+		if(e) {
+			setCalenderDate(e)
+			setMonthData('today')
+	
+		handleAttandanceReport(onSelectData ? onSelectData : id, 'today','','','',e);
+
+		}
+	  }
 
 	return (
 		<>
@@ -554,48 +638,84 @@ export default function AttandanceReport(props) {
 											})}
 										</NativeSelect>
 									</FormControl>
-									<div style={{ display: "flex" }} >
+									<div style={{ display: "flex" ,  position: 'absolute',  top: '154px',fontSize: '13px'}} >
 
-										{monthData ? <>
+										{monthData === 'month'? <>
 
 											{/* previous next functionality of Month */}
-											<div>
-												<div style={{ display: "inline-block" }}>
-													<ArrowBackIosIcon onClick={() => renderCellsMonth("prev")} />
-												</div>
-												<div style={{ display: "inline-block" }} hidden>
+											<div style={{fontSize: 'smaller'}}>
+												<div style={{ display: "inline-block",cursor:'pointer'}} onClick={() => renderCellsMonth("prev")}>
+													<ArrowBackIosIcon  />
+												Prev Month
+												</div> | 
+												{/* <div style={{ display: "inline-block" }}>
 													<DatePicker
-														selected={startDateOfMonth}
-														onChange={(date) => setStartDateMonth(date)}
+														placeholderText="Please select date of birth"
+														name="dob"
+														selected={calenderDate}
+														onChange={(date) => HandleDate(date)}
 														customInput={<ExampleCustomInput />}
-													/>
+														peekNextMonth
+														showMonthDropdown
+														showYearDropdown
+														dateFormat="dd/MM/yyyy"
+														dropdownMode="select"
+														className="form-control"
+														/> 
+												</div> */}
+												 <div style={{ display: "inline-block" ,marginLeft:'3px',cursor:'pointer'}} onClick={() => renderCellsMonth("next")}>
+												 Next Month
+													<ArrowForwardIosIcon />
 												</div>
-												<div style={{ display: "inline-block" }}>
-													<ArrowForwardIosIcon onClick={() => renderCellsMonth("next")} />
-												</div>
-											</div></> : <>
+											</div></> : monthData === 'week' ?<>
 
 											{/* previous next functionality of week */}
-											<div >
-												<div style={{ display: "inline-block" }}>
+											<div style={{fontSize: '13px'}}>
+												<div onClick={() => changeWeekHandle("prev")} style={{ display: "inline-block",cursor:'pointer' }}>
 													<ArrowBackIosIcon
-														onClick={() => changeWeekHandle("prev")}
-													/>
-												</div>
-												<div style={{ display: "inline-block" }} hidden>
-													<DatePicker
-														selected={startDate}
-														onChange={(date) => setStartDate(date)}
+														
+														/>
+														Prev Week 
+												</div> |
+												{/* <div style={{ display: "inline-block" }}>
+												<DatePicker
+														placeholderText="Please select date of birth"
+														name="dob"
+														selected={calenderDate}
+														onChange={(date) => HandleDate(date)}
 														customInput={<ExampleCustomInput />}
-													/>
-												</div>
-												<div style={{ display: "inline-block" }}>
+														peekNextMonth
+														showMonthDropdown
+														showYearDropdown
+														dateFormat="dd/MM/yyyy"
+														dropdownMode="select"
+														className="form-control"
+														/> 
+												</div> */}
+											
+												 <div style={{ display: "inline-block",marginLeft:'3px',cursor:'pointer' }} onClick={() => changeWeekHandle("next")}>
+													 Next Week
 													<ArrowForwardIosIcon
-														onClick={() => changeWeekHandle("next")}
+														
 													/>
 												</div>
+											
 											</div>
-										</>}
+										</> : monthData === 'today' ? <div>
+										<DatePicker
+														placeholderText="Please select date of birth"
+														name="dob"
+														selected={calenderDate}
+														onChange={(date) => HandleDate(date)}
+														customInput={<ExampleCustomInput />}
+														peekNextMonth
+														showMonthDropdown
+														showYearDropdown
+														dateFormat="dd/MM/yyyy"
+														dropdownMode="select"
+														className="form-control"
+														/> 
+										</div> : null }
 									</div>
 								</div>
 							</div>
@@ -610,12 +730,14 @@ export default function AttandanceReport(props) {
 								</div>
 								<div>
 								<div>
-								<span onClick={() => handleDataAccWeekAndMonth("week")}> Week{" "}  </span> | <span onClick={() => handleDataAccWeekAndMonth("month")}>{" "} Month </span> | <span onClick={() => handleDataAccWeekAndMonth("today")}> Today{" "}  </span>
+								<span onClick={() => handleDataAccWeekAndMonth("today")} style={{color:monthData === 'today'? '#007bff':'black' ,cursor:'pointer'}}>{moment(calenderDate).format('DD-MMM-YYYY') === moment().format('DD-MMM-YYYY') ? 'Today' : moment(calenderDate).format('DD-MMM-YYYY')}</span> |
+								<span onClick={() => handleDataAccWeekAndMonth("week")} style={{color:monthData === 'week'? '#007bff':'black' ,cursor:'pointer'}}> Week{" "}  </span> | 
+								<span onClick={() => handleDataAccWeekAndMonth("month")} style={{color:monthData === 'month'? '#007bff':'black' ,cursor:'pointer'}}>{" "} Month </span>
 								</div>
 								<SearchBar
 									value={search}
-									onChange={(newValue) => handleAttandanceReport(onSelectData? onSelectData: id, monthData ? "month" : "week", '','',newValue)}
-									placeholder="Search Counsellor"
+									onChange={(newValue) => handleAttandanceReport(onSelectData? onSelectData: id, monthData , '','',newValue,calenderDate)}
+									placeholder="Search Student"
 								/>
 								</div>
 							</div>

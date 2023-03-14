@@ -5,20 +5,17 @@ import alert1 from '../../images/white-alert.svg';
 import alert2 from '../../images/black-alert.svg';
 import { API, BASE_URL, SOCKET_URL } from "../../config/config";
 import { stylePopup } from "../css/style";
-import { setDefaultLocale } from "react-datepicker";
 import axios from "axios";
 import { authHeader } from "../../comman/authToken";
 import { handleLogout } from "../header";
 
 const PushNotification = () => {
 
-  const [socketConnecttion, setSocketConnected] = useState(false);
-
   var socket;
 
   useEffect(() => {
     socket = io.connect(SOCKET_URL);
-    socket.on("connected", () => setSocketConnected(true));
+    socket.on("connected", () => {});
  
     return () => {
       socket.disconnect();
@@ -49,23 +46,23 @@ const PushNotification = () => {
       setData(res);
       setDismiss(true);
     });
-    socket.on("dismissAllNotication", (ress) => {
+    // socket.on("dismissAllNotication", (ress) => {
       
-       axios.get(`${API.getStudent}`, { headers: authHeader() }).then((res)=>{
-        for(var i=0;i < (ress.selectedRow.length);i++){ 
-          res.data.data.filter((item)=>{ 
-            if(item._id === (ress.selectedRow[i])){ 
-              allData.push(item)
-                setAllDismiss(true);
-            }
-          }) 
-        }
-      }).catch((err) => {
-        if (err.response.status === 401) {
-          handleLogout()
-        }
-      });
-    });
+    //    axios.get(`${API.getStudent}`, { headers: authHeader() }).then((res)=>{
+    //     for(var i=0;i < (ress.selectedRow.length);i++){ 
+    //       res.data.data.filter((item)=>{ 
+    //         if(item._id === (ress.selectedRow[i])){ 
+    //           allData.push(item)
+    //             setAllDismiss(true);
+    //         }
+    //       }) 
+    //     }
+    //   }).catch((err) => {
+    //     if (err.response.status === 401) {
+    //       handleLogout()
+    //     }
+    //   });
+    // });
     
   }, [socket]);
 
@@ -150,7 +147,6 @@ const PushNotification = () => {
                     </Box>
                   </Modal>
                 }
-             
                   {
                   <Modal
                     open={dismiss}

@@ -331,8 +331,10 @@ class AddCounsellor extends Component {
                     >
                       <option value="">select</option>
                       {this.state.getclasses.map((item) => {
+                        const renameClassName = item.className?.slice(6);
+                        const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
                         return (
-                          <option key={item._id} value={item._id}>{item.className?.slice(6)}</option>
+                          <option key={item._id} value={item._id}>{capitalFirstLetterClassName}</option>
                         );
                       })}
                     </select>

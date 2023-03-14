@@ -1,6 +1,6 @@
 export const csvData = [
     { 
-        assignClass:"class C",
+        assignClass:"Class A",
         name:"Max",
         lastName:"Proton",  
         fatherName:"Jason",

@@ -302,60 +302,6 @@ const EnhancedTableToolbar = (props) => {
       });
   };
 
-  const handleAllStuDismiss = (row) => {
-    var date = new Date();
-    var hours = date.getHours() > 12 ? date.getHours() - 12 : date.getHours();
-    var am_pm = date.getHours() >= 12 ? "PM" : "AM";
-    hours = hours < 10 ? "0" + hours : hours;
-    var minutes =
-      date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-    var seconds =
-      date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-    var time = hours + ":" + minutes + ":" + seconds + " " + am_pm;
-
-    const reqData = {
-      id: selectedRow,
-      time: time,
-    };
-
-    for (var i = 0; i < selectedRow.length; i++) {
-      row.filter((item) => {
-        if (item._id === selectedRow[i]) {
-          const studentNamee = item.name.charAt(0).toUpperCase() + item.name.slice(1);
-          const studentLastNamee = item.lastName.charAt(0).toUpperCase() + item.lastName.slice(1);
-          if (item && item.dismiss) {
-            toast.error(`"${studentNamee} ${studentLastNamee}" is already dismissed`);
-          } else if (item.attaindence.attendence === null) {
-            toast.error(`"${studentNamee} ${studentLastNamee}" is not mark as dismiss until he is present.`);
-          } else if (item && item.attaindence.attendence === "0") {
-            toast.error(`"${studentNamee} ${studentLastNamee}" is absent so you can not Dismiss him.`);
-          } else {
-            const request = axios({
-              method: "post",
-              url: `${API.studentDismiss}`,
-              data: reqData,
-              headers: authHeader(),
-            })
-              .then((res) => {
-                toast.success("Students Dismissed");
-                socket.current.emit("sendNotificationAllDismiss", {
-                  selectedRow,
-                });
-                allData();
-                setSelected([]);
-              })
-              .catch((err) => {
-                if (err.response.status === 401) {
-                  handleLogout();
-                }
-                toast.error("Students dismissed failed");
-              });
-          }
-        }
-      });
-    }
-  };
-
   const handleOnChange = (e) => {
     setNameC(e.target.value);
 
@@ -465,10 +411,12 @@ const EnhancedTableToolbar = (props) => {
                   >
                     <option value="select">Select</option>
                     {allClasses.map((item) => {
+                      const renameClassName = item.className?.slice(6);
+                      const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
                       return (
                         <>
                           <option key={item._id} value={item._id}>
-                            {item.className?.slice(6)}
+                            {capitalFirstLetterClassName}
                           </option>
                         </>
                       );
@@ -610,10 +558,6 @@ const EnhancedTableToolbar = (props) => {
             <span title="Assign" onClick={handleOpen}>
               Assign
             </span>
-            |
-            <span title="Dismiss" onClick={() => handleAllStuDismiss(rowsData)}>
-              Dismiss
-            </span>
           </span>
         ) : (
           <Tooltip title="Filter list">
@@ -647,7 +591,6 @@ export default function EnhancedTable(props) {
   const [emergencyVal, setEmergencyVal] = useState([]);
   const [classData, setClassData] = useState([]);
   const [array, setArray] = useState([]);
-  const [dismissId, setDismissId] = useState("");
   const [deleteId, setDeleteId] = useState("");
   const [progress, setProgress] = useState(false);
   const [pin, setPin] = useState("");
@@ -705,8 +648,16 @@ export default function EnhancedTable(props) {
           }, {});
           return obj;
         });
+
+        const upd_obj = array.map(obj => {
+          if (Object.keys('assignClass')) {
+           obj.assignClass=`class ${obj.assignClass}`;
+          }
+          return obj;
+         })
+        
         const reqData = {
-          array: array,
+          array: upd_obj,
         };
 
         for (let j = 0; j < counsellorDetail.length; j++) {
@@ -716,8 +667,8 @@ export default function EnhancedTable(props) {
         for (let k = 0; k < array.length; k++) {
           classAssign_a_Counselor.push(
             classNameArrayCoun.includes(array[k].assignClass)
-          );
-        }
+            );
+          }
 
         if (!classAssign_a_Counselor.includes(false)) {
           setLoading(true);
@@ -782,53 +733,6 @@ export default function EnhancedTable(props) {
       });
   };
 
-  const handleStuDismiss = (row) => {
-    console.log(row,"$$$$$$$$$$44")
-    setDismissId(row._id);
-    var date = new Date();
-    var hours = date.getHours() > 12 ? date.getHours() - 12 : date.getHours();
-    var am_pm = date.getHours() >= 12 ? "PM" : "AM";
-    hours = hours < 10 ? "0" + hours : hours;
-    var minutes =
-      date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-    var seconds =
-      date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-    var time = hours + ":" + minutes + ":" + seconds + " " + am_pm;
-
-    if (row && row.dismiss) {
-      toast.error("Student is already dismissed");
-    } else if (row && row.attaindence.attendence === null) {
-      toast.error("Student is not mark as Dismiss until he is Present.");
-    } else if (row && row.attaindence.attendence === "0") {
-      toast.error("Student is absent so you can not Dismiss him.");
-    } else {
-      const reqData = {
-        id: [row._id],
-        time: time,
-      };
-      setLoading1(true);
-      const request = axios({
-        method: "post",
-        url: `${API.studentDismiss}`,
-        data: reqData,
-        headers: authHeader(),
-      })
-        .then((request) => {
-          socket.current.emit("sendNotificationDismiss", row);
-          toast.success("Student Dismissed");
-          setSelected([]);
-          setLoading1(false);
-          GetStudentData();
-        })
-        .catch((err) => {
-          if (err.response.status === 401) {
-            handleLogout();
-          }
-          setLoading1(false);
-          toast.error("Student Dismissed Failed");
-        });
-    }
-  };
 
   const handleStuFilter = (e) => {
     if (e.target.value === "all classes") {
@@ -909,7 +813,9 @@ export default function EnhancedTable(props) {
       setLoading(false);
       setLoading1(false);
     }
-    setClassData(response.data.data);
+    const filterData = response.data.data.filter((fil) => fil.className !== 'class unassigned')
+
+    setClassData(filterData);
   };
 
   const GetStudentData = async () => {
@@ -1116,11 +1022,11 @@ export default function EnhancedTable(props) {
                 >
                   <option value="all classes">All Class</option>
                   {classData.map((item) => {
+                     const renameClassName = item.className?.slice(6);
+                     const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
                     return (
                       <option key={item._id} value={item.className}>
-                        {item.className === "unassign"
-                          ? "Un Assign"
-                          : item.className?.slice(6)}
+                        {capitalFirstLetterClassName}
                       </option>
                     );
                   })}
@@ -1172,6 +1078,9 @@ export default function EnhancedTable(props) {
                             .map((row, index) => {
                               const isItemSelected = isSelected(row._id);
                               const labelId = `enhanced-table-checkbox-${index}`;
+                          
+                              const renameClassName = row.assignClass && row.assignClass.className?.slice(6);
+                              const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
                               return (
                                 <React.Fragment key={row._id}>
                                   <TableRow
@@ -1242,9 +1151,7 @@ export default function EnhancedTable(props) {
                                       padding="none"
                                       style={{ width: "100px" }}
                                     >
-                                      {row.assignClass
-                                        ? row.assignClass.className?.slice(6)
-                                        : ""}
+                                      {capitalFirstLetterClassName}
                                     </TableCell>
                                     <TableCell
                                       align="center"
@@ -1305,39 +1212,6 @@ export default function EnhancedTable(props) {
                                           alt="delete icon"
                                         />
                                       </span>
-                                      {row &&
-                                      row.attaindence &&
-                                      row.attaindence.attendence === null || row.attaindence.attendence === '0' ? (
-                                        <span
-                                          style={{ marginRight: "30px" }}
-                                        ></span>
-                                      ) : (
-                                        <span
-                                          onClick={() => handleStuDismiss(row)}
-                                        >
-                                          {dismissId === row._id ? (
-                                            !loading1 ? (
-                                              <img
-                                                src={require("./images/dismiss.png")}
-                                                alt="dismiss icon"
-                                              />
-                                            ) : (
-                                              <>
-                                                <Example1 />{" "}
-                                                <img
-                                                  src={require("./images/dismiss.png")}
-                                                  alt="dismiss icon"
-                                                />
-                                              </>
-                                            )
-                                          ) : (
-                                            <img
-                                              src={require("./images/dismiss.png")}
-                                              alt="dismiss icon"
-                                            />
-                                          )}
-                                        </span>
-                                      )}
                                     </TableCell>
                                   </TableRow>
                                   {/* Medical message modal */}

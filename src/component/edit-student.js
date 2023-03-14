@@ -417,7 +417,8 @@ const EditStudent = () => {
     fetch(`${API.getClass}`)
       .then((res) => res.json())
       .then((ress) => {
-        setGetClasses(ress.data);
+        const filterData = ress.data.filter((fil) => fil.className !== 'class unassigned')
+        setGetClasses(filterData);
       })
       .catch((err) => {
         if (err.response.status === 401) {
@@ -791,9 +792,11 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                                   className="w-100"
                                 >
                                   {getclasses.map((item) => {
+                                    const renameClassName = item.className?.slice(6);
+                                    const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
                                     return (
                                       <MenuItem key={item._id} value={item._id}>
-                                        {item.className?.slice(6)}
+                                        {capitalFirstLetterClassName}
                                       </MenuItem>
                                     );
                                   })}

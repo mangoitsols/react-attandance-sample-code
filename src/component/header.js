@@ -1,5 +1,5 @@
 import React, { useState, useRef,useEffect } from "react";
-import { io } from "socket.io-client";
+import  io  from "socket.io-client";
 import {Box,Backdrop,Avatar,Stack,Typography,Button,Fade,Modal} from '@mui/material';
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -57,8 +57,6 @@ export default function ImageAvatars() {
    
   const [newPass,setNewPass]=useState(""); 
 
-  const socket = useRef(io(`${SOCKET_URL}`, { transports: ['websocket'] }));
-
   const getUser = () => {
     const id = localStorage.getItem("id")
    fetch(`${API.getUser}/${id}`, { headers: authHeader() }
@@ -88,15 +86,21 @@ export default function ImageAvatars() {
     setActive(!isActive);
   };
   const handleRed = () => {
-    socket.current.emit("sendNotification", {});
+   let socket = io.connect(SOCKET_URL);
+    socket.on("connected", () => {});
+    socket.emit("sendNotification", {});
     setOpenRed(false);
   };
   const handleYellow = () => {
-    socket.current.emit("sendYellowNotification", {});
+    let socket = io.connect(SOCKET_URL);
+    socket.on("connected", () => {});
+    socket.emit("sendYellowNotification", {});
     setOpenYellow(false);
   };
   const handleBlack = () => {
-    socket.current.emit("sendBlackNotification", {});
+    let socket = io.connect(SOCKET_URL);
+    socket.on("connected", () => {});
+    socket.emit("sendBlackNotification", {});
     setOpenBlack(false);  
   };
 

@@ -28,6 +28,7 @@ const EditCounsellor = () => {
   const [getclasses, setGetclasses] = useState([]);
   const [getUserDataById, setUserData] = useState([]);
   const [counsellorDetail, setCounsellorDetail] = useState([]);
+  const [allUserData, setAllUserData] = useState([]);
   const [item, setItem] = useState("");
   const [loading, setLoading] = useState(false);
   const [passwordValid, setPasswordValid] = useState(true);
@@ -115,6 +116,7 @@ const EditCounsellor = () => {
         }
       })
       .then((data) => {
+        setAllUserData(data);
         setCounsellorDetail(data.filter((e) => e.role.name === "counsellor"));
       })
       .catch((err) => {
@@ -172,6 +174,11 @@ const EditCounsellor = () => {
     const findClassId = counsellorDetail.filter((counFil) => {
       return counFil.classId._id === classSelect;
     });
+
+    const uniqueUserName = allUserData.filter((counFil) => {
+      return (counFil._id !== id && counFil.username === username);
+    });
+
     const manageCouncellor = findClassId.filter((mngFil) => {
       return mngFil._id === id;
     });
@@ -182,6 +189,10 @@ const EditCounsellor = () => {
     if (!equalsCheck(findClassId, manageCouncellor) && findClassId[0].classId.className !== 'class unassigned') {
       toast.error(
         `Another counsellor was assigned to the ${GettingClassName.className?.slice(6)}`
+      );
+    }else if(uniqueUserName.length > 0){
+      toast.error(
+        `Username should be unique`
       );
     } else if (passwordValid) {
       const requestData = {
@@ -298,8 +309,10 @@ const EditCounsellor = () => {
                       inputProps={{ "aria-label": "Without label" }}
                     >
                       {getclasses.map((item) => {
+                         const renameClassName = item.className?.slice(6);
+                         const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
                         return (
-                          <MenuItem value={item._id}>{item.className?.slice(6)}</MenuItem>
+                          <MenuItem value={item._id}>{capitalFirstLetterClassName}</MenuItem>
                         );
                       })}
                     </Select>

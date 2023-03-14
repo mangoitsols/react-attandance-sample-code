@@ -207,6 +207,8 @@ export default function Counsellor() {
                             page * rowsPerPage + rowsPerPage
                           )
                           .map((item) => {
+                            const renameClassName = item && item.classId && item.classId.className?.slice(6);
+                            const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
                             return (
                               <TableRow key={item && item._id}>
                                 <TableCell>
@@ -222,9 +224,7 @@ export default function Counsellor() {
                                   align="left"
                                   style={{ width: "100px" }}
                                 >
-                                  {item &&
-                                    item.classId &&
-                                    item.classId.className?.slice(6)}
+                                  {capitalFirstLetterClassName}
                                 </TableCell>
 
                                 <TableCell

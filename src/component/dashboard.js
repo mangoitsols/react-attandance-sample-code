@@ -151,7 +151,8 @@ const DashBoard1 = () => {
       .get(`${API.getClass}`)
       .then((res) => {
         setLoading(false);
-        setClassData(res.data.data);
+        const filterData = res.data.data.filter((fil) => fil.className !== 'class unassigned')
+        setClassData(filterData);
       })
       .catch((err) => {
         if (err.response.status === 401) {
@@ -194,7 +195,6 @@ const DashBoard1 = () => {
   );
 
   const AbsConcatNull = filterDataAbs.concat(filterDataNull);
-  console.log(AbsConcatNull,"absent",filterDataAbs,"nulldata",filterDataNull,filterr)
 
   const filterDataPre =
     filterr &&
@@ -218,6 +218,9 @@ const DashBoard1 = () => {
 
   let dismiss = filterr.filter((e) => e.dismiss !== null);
   let finalAbsRecord = filterDataAbs.filter((e) => e.dismiss === null);
+
+  const renameClassName = classNameOnChange?.slice(6);
+  const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
 
   return (
     <React.Fragment>
@@ -254,9 +257,11 @@ const DashBoard1 = () => {
                 >
                   <option value="all">All</option>
                   {classData.map((item) => {
+                 
                     const str = item?.className?.slice(6);
                     const capitalizeFirstLetter =
                       str?.charAt(0)?.toUpperCase() + str?.slice(1);
+
                     return (
                       <option key={item._id} value={item._id}>
                         {capitalizeFirstLetter}
@@ -269,12 +274,12 @@ const DashBoard1 = () => {
           </div>
 
           <div className="filter-text">
-            {classNameOnChange === "all" ? "" : classNameOnChange?.slice(6)}
-            {classNameOnChange ? (
+            {classNameOnChange === "all" || classNameOnChange === undefined ? "" : capitalFirstLetterClassName}
+            { classNameOnChange ? (
               <span>
                 <div className="filter-text">
-                  {classNameOnChange === "all" ? (
-                    ""
+                  {classNameOnChange === "all" || classNameOnChange === undefined  ? (
+                    ''
                   ) : filterr.length === 0 ? (
                     ""
                   ) : (
@@ -312,7 +317,7 @@ const DashBoard1 = () => {
                     <span className="count">
                       {classNameOnChange === undefined ||
                       classNameOnChange === ""
-                        ? rows?.totalpresent
+                        ? filterDataPre?.length
                         : filterDataPre?.length}
                     </span>
                   </div>
