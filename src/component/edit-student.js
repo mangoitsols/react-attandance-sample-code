@@ -406,7 +406,7 @@ const EditStudent = () => {
         toast.success("Student Updated Successfully");
         setTimeout(() => {
           window.location.replace("/student");
-        }, 3000);
+        }, 1000);
       } else {
         toast.error("Something Went Wrong");
       }

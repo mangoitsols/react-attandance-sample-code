@@ -35,11 +35,18 @@ toast.configure();
         const [counsellorDetail,setCounsellorDetail]=useState([]);
         const [openModelClassDelete, setOpenModelClassDelete] = useState(false);
         const [selectedClassDetail, setSelectedClassDetail] = useState('');
+        const [studentDetail, setStudentDetail] = useState([]);
 
-        const handleCloseClassDeleteModal = (classDetail,councellorDetail) => { 
+
+        const handleCloseClassDeleteModal = (classDetail,councellorDetail,studentDetail) => { 
            
-            if(councellorDetail.length > 0) {
-                toast.error(`Students/Counsellor are assigned to this "${classDetail?.className?.charAt(0)?.toUpperCase() + classDetail?.className?.slice(1)}" To delete the "${classDetail?.className?.charAt(0)?.toUpperCase() + classDetail?.className?.slice(1)}", it should be empty.`);
+           const classnameee = classDetail?.className.slice(6)
+            if(councellorDetail.length > 0 && studentDetail?.length > 0) {
+                toast.error(`Students/Counsellor are assigned to this "${classnameee?.charAt(0)?.toUpperCase() + classnameee?.slice(1)}" To delete the "${classnameee?.charAt(0)?.toUpperCase() + classnameee?.slice(1)}", it should be empty.`);
+            }else if(studentDetail?.length > 0) {
+                toast.error(`Students are assigned to this "${classnameee?.charAt(0)?.toUpperCase() + classnameee?.slice(1)}" To delete the "${classnameee?.charAt(0)?.toUpperCase() + classnameee?.slice(1)}", it should be empty.`);
+            }else if(councellorDetail.length > 0) {
+                toast.error(`Counsellor are assigned to this "${classnameee?.charAt(0)?.toUpperCase() + classnameee?.slice(1)}" To delete the "${classnameee?.charAt(0)?.toUpperCase() + classnameee?.slice(1)}", it should be empty.`);
             }else{
             setOpenModelClassDelete(!openModelClassDelete)
             setSelectedClassDetail(classDetail)
@@ -48,7 +55,6 @@ toast.configure();
 
         useEffect(() => {
             handleGetClass();
-            handleGetUser();
             setSearch('');
         }, [])
 
@@ -70,15 +76,33 @@ toast.configure();
               }
           })
       };
+
+      const GetStudentData = async () => {
+        
+         await axios
+          .get(`${API.getStudent}`, { headers: authHeader() })
+          .then((res) => {
+            setStudentDetail(res.data.data);
+          })
+          .catch((err) => {
+            if (err?.response?.status === 401) {
+              handleLogout();
+            }
+          })
+      };
         
         const handleGetClass = async() =>{
+            setLoading(true)
             await axios.get(`${API.getClass}`).then((res) => {
                     setLoading(false);
                     setClassDetail(res.data.data)
+                    handleGetUser();
+                    GetStudentData()
                 }).catch((err) => {
                     if (err.response.status === 401) {
                         handleLogout()
                       }
+                      setLoading(false)
                 })
             }
             
@@ -228,12 +252,12 @@ toast.configure();
                 }).then((a) => {
                   if (a.status === 200 || a.status === 201) {
                     setLoading(false);
-                    handleCloseClassDeleteModal('',[])
+                    setOpenModelClassDelete(!openModelClassDelete)
                     toast.success(`${classnamee?.charAt(0)?.toUpperCase() + classnamee?.slice(1)} deleted successfully`);
                     handleGetClass();
                   } else {
                     setLoading(false);
-                    toast.success("Failed to delete class");
+                    toast.error("Failed to delete class");
                   }
                 }).catch((err) => {
                     if (err.response.status === 401) {
@@ -303,19 +327,20 @@ toast.configure();
                                 </TableHead>
                                 <TableBody>
                                     {classDetail.length > 0 ? classDetail.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((item,index) => {
-                                       const counDetail = counsellorDetail.filter((ccitem) => {return ccitem.classId._id === item._id})
+                                       const counDetail = counsellorDetail.filter((ccitem) => {return ccitem?.classId?._id === item?._id})
                                     const classnamee = item.className?.slice(6)
+                                    const studentDataOfClass = studentDetail.filter((ssitem)=>{ return ssitem?.assignClass?._id === item?._id})
                                         return (
                                             classnamee !== 'unassigned' ?
                                             <TableRow key={item && item._id}>
                                                 
                                                  <TableCell  > {" "}{classnamee?.charAt(0).toUpperCase() + classnamee.slice(1)}</TableCell>
                                                  <TableCell  > {" "}{counDetail.length > 0 ? counDetail[0]?.name?.charAt(0)?.toUpperCase() + counDetail[0]?.name?.slice(1) :''}  {counDetail.length > 0 ? counDetail[0]?.lastname?.charAt(0)?.toUpperCase() + counDetail[0]?.lastname?.slice(1): ''}</TableCell>
-                                                 <TableCell  > {" "}{counDetail[0]?.studentCount}</TableCell>
+                                                 <TableCell  > {" "}{studentDataOfClass?.length > 0 ? studentDataOfClass?.length : 0}</TableCell>
                                                 
                                                 <TableCell align="center" className='action' style={{ width: "150px", }}>
                                                 <span onClick={() => handleOpenEdit(item)}><img src={require('./images/edit.png')} alt="Edit icon" /></span>
-                                                    <span onClick={() => handleCloseClassDeleteModal(item,counDetail)}><img src={require('./images/delet.png')} alt="Delete icon" /></span>
+                                                    <span onClick={() => handleCloseClassDeleteModal(item,counDetail,studentDataOfClass)}><img src={require('./images/delet.png')} alt="Delete icon" /></span>
                                                  
                                                 </TableCell>
                                                 {
@@ -353,7 +378,7 @@ toast.configure();
                                              <Loader1 />
                                                </>
                                              )}                                       
-                                              <Button variant='outlined' size="large"  onClick={() => handleCloseClassDeleteModal('',[])} sx={{marginLeft:'15px',borderColor:'text.primary',color:'text.primary'}}>
+                                              <Button variant='outlined' size="large"  onClick={() => setOpenModelClassDelete(!openModelClassDelete)} sx={{marginLeft:'15px',borderColor:'text.primary',color:'text.primary'}}>
                                                Cancel
                                              </Button>
                                             

@@ -305,9 +305,6 @@ class AddStudent extends Component {
       { Ename: phonename2, number: phone1 }
     );
 
-    const mngStudentClass = CounsellorDetail.filter((counFil) => {
-      return counFil.classId._id === classSelect;
-    });
   
     if(phone === '' && phone1 === ''){
       this.setState({ phoneError: "The mobile number field is required." });
@@ -327,7 +324,7 @@ class AddStudent extends Component {
       phone !== "" ||
       phone1 !== ""
     ) {
-      if (mngStudentClass.length === 1) {
+    
         const requestData = {
           name: name,
           lastName: lastname,
@@ -354,17 +351,13 @@ class AddStudent extends Component {
             toast.success("Student Added Successfully");
             setTimeout(() => {
               window.location.replace("/student");
-            }, 2000);
+            }, 1000);
           } else {
             this.setState({ Submitloading: false });
             toast.error("Student Added Failed");
           }
         });
-      } else {
-        toast.error(
-          "Please add a Counsellor before adding students to the class"
-        );
-      }
+     
     }
   }
   };

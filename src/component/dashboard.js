@@ -274,7 +274,7 @@ const DashBoard1 = () => {
           </div>
 
           <div className="filter-text">
-            {classNameOnChange === "all" || classNameOnChange === undefined ? "" : capitalFirstLetterClassName}
+            {classNameOnChange === "all" || classNameOnChange === undefined ? "" : capitalFirstLetterClassName ? capitalFirstLetterClassName :''}
             { classNameOnChange ? (
               <span>
                 <div className="filter-text">

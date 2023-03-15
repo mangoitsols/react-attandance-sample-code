@@ -77,6 +77,7 @@ const PushNotification = () => {
   };
   const handleDismissNoty = () => {
     setDismiss(false);
+    window.location.reload();
   };
   const handleAllDismissNoty = () => {
     setAllDismiss(false);
@@ -156,12 +157,12 @@ const PushNotification = () => {
                   >
                     <Box sx={stylePopup} className="popup_box">
                       <Typography id="modal-modal-title" variant="h6" component="h2" className="red">
-                         <span className='icon'> <img src={alert1} className="" alt="logo" /></span>
+                         <span className='icon'> <img src={alert1} className="" alt="logo" />
+                         <p style={{ fontWeight: 600,  left: '36%', position: 'absolute',  top: '20%',  color: 'white', fontSize: '22px' }}>Dismissed</p></span>
 
                       </Typography>
                       <Typography id="modal-modal-description" component="div" sx={{ mt: 2 }}>
-                        <h4 className="red-text">Student Name : 
-                         <p>{data ? data.name :""} {data ? data.lastName : "" }</p></h4>
+                        <h4 className="red-text">Student Name : <span> {data ? data.name :""} {data ? data.lastName : "" }</span></h4>
                          <Button className="red-btn" onClick={handleDismissNoty}>OK</Button>
                       </Typography>
                       

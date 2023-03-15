@@ -290,16 +290,6 @@ class Login extends Component {
                       </label>
                     </div>
                   </div>
-                  <Tooltip
-                    title={<><Box mb={2}><Typography component='p' variant='body2' color="textPrimary">Manager Account</Typography>
-                    <Typography component='p' variant='caption'>Username : jhonmanager</Typography><Typography component='span' variant='caption' >Password : Mus@2121</Typography></Box>
-                    <Box><Typography color="textPrimary" variant='body2'>Counselor Account</Typography>
-                    <Typography component='p' variant='caption'>Username : GovindCouncellor</Typography><Typography component='span' variant='caption'>Password : Mus@2121</Typography></Box></>}
-                    arrow >
-                  <div className="col d-flex justify-content-end text-right small">
-                    Test Credential
-                  </div>
-                    </Tooltip>
                 </div>
                 {!this.state.loading ? (
                   <input

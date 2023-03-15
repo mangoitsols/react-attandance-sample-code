@@ -63,7 +63,7 @@ export default function AttandanceReport(props) {
 	let classNameId = localStorage.getItem("className");
 
 	useEffect(() => {
-		handleAttandanceReport(finalId, "week",'','','',calenderDate);
+		handleAttandanceReport(finalId, monthData,'','','',calenderDate);
 		GetClassData();
 		handleCounsellorNameByClassId(finalId);
 	}, []);
@@ -103,7 +103,7 @@ export default function AttandanceReport(props) {
 			data: reqData,
 			headers: authHeader(),
 		  }).then((request) => {
-			socket.emit("sendNotificationDismiss", {row});
+			socket.emit("sendNotificationDismiss", row);
 			setLoadingDismiss(false);
 			toast.success(`Student Dismissed`);
 			handleAttandanceReport(row.assignClass,'today','','','',calenderDate);
@@ -165,9 +165,11 @@ export default function AttandanceReport(props) {
 
 										 {item.attandan.length > 0 ? item.attandan.map((attn)=> { 
 										const dateCreated = moment(attn.createdAt).format('DD/MM/YYYY')
+										const CurrentDayDate = moment().format('DD/MM/YYYY')
+										
 											 return ( 
 												todayDate === dateCreated ? 
-												attn &&  attn.attendence &&  (attn.attendence !== null || attn.attendence !== "0") ? 
+												attn &&  attn.attendence &&  (attn.attendence !== null || attn.attendence !== "0") && dateCreated === CurrentDayDate ? 
 												<TableCell style={{ textAlign: "center" }}>	<span onClick={() => handleStuDismiss(item.studentId)}  > <img  src={require("./images/dismiss.png")}  alt="dismiss icon"/> </span></TableCell>
 											   :<TableCell style={{ textAlign: "center" }}> </TableCell>:null
 									  	 )}): <TableCell style={{ textAlign: "center" }}> </TableCell>} 
@@ -497,10 +499,9 @@ export default function AttandanceReport(props) {
 			 });
 		}else if(byWhich === "today"){
 			setLoadingAttendance(true);
-			const TomorrowDate = moment(calenderDatee).add(1,'days').format("YYYY-MM-DD")
 			const requestData = {
 				fromDate: moment(calenderDatee).format("YYYY-MM-DD"),
-				toDate:	TomorrowDate,
+				toDate:	moment(calenderDatee).format("YYYY-MM-DD"),
 				searchName:data
 			}
 			await axios({

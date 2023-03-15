@@ -597,6 +597,8 @@ export default function EnhancedTable(props) {
   const [openMedical, setOpenMedical] = React.useState(false);
   const [openModel, setOpenModel] = useState(false);
   const [counsellorDetail, setCounsellorDetail] = useState([]);
+  const [medicalRow, setMedicalRow] = useState('');
+  
 
   const handleGetCouncellor = () => {
     fetch(API.getAllUser, { headers: authHeader() })
@@ -890,12 +892,14 @@ export default function EnhancedTable(props) {
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
 
-  const handleOpenMedical = () => {
+  const handleOpenMedical = (row) => {
     setOpenMedical(true);
+    setMedicalRow(row)
   };
 
   const handleCloseMedical = () => {
     setOpenMedical(false);
+
   };
 
   const handleMedicalByPin = async () => {
@@ -926,6 +930,7 @@ export default function EnhancedTable(props) {
 
   const closeModel = () => {
     setOpenModel(false);
+    setMedicalRow('')
   };
 
   return (
@@ -1151,7 +1156,7 @@ export default function EnhancedTable(props) {
                                       padding="none"
                                       style={{ width: "100px" }}
                                     >
-                                      {capitalFirstLetterClassName}
+                                      {capitalFirstLetterClassName ? capitalFirstLetterClassName : ''}
                                     </TableCell>
                                     <TableCell
                                       align="center"
@@ -1162,9 +1167,10 @@ export default function EnhancedTable(props) {
                                       ) : (
                                         <i
                                           onClick={() =>
-                                            handleOpenMedical(row.medical)
+                                            handleOpenMedical(row)
                                           }
                                         >
+                                         
                                           <img
                                             src={require("./images/medical.png")}
                                             alt="Medical_Img"
@@ -1234,9 +1240,11 @@ export default function EnhancedTable(props) {
                                           variant="h6"
                                           component="h2"
                                         >
+                                          {}
                                           <strong>Student Name: </strong>
                                           <span>
-                                            {row.name} {row.lastname}
+                                            {medicalRow.name} {medicalRow.lastName} S/o{" "}
+                                            {medicalRow.fatherName} {medicalRow.lastName}
                                           </span>
                                         </Typography>
                                         <Typography
@@ -1246,7 +1254,7 @@ export default function EnhancedTable(props) {
                                           <strong>Medical Message </strong>
                                           <div id="medical" name="medical">
                                             {" "}
-                                            {row.medical}
+                                            {medicalRow.medical}
                                           </div>
                                         </Typography>
                                       </Box>

@@ -81,9 +81,12 @@ export default function Counsellor() {
     setDense(event.target.checked);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (councellorDetail) => {
+    if(councellorDetail?.classId?.className !== "class unassigned"){
+      toast.error(`${councellorDetail?.classId?.className.slice(6)} assigned to ${councellorDetail?.name} ${councellorDetail?.lastname} so can't be deleted`)
+    }else{
     setLoading(!loading);
-    fetch(`${API.deleteUser}/${id}`, {
+    fetch(`${API.deleteUser}/${councellorDetail?._id}`, {
       method: "DELETE",
       headers: authHeader(),
     })
@@ -102,6 +105,7 @@ export default function Counsellor() {
           handleLogout();
         }
       });
+    }
   };
 
   const handleSearch = async (data) => {
@@ -224,7 +228,7 @@ export default function Counsellor() {
                                   align="left"
                                   style={{ width: "100px" }}
                                 >
-                                  {capitalFirstLetterClassName}
+                                  {capitalFirstLetterClassName ? capitalFirstLetterClassName : ''}
                                 </TableCell>
 
                                 <TableCell
@@ -297,7 +301,7 @@ export default function Counsellor() {
         {
                                    <Modal
                                          open={openModelDelete}
-                                         onClose={() => handleCloseDeleteModal('')}
+                                         onClose={() => setOpenModelDelete(!openModelDelete)}
                                          aria-labelledby="modal-modal-title"
                                          aria-describedby="modal-modal-description"
                                        >
@@ -327,7 +331,7 @@ export default function Counsellor() {
                                           
                                           
                                              {!loading ? (
-                                               <Button variant="contained" size="large" className="delete-button" onClick={() => handleDelete(selectedCouncellorDetail && selectedCouncellorDetail?._id)}>Delete</Button>
+                                               <Button variant="contained" size="large" className="delete-button" onClick={() => handleDelete(selectedCouncellorDetail)}>Delete</Button>
                                              ) : (
                                                <>
                                              <Button variant="contained" size="large" disabled>Delete</Button> 
@@ -336,7 +340,7 @@ export default function Counsellor() {
                                              )}
                                           
                                        
-                                              <Button variant='outlined' size="large"  onClick={() => handleCloseDeleteModal('')} sx={{marginLeft:'15px',borderColor:'text.primary',color:'text.primary'}}>
+                                              <Button variant='outlined' size="large"  onClick={() => setOpenModelDelete(!openModelDelete)} sx={{marginLeft:'15px',borderColor:'text.primary',color:'text.primary'}}>
                                                Cancel
                                              </Button>
                                             

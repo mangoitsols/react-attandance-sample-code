@@ -213,7 +213,7 @@ const EditCounsellor = () => {
           toast.success("Councellor Updated");
           setTimeout(() => {
             window.location.replace("/counsellor");
-          }, 3000);
+          }, 1000);
         })
         .catch(function (error) {
           if (error.response.status === 400) {

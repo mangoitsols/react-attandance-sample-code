@@ -214,7 +214,7 @@ class AddCounsellor extends Component {
             });
             setTimeout(() => {
               window.location.replace("/counsellor");
-            }, 500);
+            }, 1000);
             this.setState({ loading: false });
           } else {
             this.setState({ loading: false });
