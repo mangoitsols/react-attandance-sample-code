@@ -3,12 +3,12 @@
 // export const SOCKET_URL = "https://api-aelix.mangoitsol.com/"; 
 
 // mangoit server
-// export const BASE_URL = "http://103.127.29.85:6020";
-// export const SOCKET_URL = "http://103.127.29.85:6020/"; 
+ export const BASE_URL = "http://103.127.29.85:6020";
+ export const SOCKET_URL = "http://103.127.29.85:6020/"; 
 
 // local server
-export const BASE_URL = "http://localhost:6020";
-export const SOCKET_URL = "http://localhost:6020/"; 
+// export const BASE_URL = "http://localhost:6020";
+// export const SOCKET_URL = "http://localhost:6020/"; 
 
 export const API = {
   login: `${BASE_URL}/api/login`,
