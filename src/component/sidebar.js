@@ -42,7 +42,7 @@ class Sidebar extends Component {
       this.handleGetSchoolInfo()
     }).catch((err) => {
       this.setState({loading:false});
-      if (err.response.status === 401) {
+      if (err?.response?.status === 401) {
         handleLogout()
       }
     })
@@ -63,7 +63,7 @@ class Sidebar extends Component {
 
     })
     .catch((err) => {
-      if (err.response.status === 401) {
+      if (err?.response?.status === 401) {
         handleLogout()
       }
       localStorage.setItem("schoolLocation",'');

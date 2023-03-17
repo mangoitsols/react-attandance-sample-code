@@ -598,7 +598,8 @@ export default function EnhancedTable(props) {
   const [openModel, setOpenModel] = useState(false);
   const [counsellorDetail, setCounsellorDetail] = useState([]);
   const [medicalRow, setMedicalRow] = useState('');
-  
+  const [stateByCountry, setStateByCountry] = useState([]);
+  const [getCountry, setGetCountry] = useState([]);
 
   const handleGetCouncellor = () => {
     fetch(API.getAllUser, { headers: authHeader() })
@@ -620,7 +621,23 @@ export default function EnhancedTable(props) {
       });
   };
 
-  const socket = useRef(io(SOCKET_URL));
+  const getCountries = async() =>{
+    await axios.get(`${API.getAllCountry}`, { headers: authHeader() }).then((res) => {
+      setGetCountry(res.data.country);
+      handleState(res.data.country[0]?._id)
+    })
+    .catch((err) => {
+      if (err.response.status === 401) {
+        handleLogout();
+      }
+    });
+  }
+
+  const handleState = async(id) => {
+    await axios.get(`${API.getStateBYCountryId}/${id}`, { headers: authHeader() }).then((res) => {
+        setStateByCountry(res.data);
+      });
+    };
 
   const dispatch = useDispatch();
 
@@ -630,11 +647,20 @@ export default function EnhancedTable(props) {
 
   const fileReader = new FileReader();
 
+  function getAge(dateString) {
+    var today = new Date();
+    var birthDate = new Date(dateString);
+    var age = today.getFullYear() - birthDate.getFullYear();
+    var m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
+}
+
   const handleOnChange = (e) => {
     if (e.target.files[0]) {
       fileReader.onload = function (event) {
-        let classNameArrayCoun = [];
-        let classAssign_a_Counselor = [];
 
         const text = event.target.result.replace(/["]+/g, "");
         const csvHeader = text.slice(0, text.indexOf("\n")).split(",");
@@ -651,28 +677,67 @@ export default function EnhancedTable(props) {
           return obj;
         });
 
-        const upd_obj = array.map(obj => {
-          if (Object.keys('assignClass')) {
-           obj.assignClass=`class ${obj.assignClass}`;
-          }
-          return obj;
+        // update classname
+        const check_Obj = array.map(obj => {
+          const compareClass = classData.map((res)=>{
+            return (
+           res.className === `class ${obj.assignClass}`)
+               })
+          return compareClass;
+         })
+
+        //  check zipcode
+         const check_Zipcode = array.map(obj => {
+          const zipcode_length_Compare =  (obj.zip_code.length > 5 || obj.zip_code.length < 5)
+          return zipcode_length_Compare;
          })
         
-        const reqData = {
-          array: upd_obj,
-        };
+         // check state
+         const check_State = array.map(obj => {
+            const stateCompare = stateByCountry.map((res)=>{ return (
+                res.name === obj.state)
+              })
+  
+          return stateCompare;
+         })
+         //check country
+         const check_Country = array.map(obj => {
+          const countryCompare = getCountry.map((res)=>{ return (
+              res.name === obj.country.toUpperCase())
+            })
 
-        for (let j = 0; j < counsellorDetail.length; j++) {
-          classNameArrayCoun.push(counsellorDetail[j].classId.className);
+        return countryCompare;
+       })
+
+      //  check DOB
+      const Dob_length = []
+      const check_Dob = array.map(obj => {
+        const age = getAge(obj.DOB)
+        const Dob_compare = age >= 2 ? true : false;
+          Dob_length.push(Dob_compare)
+        return Dob_compare;
+       })
+
+       let classNameRegex = [];
+       //  update classname key object 
+       const update_Obj = array.map(obj => {
+         const classRegex = /[^A-Za-z0-9-\s]/g;
+        classNameRegex = (obj.assignClass.match(classRegex) ? obj.assignClass.match(classRegex) : []);
+        if (Object.keys('assignClass')) {
+          obj.assignClass=`class ${obj.assignClass}`;
         }
+        return obj
+      })
 
-        for (let k = 0; k < array.length; k++) {
-          classAssign_a_Counselor.push(
-            classNameArrayCoun.includes(array[k].assignClass)
-            );
-          }
+      const reqData = {
+        array: update_Obj,
+      };
 
-        if (!classAssign_a_Counselor.includes(false)) {
+        if (classNameRegex.length <= 0) {
+          if(!check_Dob.includes(false)){
+          if(!check_Zipcode.includes(true)){
+            if(!check_Country[0].includes(false)){
+            if(check_State[0].includes(true)){
           setLoading(true);
           const res = axios({
             method: "post",
@@ -684,6 +749,7 @@ export default function EnhancedTable(props) {
               setLoading(false);
               setProgress(true);
               GetStudentData();
+              GetClassData();
               setTimeout(() => {
                 setProgress(false);
                 handleClose1();
@@ -697,12 +763,35 @@ export default function EnhancedTable(props) {
             });
 
           setArray(array);
-        } else {
+        } 
+        else{
           toast.error(
-            "Please check the classes and add a counsellor if not added"
+            "Please check the state"
           );
         }
-      };
+      }else{
+        toast.error(
+          "Please check the country"
+        );
+      }
+      }
+        else {
+          toast.error(
+            "Please check the zip code"
+          );
+        }}else{
+          toast.error(
+            "Student age must be greather than 2 or equal."
+          );
+        }
+      
+      }else{
+        toast.error(
+          "Class name verification failed."
+        );
+
+      }
+    }
 
       fileReader.readAsText(e.target.files[0]);
     }
@@ -799,6 +888,7 @@ export default function EnhancedTable(props) {
     GetStudentData();
     GetClassData();
     handleGetCouncellor();
+    getCountries();
   }, []);
 
   const GetClassData = async () => {
@@ -964,7 +1054,9 @@ export default function EnhancedTable(props) {
                     type={"file"}
                     id={"csvFileInput"}
                     accept={".csv"}
+                    disabled={progress}
                     onChange={handleOnChange}
+                    onClick={(e) => {e.target.value = null}}
                   />
                 </form>
               </div>

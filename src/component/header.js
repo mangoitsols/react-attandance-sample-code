@@ -28,7 +28,7 @@ const handleUpdateLoginStatus = async() =>{
 
       })
       .catch((err) => {
-        if (err.response.status === 401) {
+        if (err?.response?.status === 401) {
           handleLogout()
         }
       });
@@ -65,7 +65,7 @@ export default function ImageAvatars() {
                 .then((json) => {
                   setNewPass(json)
                 }).catch((err) => {
-                  if (err.response.status === 401) {
+                  if (err?.response?.status === 401) {
                     handleLogout()
                   }
                 })

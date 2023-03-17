@@ -52,10 +52,10 @@ class Login extends Component {
         },
         messages: {
           email: {
-            required: "<p style='color:red'>Please provide a username</p>",
+            required: "<p style='color:red'>Please provide username</p>",
           },
           password: {
-            required: "<p style='color:red'>Please provide  password</p>",
+            required: "<p style='color:red'>Please provide password</p>",
           },
         },
       });

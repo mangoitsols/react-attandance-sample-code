@@ -154,9 +154,9 @@ const EditStudent = () => {
         zipcode: {
           required: "<p style='color:red'>zipcode is required</P>",
           minlength:
-              "<p style='color:red'>zipcode must consist of at least 5 characters</p>",
+              "<p style='color:red'>zipcode must consist  5 characters</p>",
 			    maxlength:
-              "<p style='color:red'>zipcode must consist of at least 5 characters</p>",
+              "<p style='color:red'>zipcode must consist 5 characters</p>",
         },
         dob: {
           required: "<p style='color:red'>Please provide a Date Of Birth</p>",
