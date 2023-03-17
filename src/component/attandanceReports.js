@@ -4,7 +4,7 @@ import ImageAvatars, { handleLogout } from "./header";
 import Container from "@mui/material/Container";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import { API, SOCKET_URL } from "../config/config";
-import { Link, useParams ,useNavigate} from "react-router-dom";
+import { useParams} from "react-router-dom";
 import Loader from "../comman/loader";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -18,9 +18,14 @@ import {
 	TableHead,
 	TableBody,
 	Table,
-	Tooltip,
+	Modal,
+	Fade,
+	Box,
+	Backdrop
 } from "@mui/material";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import moment from "moment";
+import $ from "jquery";
 import { authHeader } from "../comman/authToken";
 import {
 	format,
@@ -42,12 +47,18 @@ import SearchBar from "material-ui-search-bar";
 import html2pdf from "html2pdf-jspdf2";
 import Example1 from "../comman/loader1";
 import  io  from "socket.io-client";
+import { capitalizeFirstLetter } from "../comman/capitalizeFirstLetter";
 toast.configure();
 
 export default function AttandanceReport(props) {
 
 	const [loadingDismiss, setLoadingDismiss] = useState(false);
 	const [loadingAttendance, setLoadingAttendance] = useState(false);
+	const [openModelDismiss, setOpenModelDismiss] = useState(false);
+	const [openShowDismissReason, setOpenShowDismissReason] = useState(false);
+	const [dismissStudentDetails, setDismissStudentDetails] = useState('');
+	const [dismissReasonDetails, setDismissReasonDetails] = useState('');
+	const [dismissReason,setDismissReason] = useState('');
 	const [loading, setLoading] = useState(true);
 	const [attandanceData, setattandanceData] = useState([]);
 	const [classData, setClassData] = useState([]);
@@ -74,65 +85,197 @@ export default function AttandanceReport(props) {
 
 	// Today Data render start
 
-	const handleStuDismiss = async(row) => {
+	const style = {
+		position: "absolute",
+		top: "50%",
+		left: "50%",
+		transform: "translate(-50%, -50%)",
+		bgcolor: "background.paper",
+		borderRadius: "15px",
+		p: 4,
+	  };
+
+	  const style1 = {
+		position: "absolute",
+		top: "50%",
+		left: "50%",
+		transform: "translate(-50%, -50%)",
+		bgcolor: "background.paper",
+		borderRadius: "15px",
+		p: 4,
+		width:'400px'
+	  };
+
+	const handleStuDismiss = async(e) => {
+		e.preventDefault();
+
+		const concatDismissReason_StudentDetail = {...dismissStudentDetails,dismissReason}
 
 		var socket = io.connect(SOCKET_URL);
 		socket.on("connected", () => {});
-
-		var date = new Date();
-		var hours = date.getHours() > 12 ? date.getHours() - 12 : date.getHours();
-		var am_pm = date.getHours() >= 12 ? "PM" : "AM";
-		hours = hours < 10 ? "0" + hours : hours;
-		var minutes =
-		  date.getMinutes() < 10 ? "0" + date.getMinutes() : date.getMinutes();
-		var seconds =
-		  date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
-		var time = hours + ":" + minutes + ":" + seconds + " " + am_pm;
 	
-		if (row && row.dismiss) {
-			toast.error(`${row && row.name} ${row && row.lastName} is already dismissed`);
+		if (dismissStudentDetails && dismissStudentDetails.dismiss_date) {
+			toast.error(`${dismissStudentDetails && capitalizeFirstLetter(dismissStudentDetails.name)} ${dismissStudentDetails && dismissStudentDetails.lastName} is already dismissed`);
 		} else {
 		  const reqData = {
-			id: [row._id],
-			time: new Date(),
+			dismiss_date : new Date(),
+  			dismiss_reason:dismissReason,
 		  };
 		  setLoadingDismiss(true);
 		  await axios({
-			method: "post",
-			url: `${API.studentDismiss}`,
+			method: "put",
+			url: `${API.studentStatusUpdate}/${dismissStudentDetails._id}`,
 			data: reqData,
 			headers: authHeader(),
 		  }).then((request) => {
-			socket.emit("sendNotificationDismiss", row);
+			socket.emit("sendNotificationDismiss", concatDismissReason_StudentDetail);
 			setLoadingDismiss(false);
-			toast.success(`Student Dismissed`);
-			handleAttandanceReport(row.assignClass,'today','','','',calenderDate);
+			setOpenModelDismiss(!openModelDismiss)
+			toast.success(`${capitalizeFirstLetter(dismissStudentDetails.name)} ${dismissStudentDetails.lastName}marked as dismissed`);
+			handleAttandanceReport(dismissStudentDetails.assignClass,'today','','','',calenderDate);
 			}).catch((err) => {
 			  if (err?.response?.status === 401) {
 				handleLogout();
 			  }
 			  setLoadingDismiss(false);
-			  toast.error(`${row && row.name} ${row && row.lastName} Dismissed Failed`);
+			  toast.error(`${dismissStudentDetails && dismissStudentDetails.name} ${dismissStudentDetails && dismissStudentDetails.lastName} Dismissed Failed`);
 			});
 		}
 	  };
+
+	const handleDismissModal = (row) => {
+		setOpenModelDismiss(!openModelDismiss)
+		setDismissStudentDetails(row)
+	}
+
+	$(document).ready(function () {
+		$("#dismissReasonInsert").validate({
+		  rules: {
+			dismissReason: {
+			  required: true,
+			},
+		  },
+		  messages: {
+			dismissReason: {
+			  required: "<p style='color:red'>Please enter dismiss reason</p>",
+			},	
+		  },
+		});
+	  });
+
+	const handleShowDismissReasonModal = (studentDetail,row) => {
+		const studentAttnDetail = {...row,studentDetail}
+		setOpenShowDismissReason(!openShowDismissReason)
+		setDismissReasonDetails(studentAttnDetail)
+	}
 
 	const renderCellsToday = () => {
 		
 		const todayDate = moment(calenderDate).format('DD/MM/YYYY')
 		return(
 			<div id="weekpdf" className="counselloTabel" style={{ width: "100%" }}>
+				{/* Start dismiss take reason modal */}
+				{
+					  <Modal
+					  aria-labelledby="transition-modal-title"
+					  aria-describedby="transition-modal-description"
+					  open={openModelDismiss}
+					  onClose={() => setOpenModelDismiss(!openModelDismiss)}
+					  closeAfterTransition
+					  BackdropComponent={Backdrop}
+					  BackdropProps={{
+						timeout: 500,
+					  }}
+					>
+					  <Fade in={openModelDismiss}>
+						<Box sx={style}>
+						  <form
+							name="dismissReasonInsert"
+							id="dismissReasonInsert"
+							className="mui-form"
+							onSubmit={handleStuDismiss}
+						  >
+							<legend style={{fontWeight: 600}}>Reason for dismiss</legend>
+							<div className="mui-textfield">
+								<div style={{marginBottom:'20px',fontWeight: 500}}>
+									Student Name : 
+									<span style={{fontSize:'16px', fontWeight: 400}}> {capitalizeFirstLetter(dismissStudentDetails.name)} {dismissStudentDetails.lastName}</span>
+								</div>
+								<div style={{fontWeight: 500}}>Dismiss Reason :
+								<div>
+								<textarea name="dismissReason" id="dismissReason" rows="3" cols="26" placeholder="Please provide dismiss reason" value={dismissReason} onChange={(e) => {setDismissReason(e.target.value)}} style={{margin: '10px 0'}}>
+								</textarea>
+								</div>
+							  </div>
+							</div>
+							<div className="btndesign text-right">
+							  <button
+								type="button"
+								className="btn btn-transparent"
+								onClick={() => setOpenModelDismiss(!openModelDismiss)}
+							  >
+								CLOSE
+							  </button>
+								{!loadingDismiss ? <input
+								  type="submit"
+								  className="btn btn-primary"
+								  value="DISMISS"
+								/>:<input
+								type="submit"
+								className="btn btn-primary"
+								value="DISMISS"
+								disabled
+							  />}
+							</div>
+						  </form>
+						</Box>
+					  </Fade>
+					</Modal>
+				}
+				{/* End dismiss take reason modal  */}
+				{/* Start show dismiss reason modal */}
+				{
+					  <Modal
+					  aria-labelledby="transition-modal-title"
+					  aria-describedby="transition-modal-description"
+					  open={openShowDismissReason}
+					  onClose={() => setOpenShowDismissReason(!openShowDismissReason)}
+					  closeAfterTransition
+					  BackdropComponent={Backdrop}
+					  BackdropProps={{
+						timeout: 500,
+					  }}
+					>
+					  <Fade in={openShowDismissReason}>
+						<Box sx={style1}>
+						 <div>
+							<legend style={{fontWeight: 600}}>Reason for dismiss</legend>
+							<CancelOutlinedIcon sx={{left: '10px',fontSize: 'xx-large !important',float: 'right', position: 'relative', top: "-64px"}} onClick={() => setOpenShowDismissReason(!openShowDismissReason)}/>
+							</div>
+							<div className="mui-textfield">
+								<div style={{marginBottom:'20px',fontWeight: 500}}>
+									Student Name : 
+									<span style={{fontSize:'16px', fontWeight: 400}}> {capitalizeFirstLetter(dismissReasonDetails?.studentDetail?.name)} {dismissReasonDetails?.studentDetail?.lastName}</span>
+								</div>
+								<div style={{fontWeight: 500}}>Dismiss Reason : <p style={{fontSize:'16px', fontWeight: 400}}>{capitalizeFirstLetter(dismissReasonDetails.dismiss_reason)}</p></div>
+							  </div>
+						</Box>
+					  </Fade>
+					</Modal>
+					    
+				}
+				{/* End show dismiss reason modal */}
 				<TableContainer>
 					<Table >
 						<TableHead>
 							<TableRow>
-								<TableCell style={{ textAlign: "center" }}>
+								<TableCell style={{ textAlign: "left" }}>
 									Student Name
 								</TableCell>
-								<TableCell style={{ textAlign: "center" }}>
+								<TableCell style={{ textAlign: "left" }}>
 									Attendence
 								</TableCell>
-								<TableCell style={{ textAlign: "center" }}>
+								<TableCell style={{ textAlign: "left" }}>
 									Action
 								</TableCell>
 							</TableRow>
@@ -140,28 +283,25 @@ export default function AttandanceReport(props) {
 						<TableBody>
 							{!loadingAttendance ? attandanceData && attandanceData.length > 0 ? attandanceData.map((item) => {
 				
-								
 								return (
 									
 									<TableRow >
-										
-
-										<TableCell style={{ textAlign: "center" }}>
-										{item.studentId && item.studentId.name}{" "}{item.studentId && item.studentId.lastName}
+										<TableCell style={{ textAlign: "left" }}>
+										{item.studentId && capitalizeFirstLetter(item.studentId.name)}{" "}{item.studentId && item.studentId.lastName}
 										</TableCell>
 										{item.attandan.length > 0 ? item.attandan?.map((attn)=> { 
 										const dateCreated = moment(attn.createdAt).format('DD/MM/YYYY')
 										return(
 											<>
 											{todayDate === dateCreated ? 
-										<TableCell style={{ textAlign: "center" }}>
-										{ moment(item.studentId.dismiss).format('DD/MM/YYYY') === dateCreated && item.studentId.dismiss !== null ? "D" : attn.attendence === null || attn.attendence === "0" ? "A" : attn.attendence === "1" ? "P" : '-' }
+										<TableCell style={{ textAlign: "left" }}>
+										{ moment(attn.dismiss_date).format('DD/MM/YYYY') === dateCreated && attn.dismiss_date !== null ? "Dismissed" : attn.attendence === null || attn.attendence === "0" ? "Absent" : attn.attendence === "1" ? "Present" : '-' }
 										</TableCell>
 										
-										:search !== ''?<TableCell style={{ textAlign: "center" }}>-</TableCell>:null}
+										:search !== ''?<TableCell style={{ textAlign: "left" }}>-</TableCell>:null}
 
 										</> 
-										)}):<TableCell style={{ textAlign: "center" }}>- </TableCell>}
+										)}):<TableCell style={{ textAlign: "left" }}>- </TableCell>}
 
 										 {item.attandan.length > 0 ? item.attandan.map((attn)=> { 
 										const dateCreated = moment(attn.createdAt).format('DD/MM/YYYY')
@@ -169,10 +309,10 @@ export default function AttandanceReport(props) {
 										
 											 return ( 
 												todayDate === dateCreated ? 
-												attn &&  attn.attendence &&  (attn.attendence !== null || attn.attendence !== "0") && dateCreated === CurrentDayDate ? 
-												<TableCell style={{ textAlign: "center" }}>	<span onClick={() => handleStuDismiss(item.studentId)}  > <img  src={require("./images/dismiss.png")}  alt="dismiss icon"/> </span></TableCell>
-											   :<TableCell style={{ textAlign: "center" }}> </TableCell>:null
-									  	 )}): <TableCell style={{ textAlign: "center" }}> </TableCell>} 
+												attn &&  attn.attendence && moment(attn.dismiss_date).format('DD/MM/YYYY') === dateCreated && attn.dismiss_date !== null ? <TableCell style={{ textAlign: "left",color:'#005cb3' }}><span onClick={() => handleShowDismissReasonModal(item.studentId,attn)}>Get Reason</span></TableCell> :  (attn.attendence === "1" && CurrentDayDate === dateCreated) ?
+												<TableCell style={{ textAlign: "left" }}>	<span onClick={() => handleDismissModal(item.studentId)}  > <img  src={require("./images/dismiss.png")}  alt="dismiss icon"/> </span></TableCell>
+											   :<TableCell style={{ textAlign: "left" }}> </TableCell>:null
+									  	 )}): <TableCell style={{ textAlign: "left" }}> </TableCell>} 
 									</TableRow>
 								)}
 							):<TableRow><TableCell colspan={3} style={{ textAlign: "center" }}>Record not found</TableCell></TableRow>:<Example1/>}
@@ -258,7 +398,7 @@ export default function AttandanceReport(props) {
 					<Table >
 						<TableHead>
 							<TableRow>
-								<TableCell style={{ textAlign: "center" }}>
+								<TableCell style={{ textAlign: "left" }}>
 									Student Name
 								</TableCell>
 								{rows[0].props.children.map((res) => {
@@ -273,7 +413,7 @@ export default function AttandanceReport(props) {
 								return (
 									
 									<TableRow >
-										<TableCell style={{ textAlign: "center" }}>
+										<TableCell style={{ textAlign: "left" }}>
 										{item.studentId && item.studentId.name}{" "}{item.studentId && item.studentId.lastName}
 										</TableCell>
 										{rows[0].props.children.map((week) => {
@@ -287,7 +427,7 @@ export default function AttandanceReport(props) {
 													(
 														item.attandan.map((e) => {
 															if(moment(e.createdAt).format("YYYY-MM-DD") === moment(week.key).format("YYYY-MM-DD")){
-																return moment(item.studentId.dismiss).format('YYYY-MM-DD') === moment(e.createdAt).format("YYYY-MM-DD") && item.studentId.dismiss !== null ? "D" : e.attendence === null || e.attendence === "0" ? "A" : e.attendence === "1" ? "P" : "";
+																return moment(e.dismiss_date).format('YYYY-MM-DD') === moment(e.createdAt).format("YYYY-MM-DD") && e.dismiss_date !== null ? "D" : e.attendence === null || e.attendence === "0" ? "A" : e.attendence === "1" ? "P" : "";
 															}
 															// else{
 															// 	return "no"; 
@@ -388,7 +528,7 @@ export default function AttandanceReport(props) {
 					<Table >
 						<TableHead>
 							<TableRow>
-								<TableCell style={{ textAlign: "center" }}>Student Name</TableCell>
+								<TableCell style={{ textAlign: "left" }}>Student Name</TableCell>
 								{rows[0].props.children.map((month) => {
 									return (<TableCell style={{ textAlign: "center" }}> {moment(month.key).format("DD MMM YYYY")}</TableCell>);
 								})}
@@ -399,18 +539,19 @@ export default function AttandanceReport(props) {
 									return (
 										<>
 											<TableRow key={item._id}>
-												<TableCell style={{ textAlign: "center" }}>
+												<TableCell style={{ textAlign: "left" }}>
 													{item.studentId && item.studentId.name}{" "}{item.studentId && item.studentId.lastName}
 												</TableCell >
 												{rows[0].props.children.map((month) => {
 													return (
+														
 														moment(month.key).format("ddd") === "Sat" || moment(month.key).format("ddd") === "Sun" ?
 														<TableCell style={{ textAlign: "center" }} > Leave </TableCell> 
 														: item.attandan.length === 0 ?  <TableCell   style={{ textAlign: "center" }}> - </TableCell> :(
 														<TableCell  style={{ textAlign: "center" }}>															
 																{item.attandan.map((e) => {
 																	if (moment(e.createdAt).format("YYYY-MM-DD") === moment(month.key).format("YYYY-MM-DD")) {
-																 		return  moment(item.studentId.dismiss).format('YYYY-MM-DD') === moment(e.createdAt).format("YYYY-MM-DD")  && item.studentId.dismiss !== null ? "D" : e.attendence === null || e.attendence === "0" ? "A" : e.attendence === "1" ? "P" : "-";
+																 		return  moment(e.dismiss_date).format('YYYY-MM-DD') === moment(e.createdAt).format("YYYY-MM-DD")  && e.dismiss_date !== null ? "D" : e.attendence === null || e.attendence === "0" ? "A" : e.attendence === "1" ? "P" : "-";
 																	}
 																})
 															}
@@ -448,7 +589,6 @@ export default function AttandanceReport(props) {
 	};
 
 	const handleAttandanceReport = async (idd, byWhich,strd,endd,data,calenderDatee) => {
-		console.log(idd,byWhich,strd,endd,data,calenderDatee)
 		setSearch(data);
 
 		setattandanceData([])

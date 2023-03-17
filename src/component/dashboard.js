@@ -22,6 +22,7 @@ import attendance1 from "./images/attendance.svg";
 import { Link } from "react-router-dom";
 import { authHeader } from "../comman/authToken";
 import Loader from "../comman/loader";
+import { capitalizeFirstLetter } from "../comman/capitalizeFirstLetter";
 
 toast.configure();
 
@@ -191,7 +192,7 @@ const DashBoard1 = () => {
 
   const filterDataNull = filterr.filter(
     (vall) =>
-      vall && vall.dismiss === null && vall.attaindence.attendence === null
+      vall && vall.attaindence.attendence === null
   );
 
   const AbsConcatNull = filterDataAbs.concat(filterDataNull);
@@ -210,17 +211,13 @@ const DashBoard1 = () => {
             ? []
             : vall.attaindence &&
               vall.attaindence.out_of_class !== "no" &&
-              vall?.dismiss === null &&
+              vall?.attaindence.dismiss_date === null &&
               vall.attaindence.attendence !== "0" &&
               vall.attaindence.outclassDateTime
         );
-  const absBySubs = filterr.length - filterDataPre.length;
-
-  let dismiss = filterr.filter((e) => e.dismiss !== null);
-  let finalAbsRecord = filterDataAbs.filter((e) => e.dismiss === null);
 
   const renameClassName = classNameOnChange?.slice(6);
-  const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
+  const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
 
   return (
     <React.Fragment>
@@ -259,12 +256,11 @@ const DashBoard1 = () => {
                   {classData.map((item) => {
                  
                     const str = item?.className?.slice(6);
-                    const capitalizeFirstLetter =
-                      str?.charAt(0)?.toUpperCase() + str?.slice(1);
+                    const capitalizeLetter =  capitalizeFirstLetter(str)
 
                     return (
                       <option key={item._id} value={item._id}>
-                        {capitalizeFirstLetter}
+                        {capitalizeLetter}
                       </option>
                     );
                   })}
@@ -331,7 +327,7 @@ const DashBoard1 = () => {
                     <span className="count">
                       {classNameOnChange === undefined ||
                       classNameOnChange === ""
-                        ? AbsConcatNull?.length
+                        ? (rows.totalcount && filterDataPre?.length ? rows.totalcount - filterDataPre?.length : 0)
                         : AbsConcatNull?.length}
                     </span>
                   </div>

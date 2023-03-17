@@ -1,28 +1,16 @@
 import  io  from "socket.io-client";
-import React, { useEffect, useRef, useState } from 'react';
-import {Box,FormControl,styled,Grid, Container,Modal,Button,FormControlLabel,Table,TableBody,TableCell,TableContainer,TableHead,TablePagination,TableRow,TableSortLabel,Typography,Paper,Switch, NativeSelect, Avatar} from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import {Box,Modal,Button,Typography} from '@mui/material';
 import alert1 from '../../images/white-alert.svg';
 import alert2 from '../../images/black-alert.svg';
-import { API, BASE_URL, SOCKET_URL } from "../../config/config";
+import { SOCKET_URL } from "../../config/config";
 import { stylePopup } from "../css/style";
-import axios from "axios";
-import { authHeader } from "../../comman/authToken";
-import { handleLogout } from "../header";
+
 
 const PushNotification = () => {
 
   var socket;
-
-  useEffect(() => {
-    socket = io.connect(SOCKET_URL);
-    socket.on("connected", () => {});
- 
-    return () => {
-      socket.disconnect();
-    };
-  }, [socket]);
   
-    // const socket = useRef(io(SOCKET_URL), { transports: ['websocket'] });
     const [red, setRed] = useState(false);
     const [yellow, setYellow] = useState(false);
     const [dismiss, setDismiss] = useState(false);
@@ -32,7 +20,9 @@ const PushNotification = () => {
     const [allData, setAllData] = useState([]);
 
     useEffect(() =>
-   {
+    {
+     socket = io.connect(SOCKET_URL);
+     socket.on("connected", () => {});
     socket.on("noty", () => {
       setRed(true);
     });
@@ -46,24 +36,10 @@ const PushNotification = () => {
       setData(res);
       setDismiss(true);
     });
-    // socket.on("dismissAllNotication", (ress) => {
-      
-    //    axios.get(`${API.getStudent}`, { headers: authHeader() }).then((res)=>{
-    //     for(var i=0;i < (ress.selectedRow.length);i++){ 
-    //       res.data.data.filter((item)=>{ 
-    //         if(item._id === (ress.selectedRow[i])){ 
-    //           allData.push(item)
-    //             setAllDismiss(true);
-    //         }
-    //       }) 
-    //     }
-    //   }).catch((err) => {
-    //     if (err.response.status === 401) {
-    //       handleLogout()
-    //     }
-    //   });
-    // });
     
+    return () => {
+      socket.disconnect();
+    };
   }, [socket]);
 
   const handleRed = () => {
@@ -77,7 +53,6 @@ const PushNotification = () => {
   };
   const handleDismissNoty = () => {
     setDismiss(false);
-    window.location.reload();
   };
   const handleAllDismissNoty = () => {
     setAllDismiss(false);
@@ -148,7 +123,7 @@ const PushNotification = () => {
                     </Box>
                   </Modal>
                 }
-                  {
+                  { localStorage.getItem('role') !== 'manager' &&
                   <Modal
                     open={dismiss}
                     onClose={handleDismissNoty}
@@ -161,8 +136,10 @@ const PushNotification = () => {
                          <p style={{ fontWeight: 600,  left: '36%', position: 'absolute',  top: '20%',  color: 'white', fontSize: '22px' }}>Dismissed</p></span>
 
                       </Typography>
+                     
                       <Typography id="modal-modal-description" component="div" sx={{ mt: 2 }}>
                         <h4 className="red-text">Student Name : <span> {data ? data.name :""} {data ? data.lastName : "" }</span></h4>
+                        <p>Dismiss Reason : {data && data.dismissReason} </p>
                          <Button className="red-btn" onClick={handleDismissNoty}>OK</Button>
                       </Typography>
                       

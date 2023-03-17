@@ -37,7 +37,6 @@ import PinInput from "react-pin-input";
 import student from "../../images/student-black.svg";
 import { style1 } from "../css/style";
 import { authHeader } from "../../comman/authToken";
-import PushNotification from "./pushnotification";
 import LoaderButton from "../../comman/loader1";
 import "../../style/toggle.css";
 import Switch from "@mui/material/Switch";
@@ -45,6 +44,7 @@ import { handleLogout } from "../header";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import Example1 from "../../comman/loader1";
 import moment from "moment";
+import { capitalizeFirstLetter } from "../../comman/capitalizeFirstLetter";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -261,7 +261,7 @@ const CounsellorDashboard = (props) => {
 
     if (today.getDay() == 6 || today.getDay() == 0) {
       toast.warning("Today is weekend");
-    } else if (row && row.dismiss) {
+    } else if (row && row.attaindence.dismiss_date) {
       toast.warning("This student is dismiss by manager");
     } else {
       await axios({
@@ -271,7 +271,7 @@ const CounsellorDashboard = (props) => {
         headers: authHeader(),
       })
         .then((res) => {
-          toast.success("Attendance Saved");
+          toast.success(`${capitalizeFirstLetter(row.name)} ${row.lastName} marked as present`);
           GetCounsellorData();
         })
         .catch((err) => {
@@ -296,7 +296,7 @@ const CounsellorDashboard = (props) => {
             : keys.includes("out_of_class") &&
                 vall?.attaindence &&
                 vall?.attaindence?.out_of_class !== "no" &&
-                vall?.dismiss === null &&
+                vall?.attaindence?.dismiss_date === null &&
                 vall?.attaindence?.attendence === "1";
         });
 
@@ -322,7 +322,7 @@ const CounsellorDashboard = (props) => {
         attendence: attdance,
       };
 
-      if (row && row.dismiss) {
+      if (row && row?.attaindence?.dismiss_date) {
         toast.warning("This student is dismiss by manager");
       } else {
         await axios({
@@ -332,7 +332,11 @@ const CounsellorDashboard = (props) => {
           headers: authHeader(),
         })
           .then((res) => {
-            toast.success("Attendance updated");
+            if(attdance === '1'){
+            toast.success(`${capitalizeFirstLetter(row.name)} ${row.lastName} marked as present`);
+            }else{
+            toast.success(`${capitalizeFirstLetter(row.name)} ${row.lastName} marked as absent`);
+            }
             GetCounsellorData();
             setPreAbs(!preAbs);
           })
@@ -394,7 +398,7 @@ var seconds;
       toast.warning("First you have to mark attandance");
     } else if (row.attaindence && row.attaindence.attendence === "0") {
       toast.warning("You are mark as an absent");
-    } else if (row && row.dismiss) {
+    } else if (row && row.attaindence.dismiss_date) {
       toast.warning("This student is dismiss by manager");
     } else if (row.attaindence && row.attaindence.attendence === null) {
       toast.warning("Student is not mark as out of class until he is Present");
@@ -557,7 +561,6 @@ var seconds;
           {" "}
           <ImageAvatars />
         </div>
-        <PushNotification />
         <Container
           maxWidth="100%"
           style={{ padding: "0", display: "inline-block" }}
@@ -764,7 +767,7 @@ var seconds;
                                     style={{ width: "150px" }}
                                   >
                                     { row &&
-                                    row.dismiss ? (
+                                    row.attaindence.dismiss_date ? (
                                       "Dismissed"
                                     ) :
                                      row &&
@@ -843,16 +846,13 @@ var seconds;
                                       className="filter ml-0 mb-3 w-100 select-box"
                                     >
                                       <NativeSelect
-                                          onClick={(e) => 
-                                            e.target.value = null
-                                          }
-                                        onChange={(e) =>
+                                      onChange={(e) =>
                                           handleOnChangeSelect(e, row)
                                         }
                                         value={
                                           row &&
                                           row.attaindence &&
-                                          row.dismiss ? 'no'  :
+                                          row.attaindence.dismiss_date ? 'no'  :
                                           row.attaindence.out_of_class
                                             ? row.attaindence.out_of_class
                                             : "no"
@@ -864,7 +864,7 @@ var seconds;
                                           (row.attaindence &&
                                             row.attaindence.attendence ===
                                               "0") ||
-                                          row.dismiss
+                                          row.attaindence.dismiss_date !== null
                                             ? true
                                             : false
                                         }
@@ -881,7 +881,7 @@ var seconds;
                                         </option>
                                         <option value="in Camp">In camp</option>
                                       </NativeSelect>
-                                      {row && row.dismiss ? '' :
+                                      {row && row.attaindence.dismiss_date ? '' :
                                       row.attaindence && 
                                       row.attaindence.out_of_class && 
                                       row.attaindence.attendence === "1" ? (

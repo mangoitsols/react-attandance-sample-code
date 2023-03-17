@@ -19,6 +19,7 @@ import Example1 from "../comman/loader1";
 import { API } from "../config/config";
 import { authHeader } from "../comman/authToken";
 import { Visibility, VisibilityOff } from "@material-ui/icons";
+import { capitalizeFirstLetter } from "../comman/capitalizeFirstLetter";
 
 toast.configure();
 
@@ -332,7 +333,7 @@ class AddCounsellor extends Component {
                       <option value="">select</option>
                       {this.state.getclasses.map((item) => {
                         const renameClassName = item.className?.slice(6);
-                        const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
+                        const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
                         return (
                           <option key={item._id} value={item._id}>{capitalFirstLetterClassName}</option>
                         );

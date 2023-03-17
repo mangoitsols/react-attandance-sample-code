@@ -10,6 +10,7 @@ import axios from "axios";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { handleLogout } from "../header";
+import { capitalizeFirstLetter } from "../../comman/capitalizeFirstLetter";
 
 class CProfile extends Component {
   constructor(props) {
@@ -89,16 +90,8 @@ class CProfile extends Component {
       currentLocation,
     } = this.state;
 
-    const roleStr = localStorage?.getItem("role");
-    const capitalizeFirstLetter =
-      roleStr?.charAt(0)?.toUpperCase() + roleStr?.slice(1);
-
-    const capitalizeFirstLetterofFirstName =
-      getUserDetail[0]?.name?.charAt(0)?.toUpperCase() +
-      getUserDetail[0]?.name?.slice(1);
-    const capitalizeFirstLetterofLastName =
-      getUserDetail[0]?.lastname?.charAt(0)?.toUpperCase() +
-      getUserDetail[0]?.lastname?.slice(1);
+    const capitalizeFirstLetterofFirstName = capitalizeFirstLetter(getUserDetail[0]?.name)
+    const capitalizeFirstLetterofLastName = capitalizeFirstLetter(getUserDetail[0]?.lastname)
 
     return (
       <>

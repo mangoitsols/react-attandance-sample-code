@@ -16,6 +16,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import PasswordChecklist from "react-password-checklist";
 import { Visibility, VisibilityOff } from "@material-ui/icons";
+import { capitalizeFirstLetter } from "../comman/capitalizeFirstLetter";
 toast.configure();
 
 const EditCounsellor = () => {
@@ -310,7 +311,7 @@ const EditCounsellor = () => {
                     >
                       {getclasses.map((item) => {
                          const renameClassName = item.className?.slice(6);
-                         const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
+                         const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
                         return (
                           <MenuItem value={item._id}>{capitalFirstLetterClassName}</MenuItem>
                         );

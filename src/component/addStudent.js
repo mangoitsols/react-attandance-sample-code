@@ -29,6 +29,7 @@ import { API } from "../config/config";
 import { authHeader } from "../comman/authToken";
 import moment from "moment";
 import Example from "../comman/loader";
+import { capitalizeFirstLetter } from "../comman/capitalizeFirstLetter";
 
 toast.configure();
 
@@ -374,7 +375,7 @@ class AddStudent extends Component {
     e.preventDefault();
     const { nameC } = this.state;
     if (nameC === "") {
-      toast.error("Classname is required");
+      toast.error("Class name is required");
     } else {
       const requestData = {
         className: `class ${nameC}`,
@@ -382,7 +383,7 @@ class AddStudent extends Component {
       this.setState({ AddClassloading: true });
       this.props.createClass(requestData, (res) => {
         if (res.status === 200) {
-          toast.success(res.data.message);
+          toast.success(`${capitalizeFirstLetter(nameC)} created successfully`);
           this.getClassData();
           this.setState({ AddClassloading: false });
           this.setState({ openmodel: false });
@@ -471,7 +472,7 @@ class AddStudent extends Component {
         },
         messages: {
           class: {
-            required: "<p style='color:red'>Classname is required</P>",
+            required: "<p style='color:red'>Class name is required</P>",
           },
         },
       });
@@ -910,7 +911,7 @@ class AddStudent extends Component {
                           <option value="">select</option>
                           {getclasses.map((item) => {
                              const renameClassName = item.className?.slice(6);
-                             const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
+                             const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
                             return (
                               <option key={item._id} value={item._id}>
                                 {capitalFirstLetterClassName}

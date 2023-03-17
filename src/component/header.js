@@ -10,6 +10,7 @@ import areshow from '../images/aresure.svg';
 import { styleAlertPopup } from "./css/style";
 import { authHeader } from "../comman/authToken";
 import axios from "axios";
+import { capitalizeFirstLetter } from "../comman/capitalizeFirstLetter";
 
 
 toast.configure();
@@ -105,10 +106,10 @@ export default function ImageAvatars() {
   };
 
   const roleStr = localStorage?.getItem("role");
-  const capitalizeRoleFirstLetter = roleStr?.charAt(0)?.toUpperCase() + roleStr?.slice(1);
+  const capitalizeRoleFirstLetter = capitalizeFirstLetter(roleStr);
 
   const nameStr = localStorage?.getItem("name");
-  const capitalizeNameFirstLetter = nameStr?.charAt(0)?.toUpperCase() + nameStr?.slice(1);
+  const capitalizeNameFirstLetter = capitalizeFirstLetter(nameStr);
   
   return (
     <React.Fragment>

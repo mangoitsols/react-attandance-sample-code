@@ -16,6 +16,7 @@ import "./css/student.css";
 import "react-toastify/dist/ReactToastify.css";
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import Example1 from '../comman/loader1';
+import { capitalizeFirstLetter } from '../comman/capitalizeFirstLetter';
 toast.configure();
  
     const ManageClass = () => {
@@ -39,13 +40,12 @@ toast.configure();
 
 
         const handleCloseClassDeleteModal = (classDetail,councellorDetail) => { 
-           console.log(classDetail,"ccccccc")
            if(councellorDetail.length > 0 && classDetail?.totalStudents > 0) {
-            toast.error(`Students/Counsellor are assigned.`);
+            toast.error(`Class is already associated with a counsellor/students`);
         }else if(classDetail?.totalStudents > 0) {
-            toast.error(`Students are assigned.`);
+            toast.error(`Class is already associated with the students`);
         }else if(councellorDetail.length > 0) {
-            toast.error(`Counsellor are assigned.`);
+            toast.error(`Class is already associated with the counsellor`);
         }else{
             setOpenModelClassDelete(!openModelClassDelete)
             setSelectedClassDetail(classDetail)
@@ -144,12 +144,12 @@ toast.configure();
         const handleOpen = () => setOpenmodel( true );
         const handleCloseEdit = () => setOpenmodelEdit( false);
         const handleOpenEdit = (classname) => {setOpenmodelEdit( true ) ; setNameC(classname.className?.slice(6)); setClassNameId(classname._id)}
-        console.log(selectedClassDetail,"selectedClassDetail")
+        console.log(classDetail,"selectedClassDetail")
         const handleCreateClass = async(e) => {
             e.preventDefault(); 
             
             if(nameC === ''){
-                toast.error("Classname is required");
+                toast.error("Class name is required");
             }
             else {
                 setAddLoading(true)
@@ -162,7 +162,7 @@ toast.configure();
                         data: requestData,
                         headers: authHeader(),
                     }).then((res)=>{
-                        toast.success("Classname created successfully");
+                        toast.success(`${capitalizeFirstLetter(nameC)} created successfully`);
                         setOpenmodel( false);
                         handleGetClass();
                         setAddLoading(false)
@@ -187,7 +187,7 @@ toast.configure();
             e.preventDefault();    
             
             if(nameC === ''){
-                toast.error("Classname is required");
+                toast.error("Class name is required");
             }
             else {
                 setEditLoading(true)
@@ -201,7 +201,7 @@ toast.configure();
                         headers: authHeader(),
                     }).then((res)=>{
                         setEditLoading(false)
-                        toast.success("Classname updated successfully");
+                        toast.success(`Class name is updated successfully`);
                         setOpenmodelEdit( false);
                         handleGetClass();
                   }).catch((err) => {
@@ -230,7 +230,7 @@ toast.configure();
                     },
                     messages: {
                         class: {
-                          required: "<p style='color:red'>Classname is required</P>",
+                          required: "<p style='color:red'>Class name is required</P>",
                         },
                     }
                 })
@@ -252,7 +252,7 @@ toast.configure();
                 }).then((a) => {
                   if (a.status === 200 || a.status === 201) {
                     setOpenModelClassDelete(!openModelClassDelete)
-                    toast.success(`${classnamee?.charAt(0)?.toUpperCase() + classnamee?.slice(1)} deleted successfully`);
+                    toast.success(`Class is deleted successfully`);
                     handleGetClass();
                   }else {
                     setOpenModelClassDelete(!openModelClassDelete)
@@ -278,6 +278,7 @@ toast.configure();
     
         const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - classDetail.length) : 0;
     const classnamee = selectedClassDetail?.className?.slice(6)
+
         return (
             <>
                 
@@ -302,6 +303,49 @@ toast.configure();
                     </div>
     
             {!loading ? <React.Fragment> 
+                {
+                                   <Modal
+                                         open={openModelClassDelete}
+                                         onClose={() => handleCloseClassDeleteModal('',[])}
+                                         aria-labelledby="modal-modal-title"
+                                         aria-describedby="modal-modal-description"
+                                       >
+                                         <Box sx={{ ...style,width: 600, textAlign:'center' }}>
+                                           <Box>
+                                                   <CancelOutlinedIcon sx={{fontSize:'4.5rem !important', fill:'red !important'}}/>
+                                           </Box>
+                                           <Typography
+                                             id="modal-modal-title"
+                                             component="h1"
+
+                                           >
+                                             Are you sure? 
+                                           </Typography>
+                                           <Typography
+                                             id="modal-modal-description"
+                                             component={'subtitle2'}>
+                                               Do you really want to delete the counsellor  
+                                               <strong> { selectedClassDetail && capitalizeFirstLetter(classnamee)}</strong> ?
+                                             </Typography>
+                                           <Box marginTop={'30px'}>
+                                          
+                                          
+                                             {!loading ? (
+                                               <Button variant="contained" size="large" onClick={handleDeleteClass}>Delete</Button>
+                                             ) : (
+                                               <>
+                                             <Button variant="contained" size="large" disabled>Delete</Button> 
+                                             <Loader1 />
+                                               </>
+                                             )}                                       
+                                              <Button variant='outlined' size="large"  onClick={() => setOpenModelClassDelete(!openModelClassDelete)} sx={{marginLeft:'15px',borderColor:'text.primary',color:'text.primary'}}>
+                                               Cancel
+                                             </Button>
+                                            
+                                           </Box>
+                                         </Box>
+                                       </Modal>
+                                        }
                     <div className='counselloTabel' style={{ width: "100%" }}>
                         <TableContainer>
                             <Table sx={{ minWidth: 750 }}
@@ -328,65 +372,21 @@ toast.configure();
                                 <TableBody>
                                     {classDetail.length > 0 ? classDetail.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((item,index) => {
                                        const counDetail = counsellorDetail.filter((ccitem) => {return ccitem?.classId?._id === item?._id})
-                                    const classnamee = selectedClassDetail.className?.slice(6)
+                                    
                                     const tableclassnamee = item.className?.slice(6)
                                         return (
                                            
                                             <TableRow key={item && item._id}>
                                                 
                                                  <TableCell  > {" "}{tableclassnamee?.charAt(0).toUpperCase() + tableclassnamee.slice(1)}</TableCell>
-                                                 <TableCell  > {" "}{counDetail.length > 0 ? counDetail[0]?.name?.charAt(0)?.toUpperCase() + counDetail[0]?.name?.slice(1) :''}  {counDetail.length > 0 ? counDetail[0]?.lastname?.charAt(0)?.toUpperCase() + counDetail[0]?.lastname?.slice(1): ''}</TableCell>
+                                                 <TableCell  > {" "}{counDetail.length > 0 ? capitalizeFirstLetter(counDetail[0]?.name) :''}  {counDetail.length > 0 ? capitalizeFirstLetter(counDetail[0]?.lastname): ''}</TableCell>
                                                  <TableCell  > {" "}{item.totalStudents ? item.totalStudents : 0}</TableCell>
                                                 
                                                 <TableCell align="center" className='action' style={{ width: "150px", }}>
                                                 <span onClick={() => handleOpenEdit(item)}><img src={require('./images/edit.png')} alt="Edit icon" /></span>
                                                     <span onClick={() => handleCloseClassDeleteModal(item,counDetail)}><img src={require('./images/delet.png')} alt="Delete icon" /></span>
                                                  
-                                                </TableCell>
-                                                {
-                                   <Modal
-                                         open={openModelClassDelete}
-                                         onClose={() => handleCloseClassDeleteModal('',[])}
-                                         aria-labelledby="modal-modal-title"
-                                         aria-describedby="modal-modal-description"
-                                       >
-                                         <Box sx={{ ...style,width: 600, textAlign:'center' }}>
-                                           <Box>
-                                                   <CancelOutlinedIcon sx={{fontSize:'4.5rem !important', fill:'red !important'}}/>
-                                           </Box>
-                                           <Typography
-                                             id="modal-modal-title"
-                                             component="h1"
-
-                                           >
-                                             Are you sure? 
-                                           </Typography>
-                                           <Typography
-                                             id="modal-modal-description"
-                                             component={'subtitle2'}>
-                                               Do you really want to delete the counsellor  
-                                               <strong> { selectedClassDetail && classnamee?.charAt(0)?.toUpperCase() + classnamee?.slice(1) }</strong> ?
-                                             </Typography>
-                                           <Box marginTop={'30px'}>
-                                          
-                                          
-                                             {!loading ? (
-                                               <Button variant="contained" size="large" onClick={handleDeleteClass}>Delete</Button>
-                                             ) : (
-                                               <>
-                                             <Button variant="contained" size="large" disabled>Delete</Button> 
-                                             <Loader1 />
-                                               </>
-                                             )}                                       
-                                              <Button variant='outlined' size="large"  onClick={() => setOpenModelClassDelete(!openModelClassDelete)} sx={{marginLeft:'15px',borderColor:'text.primary',color:'text.primary'}}>
-                                               Cancel
-                                             </Button>
-                                            
-                                           </Box>
-                                         </Box>
-                                       </Modal>
-                                        }
-            
+                                                </TableCell>            
                                             </TableRow>
                                      )
                                     }):  <Typography> Record Not found </Typography>}
@@ -405,7 +405,7 @@ toast.configure();
                         <TablePagination
                             rowsPerPageOptions={[5, 10, 15]}
                             component="div"
-                            count={classDetail.length-1}
+                            count={classDetail.length}
                             rowsPerPage={rowsPerPage}
                             page={page}
                             rows={classDetail}

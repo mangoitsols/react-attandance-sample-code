@@ -21,9 +21,9 @@ export function login(data, callback) {
           if (error.response.data.message === "email not found") {
             toast.error("Email does not exist");
           } else if (error.response.data.message === "password is incorrect") {
-            toast.error("Password is incorrect");
+            toast.error("Your password is incorrect");
           } else if (error.response.data.message === "user not Found !") {
-            toast.error("Username is not found");
+            toast.error("Username is invalid");
           }
         }
         callback(error);

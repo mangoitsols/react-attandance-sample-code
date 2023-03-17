@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "./sidebar";
 import ImageAvatars, { handleLogout } from "./header";
 import Container from "@mui/material/Container";
-import DashboardIcon from "@mui/icons-material/Dashboard";
 import { API } from "../config/config";
 import { Link } from "react-router-dom";
 import Table from "@mui/material/Table";
@@ -26,6 +25,7 @@ import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 
 import "./css/student.css";
 import Example1 from "../comman/loader1";
+import { capitalizeFirstLetter } from "../comman/capitalizeFirstLetter";
 
 toast.configure();
 
@@ -83,7 +83,7 @@ export default function Counsellor() {
 
   const handleDelete = (councellorDetail) => {
     if(councellorDetail?.classId?.className !== "class unassigned"){
-      toast.error(`${councellorDetail?.classId?.className.slice(6)} assigned to ${councellorDetail?.name} ${councellorDetail?.lastname} so can't be deleted`)
+      toast.error(`Counsellor is already associated with a class`)
     }else{
     setLoading(!loading);
     fetch(`${API.deleteUser}/${councellorDetail?._id}`, {
@@ -94,7 +94,7 @@ export default function Counsellor() {
         if (a.status === 200 || a.status === 201) {
           setLoading(false);
           handleGetUser();
-          toast.success("Deleted successfully");
+          toast.success("Counsellor deleted successfully");
           handleCloseDeleteModal("");
         } else {
           setLoading(true);
@@ -212,7 +212,7 @@ export default function Counsellor() {
                           )
                           .map((item) => {
                             const renameClassName = item && item.classId && item.classId.className?.slice(6);
-                            const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
+                            const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
                             return (
                               <TableRow key={item && item._id}>
                                 <TableCell>

@@ -28,7 +28,7 @@ class CreatePin extends Component {
     e.preventDefault();
     const { pint, pintt, old } = this.state;
     if (pint === "" || pintt === "" || old === "") {
-      toast.error("Pins can't be null");
+      toast.error("You should fill out the Pins");
     } else if (pint === pintt) {
       const requestData = {
         oldPin: old,
@@ -39,7 +39,7 @@ class CreatePin extends Component {
       this.props.updatePin(requestData, localStorage.getItem("id"), (res) => {
         if (res.status === 200) {
           this.setState({ loading: false });
-          toast.success("Pin updated");
+          toast.success("Pin is updated successfully");
           setTimeout(() => {
             window.location.replace("/createPin");
           }, 3000);

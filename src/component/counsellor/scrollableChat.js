@@ -190,17 +190,6 @@ const ScrollableChat = ({ messages }) => {
             ) : (
               ""
             )}
-
-            {/* {m && m._id === index && m.sender._id !== userId && toggle ? (
-              <>
-              {console.log(m._id,"rtrter",m.chat._id)}
-                <span className="mt-3 m-2" onClick={() => handleDeleteReceiver(m._id,m.chat._id)}>
-                  <img src={require("../images/delet.png")} />
-                </span>
-              </>
-            ) : (
-              ""
-            )} */}
           </div>
        ) )}
     </ScrollableFeed>

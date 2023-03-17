@@ -12,6 +12,14 @@ import {
   Button,
   Chip,
   Modal,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
   Tooltip,
   Typography,
 } from "@mui/material";
@@ -40,6 +48,7 @@ import {
   isSameUser,
 } from "../config/chatLogics";
 import CircleIcon from "@mui/icons-material/Circle";
+import { capitalizeFirstLetter } from "../comman/capitalizeFirstLetter";
 toast.configure();
 
 const Chat = () => {
@@ -72,7 +81,8 @@ const Chat = () => {
   const [openModelLeaveGroup, setOpenModelLeaveGroup] = useState(false);
   const [subHeaderOpen, setSubHeaderOpen] = useState(false);
   const [statusData, setStatusData] = useState([]);
-  
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
   var socket;
 
@@ -588,7 +598,7 @@ const Chat = () => {
   const handleFocusOut = (text) => {
     setTogglee(true);
     if (oldMessage && oldMessage === text) {
-      toast.warning("You haven't made any changes with previous message");
+      toast.warning("Tried to edit the message but didn’t make any changes");
     } else {
       const reqData = {
         content: text,
@@ -696,7 +706,16 @@ const Chat = () => {
 
   const ids = statusData.map(o => o.userId)
   const filtered = statusData.filter(({userId}, index) => !ids.includes(userId, index + 1))
-  
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
+
   return (
     <React.Fragment>
       <Sidebar />
@@ -890,15 +909,17 @@ const Chat = () => {
                                     </span>
                                   ) : togglee === true || togglee === false ? (
                                     togglee === true && m._id === index ? (
+                                      <>
                                       <Tooltip
                                         title="Click on the message"
                                         arrow
                                       >
-                                        {" "}
+                                       
                                         <span style={{ color: "white" }}>
                                           Edit
                                         </span>
                                       </Tooltip>
+                                      </>
                                     ) : (
                                       <span
                                         onClick={() =>
@@ -1086,7 +1107,7 @@ const Chat = () => {
                             id="modal-modal-description"
                             component={"subtitle2"}
                           >
-                            Do you really want to leave the{" "}
+                            Do you really want to delete the{" "}
                             <strong>
                               {chatId
                                 ? chatId.chatName.charAt(0).toUpperCase() +
@@ -1101,7 +1122,7 @@ const Chat = () => {
                                 size="large"
                                 onClick={handleGroupDelete}
                               >
-                                Leave
+                                Delete
                               </Button>
                             ) : (
                               <>
@@ -1152,14 +1173,41 @@ const Chat = () => {
                           </Typography>
                           </Box>
                           <Box>
-                          {chatId.users.map((member, index) => {
-                        return (
-                          <Chip label={(member.name === localStorage.getItem("name")
-                          ? "You"
-                          : member.name.charAt(0).toUpperCase() +
-                            member.name.slice(1))} sx={{marginRight:1}} />                         
-                        );
-                      })}
+                          
+                          <Paper sx={{ width: "100%", overflow: "hidden" }}>
+                            <TableContainer sx={{ maxHeight: 440 }}>
+                              <Table stickyHeader aria-label="sticky table">
+                                <TableHead>
+                                  <TableRow>
+                                       <TableCell align="left"> S.No. </TableCell>
+                                       <TableCell sx={{textAlign:"left !important"}}> Members </TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {chatId.users
+                                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                    .map((row,index) => {
+                                      return (
+                                        <TableRow hover role="checkbox" tabIndex={-1} key={index}>
+                                              <TableCell> {(index+1)} </TableCell>
+                                              <TableCell> {row.name === localStorage.getItem("name") ? "You" : (capitalizeFirstLetter(row.name) + " " + capitalizeFirstLetter(row.lastname))}
+                                                </TableCell>
+                                        </TableRow>
+                                      );
+                                    })}
+                                </TableBody>
+                              </Table>
+                            </TableContainer>
+                            <TablePagination
+                              rowsPerPageOptions={[5, 10, 25, 100]}
+                              component="div"
+                              count={chatId.users.length}
+                              rowsPerPage={rowsPerPage}
+                              page={page}
+                              onPageChange={handleChangePage}
+                              onRowsPerPageChange={handleChangeRowsPerPage}
+                            />
+                          </Paper>
                       </Box>
                           </Box>
                        

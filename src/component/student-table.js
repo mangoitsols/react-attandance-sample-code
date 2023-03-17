@@ -54,6 +54,7 @@ import Example1 from "../comman/loader1";
 import PinInput from "react-pin-input";
 import $ from "jquery";
 import LoaderButton from "../comman/loader1";
+import { capitalizeFirstLetter } from "../comman/capitalizeFirstLetter";
 
 toast.configure();
 
@@ -244,7 +245,7 @@ const EnhancedTableToolbar = (props) => {
     e.preventDefault();
 
     if (nameC === "") {
-      toast.error("Classname is required");
+      toast.error("Class name is required");
     } else {
       const requestData = {
         className: `class ${nameC}`,
@@ -257,7 +258,7 @@ const EnhancedTableToolbar = (props) => {
         headers: authHeader(),
       })
         .then((res) => {
-          toast.success("Classname created successfully");
+          toast.success(`${capitalizeFirstLetter(nameC)} created successfully`);
           setButtonDisable(false);
           GetClassData();
           childClose();
@@ -314,7 +315,7 @@ const EnhancedTableToolbar = (props) => {
         },
         messages: {
           classNameAdd: {
-            required: "<p style='color:red'>Classname is required</P>",
+            required: "<p style='color:red'>Class name is required</P>",
           },
         },
       });
@@ -412,7 +413,7 @@ const EnhancedTableToolbar = (props) => {
                     <option value="select">Select</option>
                     {allClasses.map((item) => {
                       const renameClassName = item.className?.slice(6);
-                      const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
+                      const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
                       return (
                         <>
                           <option key={item._id} value={item._id}>
@@ -738,15 +739,13 @@ export default function EnhancedTable(props) {
           if(!check_Zipcode.includes(true)){
             if(!check_Country[0].includes(false)){
             if(check_State[0].includes(true)){
-          setLoading(true);
-          const res = axios({
+           axios({
             method: "post",
             url: `${API.bulkUpload}`,
             data: reqData,
             headers: authHeader(),
           })
             .then((res) => {
-              setLoading(false);
               setProgress(true);
               GetStudentData();
               GetClassData();
@@ -1005,7 +1004,7 @@ export default function EnhancedTable(props) {
     })
       .then((res) => {
         setLoading1(false);
-        toast.success("Pin Verification Confirm");
+        toast.success("Pin verified");
         setOpenModel(true);
         handleCloseMedical();
       })
@@ -1014,7 +1013,7 @@ export default function EnhancedTable(props) {
           handleLogout();
         }
         setLoading1(false);
-        toast.error("Pin Verification Failed");
+        toast.error("Pin failed");
       });
   };
 
@@ -1048,19 +1047,18 @@ export default function EnhancedTable(props) {
               <legend className="text-center">
                 Upload students record in CSV{" "}
               </legend>
-              <div style={{ textAlign: "center", width: "100%" }}>
+             {!progress ?<div style={{ textAlign: "center", width: "100%" }} >
                 <form>
                   <input
                     type={"file"}
                     id={"csvFileInput"}
                     accept={".csv"}
-                    disabled={progress}
                     onChange={handleOnChange}
                     onClick={(e) => {e.target.value = null}}
                   />
                 </form>
-              </div>
-              <div style={{ textAlign: "center" }}>
+              </div> : <div className="notbulkupload" > UPLOAD CSV</div>}
+              <div style={{ textAlign: "center" ,width:'100%'}} >
                 Sample Csv File &nbsp;
                 <CSVLink data={csvData} filename="sample.csv" target="_blank">
                   Download
@@ -1120,7 +1118,7 @@ export default function EnhancedTable(props) {
                   <option value="all classes">All Class</option>
                   {classData.map((item) => {
                      const renameClassName = item.className?.slice(6);
-                     const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
+                     const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
                     return (
                       <option key={item._id} value={item.className}>
                         {capitalFirstLetterClassName}
@@ -1177,7 +1175,7 @@ export default function EnhancedTable(props) {
                               const labelId = `enhanced-table-checkbox-${index}`;
                           
                               const renameClassName = row.assignClass && row.assignClass.className?.slice(6);
-                              const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
+                              const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
                               return (
                                 <React.Fragment key={row._id}>
                                   <TableRow

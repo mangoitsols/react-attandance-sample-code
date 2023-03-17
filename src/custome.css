@@ -1551,6 +1551,18 @@ form .profileAvtar {
   max-width: 32%;
 }
 
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 .phoneNo .form-group {
   width: 100%;
 }
@@ -1632,6 +1644,18 @@ th .MuiSvgIcon-root {
 /* .not-found {
   padding: 25px;
 } */
+
+.notbulkupload {
+  border-radius: 10px;
+  text-align: center;
+  cursor: not-allowed;
+  width: 51%;
+  color: white;
+  font-size: 20px;
+  font-weight: 600;
+  background: #80808094;
+  padding: 10px;
+}
 
 body .upload_csv_box {
   width: 600px;

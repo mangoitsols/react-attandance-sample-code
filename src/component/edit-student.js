@@ -31,6 +31,7 @@ import moment from "moment";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import Example1 from "../comman/loader1";
+import { capitalizeFirstLetter } from "../comman/capitalizeFirstLetter";
 
 toast.configure();
 
@@ -321,7 +322,7 @@ const EditStudent = () => {
     e.preventDefault();
 
     if(nameC === ''){
-      toast.error("Classname is required");
+      toast.error("Class name is required");
   }
    else {
       const requestData = {
@@ -334,7 +335,7 @@ const EditStudent = () => {
         data: requestData,
         headers: authHeader(),
       }).then((res) => {
-        toast.success("Classname created successfully");
+        toast.success(`${capitalizeFirstLetter(nameC)} created successfully`);
         setAddClassLoading(false);
         setOpenmodel(false);
         setClassSelect(res);
@@ -460,7 +461,7 @@ const EditStudent = () => {
             },
             messages: {
                 class: {
-                  required: "<p style='color:red'>Classname is required</P>",
+                  required: "<p style='color:red'>Class name is required</P>",
                 },
             }
         })
@@ -793,7 +794,7 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                                 >
                                   {getclasses.map((item) => {
                                     const renameClassName = item.className?.slice(6);
-                                    const capitalFirstLetterClassName = renameClassName?.charAt(0)?.toUpperCase() + renameClassName?.slice(1);
+                                    const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
                                     return (
                                       <MenuItem key={item._id} value={item._id}>
                                         {capitalFirstLetterClassName}

@@ -11,7 +11,6 @@ import InputField from "../../comman/inputField";
 import io from "socket.io-client";
 import Lottie from "react-lottie";
 import animationData from "../../comman/12966-typing-indicator.json";
-import PushNotification from "./pushnotification";
 import EditableLabel from "react-inline-editing";
 import moment from "moment";
 import ScrollableFeed from "react-scrollable-feed";
@@ -342,7 +341,7 @@ const CouncellorChat = () => {
    
     setToggle(true);
     if(oldMessage && oldMessage === text){
-      toast.warning("You haven't made any changes with previous message");
+      toast.warning("Tried to edit the message but didn’t make any changes");
     }
     else{
     const reqData = {
@@ -439,7 +438,6 @@ const CouncellorChat = () => {
           {" "}
           <ImageAvatars />
         </div>
-        <PushNotification />
         <div className="heading ">
           <h1 className="mt-5">
             <span className="icon"></span>
@@ -572,9 +570,9 @@ const CouncellorChat = () => {
                                         {m && m?.sender?._id !== userId 
                                             ?  <span onClick={() => handleOnClickId(m._id)}>{m.content}</span>
                                             : (toggle ===true || toggle === false)
-                                            ? toggle === true && m._id === index ?<Tooltip title="Click on the message" arrow>
+                                            ? toggle === true && m._id === index ? <><Tooltip title="Click on the message" arrow>
                                           <span style={{color:"white"}}>Edit</span>
-                                          </Tooltip>:<span onClick={() => handleOnClickId(m._id,m.content)}>{ m.content}</span> 
+                                          </Tooltip></>:<span onClick={() => handleOnClickId(m._id,m.content)}>{ m.content}</span> 
                                             : ""}
 
                                         {m && m._id === index && m.sender._id === userId && toggle? (
