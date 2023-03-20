@@ -248,7 +248,7 @@ const EnhancedTableToolbar = (props) => {
       toast.error("Class name is required");
     } else {
       const requestData = {
-        className: `class ${nameC}`,
+        className: nameC,
       };
       setButtonDisable(true);
       await axios({
@@ -412,8 +412,7 @@ const EnhancedTableToolbar = (props) => {
                   >
                     <option value="select">Select</option>
                     {allClasses.map((item) => {
-                      const renameClassName = item.className?.slice(6);
-                      const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
+                      const capitalFirstLetterClassName = capitalizeFirstLetter(item.className);
                       return (
                         <>
                           <option key={item._id} value={item._id}>
@@ -1117,8 +1116,7 @@ export default function EnhancedTable(props) {
                 >
                   <option value="all classes">All Class</option>
                   {classData.map((item) => {
-                     const renameClassName = item.className?.slice(6);
-                     const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
+                     const capitalFirstLetterClassName = capitalizeFirstLetter(item.className);
                     return (
                       <option key={item._id} value={item.className}>
                         {capitalFirstLetterClassName}
@@ -1173,9 +1171,7 @@ export default function EnhancedTable(props) {
                             .map((row, index) => {
                               const isItemSelected = isSelected(row._id);
                               const labelId = `enhanced-table-checkbox-${index}`;
-                          
-                              const renameClassName = row.assignClass && row.assignClass.className?.slice(6);
-                              const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
+                              const capitalFirstLetterClassName = capitalizeFirstLetter(row.assignClass && row.assignClass.className);
                               return (
                                 <React.Fragment key={row._id}>
                                   <TableRow

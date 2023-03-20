@@ -189,7 +189,7 @@ const EditCounsellor = () => {
 
     if (!equalsCheck(findClassId, manageCouncellor) && findClassId[0].classId.className !== 'class unassigned') {
       toast.error(
-        `Another counsellor was assigned to the ${GettingClassName.className?.slice(6)}`
+        `Another counsellor was assigned to the ${GettingClassName.className}`
       );
     }else if(uniqueUserName.length > 0){
       toast.error(
@@ -310,8 +310,8 @@ const EditCounsellor = () => {
                       inputProps={{ "aria-label": "Without label" }}
                     >
                       {getclasses.map((item) => {
-                         const renameClassName = item.className?.slice(6);
-                         const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
+
+                         const capitalFirstLetterClassName = capitalizeFirstLetter(item?.className);
                         return (
                           <MenuItem value={item._id}>{capitalFirstLetterClassName}</MenuItem>
                         );

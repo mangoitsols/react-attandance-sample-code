@@ -700,9 +700,9 @@ export default function AttandanceReport(props) {
 	};
 
 	const classNaam = classData.find((item) => {
-		return item && item._id === (counsellorName && counsellorName.classId)
+		return item && item._id === id
 			? item.className
-			: "";
+			: '';
 	});
 
 	const pdfClick = () => {
@@ -773,7 +773,7 @@ export default function AttandanceReport(props) {
 											{classData.map((item) => {
 												return (
 													<option key={item._id} value={item._id}>
-														{item.className?.slice(6)}
+														{capitalizeFirstLetter(item.className)}
 													</option>
 												);
 											})}
@@ -862,7 +862,7 @@ export default function AttandanceReport(props) {
 							</div>
 							<div>
 								<div>
-									<span>{classNaam && classNaam.className?.slice(6)}</span> |{" "}
+									<span>{classNaam && capitalizeFirstLetter(classNaam.className) }</span> |{" "}
 									<span>
 										{counsellorName
 											? `${counsellorName.name} ${counsellorName.lastname}`

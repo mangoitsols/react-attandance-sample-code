@@ -378,7 +378,7 @@ class AddStudent extends Component {
       toast.error("Class name is required");
     } else {
       const requestData = {
-        className: `class ${nameC}`,
+        className: nameC,
       };
       this.setState({ AddClassloading: true });
       this.props.createClass(requestData, (res) => {
@@ -910,8 +910,7 @@ class AddStudent extends Component {
                           
                           <option value="">select</option>
                           {getclasses.map((item) => {
-                             const renameClassName = item.className?.slice(6);
-                             const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
+                             const capitalFirstLetterClassName = capitalizeFirstLetter(item.className);
                             return (
                               <option key={item._id} value={item._id}>
                                 {capitalFirstLetterClassName}

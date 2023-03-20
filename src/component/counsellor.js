@@ -211,8 +211,7 @@ export default function Counsellor() {
                             page * rowsPerPage + rowsPerPage
                           )
                           .map((item) => {
-                            const renameClassName = item && item.classId && item.classId.className?.slice(6);
-                            const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
+                            const capitalFirstLetterClassName = capitalizeFirstLetter(item && item.classId && item.classId.className);
                             return (
                               <TableRow key={item && item._id}>
                                 <TableCell>

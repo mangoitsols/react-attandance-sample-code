@@ -30,6 +30,7 @@ toast.configure();
         const [Addloading, setAddLoading] = useState(false);
         const [search,setSearch]=useState('');
         const [nameC,setNameC]=useState('');
+        const [oldNameC,setOldNameC]=useState('');
         const [openmodel,setOpenmodel]=useState(false);
         const [openModelEdit,setOpenmodelEdit]=useState(false);
         const [getClassNameId,setClassNameId]=useState('');
@@ -143,8 +144,8 @@ toast.configure();
         const handleClose = () => setOpenmodel( false);
         const handleOpen = () => setOpenmodel( true );
         const handleCloseEdit = () => setOpenmodelEdit( false);
-        const handleOpenEdit = (classname) => {setOpenmodelEdit( true ) ; setNameC(classname.className?.slice(6)); setClassNameId(classname._id)}
-        console.log(classDetail,"selectedClassDetail")
+        const handleOpenEdit = (classname) => {setOpenmodelEdit( true ) ; setOldNameC(classname.className); setNameC(classname.className); setClassNameId(classname._id)}
+
         const handleCreateClass = async(e) => {
             e.preventDefault(); 
             
@@ -154,7 +155,7 @@ toast.configure();
             else {
                 setAddLoading(true)
                   const requestData = {
-                      className: `class ${nameC}`,
+                      className: nameC,
                     };
                     await axios({
                         method: "post",
@@ -188,11 +189,14 @@ toast.configure();
             
             if(nameC === ''){
                 toast.error("Class name is required");
+            }else if(nameC === oldNameC){
+                toast.warning("Tried to edit the class name but didn’t make any changes");
+                setOpenmodelEdit( false);
             }
             else {
                 setEditLoading(true)
                   const requestData = {
-                      className: `class ${nameC}`,
+                      className: nameC,
                     };
                     await axios({
                         method: "put",
@@ -277,7 +281,7 @@ toast.configure();
             };
     
         const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - classDetail.length) : 0;
-    const classnamee = selectedClassDetail?.className?.slice(6)
+    const classnamee = selectedClassDetail?.className
 
         return (
             <>
@@ -373,7 +377,7 @@ toast.configure();
                                     {classDetail.length > 0 ? classDetail.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((item,index) => {
                                        const counDetail = counsellorDetail.filter((ccitem) => {return ccitem?.classId?._id === item?._id})
                                     
-                                    const tableclassnamee = item.className?.slice(6)
+                                    const tableclassnamee = item.className
                                         return (
                                            
                                             <TableRow key={item && item._id}>
@@ -389,7 +393,7 @@ toast.configure();
                                                 </TableCell>            
                                             </TableRow>
                                      )
-                                    }):  <Typography> Record Not found </Typography>}
+                                    }):  <TableRow >  <TableCell colSpan={4} align='center' >  Record Not found </TableCell></TableRow>}
                                     {emptyRows > 0 && (
                                         <TableRow
                                             style={{

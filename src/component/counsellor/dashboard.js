@@ -568,7 +568,7 @@ var seconds;
           <div className="heading">
             <h1 className="mb-5">
               Today Attendance for{" "}
-              {className && className.assignClass?.className?.slice(6)}
+              {className && className.assignClass?.className}
             </h1>
           </div>
 

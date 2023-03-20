@@ -216,8 +216,7 @@ const DashBoard1 = () => {
               vall.attaindence.outclassDateTime
         );
 
-  const renameClassName = classNameOnChange?.slice(6);
-  const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
+  const capitalFirstLetterClassName = capitalizeFirstLetter(classNameOnChange);
 
   return (
     <React.Fragment>
@@ -254,9 +253,8 @@ const DashBoard1 = () => {
                 >
                   <option value="all">All</option>
                   {classData.map((item) => {
-                 
-                    const str = item?.className?.slice(6);
-                    const capitalizeLetter =  capitalizeFirstLetter(str)
+
+                    const capitalizeLetter =  capitalizeFirstLetter(item?.className)
 
                     return (
                       <option key={item._id} value={item._id}>
@@ -327,7 +325,7 @@ const DashBoard1 = () => {
                     <span className="count">
                       {classNameOnChange === undefined ||
                       classNameOnChange === ""
-                        ? (rows.totalcount && filterDataPre?.length ? rows.totalcount - filterDataPre?.length : 0)
+                        ? (rows.totalcount ? rows.totalcount - filterDataPre?.length : 0)
                         : AbsConcatNull?.length}
                     </span>
                   </div>
@@ -393,7 +391,7 @@ const DashBoard1 = () => {
                               <small className="avtar-text">
                                 {item &&
                                   item.assignClass &&
-                                  item.assignClass.className?.slice(6)}
+                                  item.assignClass.className}
                               </small>
                             </span>
                           </div>

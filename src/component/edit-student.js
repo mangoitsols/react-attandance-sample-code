@@ -793,8 +793,7 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                                   className="w-100"
                                 >
                                   {getclasses.map((item) => {
-                                    const renameClassName = item.className?.slice(6);
-                                    const capitalFirstLetterClassName = capitalizeFirstLetter(renameClassName);
+                                    const capitalFirstLetterClassName = capitalizeFirstLetter(item?.className);
                                     return (
                                       <MenuItem key={item._id} value={item._id}>
                                         {capitalFirstLetterClassName}
