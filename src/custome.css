@@ -1934,3 +1934,8 @@ select.form-control {
   background: #fafbfc;
   border: 1px solid #edf0f3;
 }
+
+.chat-box .editable-text-wrap {
+  inline-size: 150px !important;
+  overflow-wrap: break-all !important;
+}

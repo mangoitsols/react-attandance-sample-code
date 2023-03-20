@@ -83,6 +83,7 @@ const Chat = () => {
   const [statusData, setStatusData] = useState([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [updatedMessage, setUpdatedMessage] = useState('')
 
   var socket;
 
@@ -591,17 +592,15 @@ const Chat = () => {
     setTogglee(true);
   };
 
-  const handleFocus = (text) => {
-    setTogglee(false);
-  };
+  const handleFocusOut = () => {
 
-  const handleFocusOut = (text) => {
     setTogglee(true);
-    if (oldMessage && oldMessage === text) {
+    if (oldMessage && oldMessage === updatedMessage) {
       toast.warning("Tried to edit the message but didn’t make any changes");
+      setTogglee(false);
     } else {
       const reqData = {
-        content: text,
+        content: updatedMessage,
       };
       setLoading(true);
       const res = axios({
@@ -621,6 +620,7 @@ const Chat = () => {
             handleLogout();
           }
           toast.error("Message can't updated");
+          setTogglee(false);
         });
     }
   };
@@ -628,6 +628,7 @@ const Chat = () => {
   const handleOnClickId = (id, oldChat) => {
     setIndex(id);
     setOldMessage(oldChat);
+    setUpdatedMessage(oldChat);
     setTogglee(!toggle);
   };
 
@@ -915,7 +916,7 @@ const Chat = () => {
                                         arrow
                                       >
                                        
-                                        <span style={{ color: "white" }}>
+                                        <span style={{ color: "white" }} >
                                           Edit
                                         </span>
                                       </Tooltip>
@@ -937,12 +938,9 @@ const Chat = () => {
                                   m._id === index &&
                                   m.sender._id === userId &&
                                   togglee ? (
-                                    <EditableLabel
-                                      text={m.content}
-                                      inputWidth="100px"
-                                      onFocus={handleFocus}
-                                      onFocusOut={handleFocusOut}
-                                    />
+                                    <div className="chat-box">
+                                      <textarea autoFocus name="one2one_message_update" id="one2one_message_update"  rows='3' columns='12' value={updatedMessage ? updatedMessage : m.content} onChange={(e) => setUpdatedMessage(e.target.value)} onBlur={() => handleFocusOut()} style={{textAlign:'justify'}}></textarea>
+                                    </div>
                                   ) : (
                                     ""
                                   )}
@@ -1300,12 +1298,9 @@ const Chat = () => {
                                   m._id === index &&
                                   m.sender._id === userId &&
                                   togglee ? (
-                                    <EditableLabel
-                                      text={m.content}
-                                      inputWidth="100px"
-                                      onFocus={handleFocus}
-                                      onFocusOut={handleFocusOut}
-                                    />
+                                    <div className="chat-box">
+                                      <textarea name="group_message_update" id="group_message_update" autoFocus  rows='3' columns='4' value={updatedMessage ? updatedMessage : m.content} onChange={(e) => setUpdatedMessage(e.target.value)} onBlur={() => handleFocusOut()}></textarea>
+                                    </div>
                                   ) : (
                                     ""
                                   )}
