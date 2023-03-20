@@ -38,7 +38,6 @@ import chat from "./images/chat.svg";
 import $ from "jquery";
 import validate from "jquery-validation";
 import ScrollableFeed from "react-scrollable-feed";
-import EditableLabel from "react-inline-editing";
 import moment from "moment";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import {

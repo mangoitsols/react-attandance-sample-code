@@ -11,7 +11,6 @@ import InputField from "../../comman/inputField";
 import io from "socket.io-client";
 import Lottie from "react-lottie";
 import animationData from "../../comman/12966-typing-indicator.json";
-import EditableLabel from "react-inline-editing";
 import moment from "moment";
 import ScrollableFeed from "react-scrollable-feed";
 import {
@@ -38,7 +37,7 @@ const CouncellorChat = () => {
   const [message, setMessage] = useState([]);
   const [newMessage, setNewMessage] = useState();
   const [socketConnecttion, setSocketConnected] = useState(false);
-  const [typing, setTyping] = useState(false);
+  const [updatedMessage, setUpdatedMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false);
   const [counsellorDet, setCounsellorDet] = useState([]);
   const userId = localStorage.getItem("id");
@@ -332,16 +331,13 @@ const CouncellorChat = () => {
   const handleToggle = () => {
     setToggle(true);
   };
-  
-  const handleFocus = (text) => {
-  
-  };
-  
+
   const handleFocusOut = (text) => {
    
     setToggle(true);
-    if(oldMessage && oldMessage === text){
+    if(oldMessage && oldMessage === updatedMessage){
       toast.warning("Tried to edit the message but didn’t make any changes");
+      setToggle(false);
     }
     else{
     const reqData = {
@@ -365,6 +361,7 @@ const CouncellorChat = () => {
         handleLogout()
       }
       toast.error("Message can't update");
+      setToggle(false);
     });
   }
   };
@@ -391,6 +388,7 @@ const CouncellorChat = () => {
   const handleOnClickId =(id,oldMsg) => {
     setIndex(id);
     setOldMessage(oldMsg)
+    setUpdatedMessage(oldMsg)
     setToggle(!toggle)
     
   }
@@ -576,13 +574,9 @@ const CouncellorChat = () => {
                                             : ""}
 
                                         {m && m._id === index && m.sender._id === userId && toggle? (
-                                            <EditableLabel
-                                            text={m.content}
-                                            inputWidth="100px"
-                                            onFocus={handleFocus}
-                                            onFocusOut={handleFocusOut}
-                                            
-                                            />
+                                          <div className="chat-box">
+                                          <textarea autoFocus name="one2one_message_update" id="one2one_message_update"  rows='3' columns='12' value={updatedMessage ? updatedMessage : m.content} onChange={(e) => setUpdatedMessage(e.target.value)} onBlur={() => handleFocusOut()} style={{textAlign:'justify'}}></textarea>
+                                          </div>
                                         ) : (
                                             ""
                                         )}
@@ -754,13 +748,9 @@ const CouncellorChat = () => {
                                             : ""}
 
                                         {m && m._id === index && m.sender._id === userId && toggle? (
-                                            <EditableLabel
-                                            text={m.content}
-                                            inputWidth="100px"
-                                            onFocus={handleFocus}
-                                            onFocusOut={handleFocusOut}
-                                            
-                                            />
+                                           <div className="chat-box">
+                                           <textarea autoFocus name="one2one_message_update" id="one2one_message_update"  rows='3' columns='12' value={updatedMessage ? updatedMessage : m.content} onChange={(e) => setUpdatedMessage(e.target.value)} onBlur={() => handleFocusOut()} style={{textAlign:'justify'}}></textarea>
+                                          </div>
                                         ) : (
                                             ""
                                         )}
