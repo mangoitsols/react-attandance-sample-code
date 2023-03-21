@@ -1251,7 +1251,7 @@ const Chat = () => {
                               
                             />
                           <Typography id="modal-modal-title" component="h6" sx={{mb:3,fontWeight: 'bold',fontSize:' 20px'}}>
-                          {chatId ? chatId.chatName.charAt(0).toUpperCase() + chatId.chatName.slice(1) : ""} ({chatId?.users?.length} participants)
+                          {chatId ? capitalizeFirstLetter(chatId.chatName) : ""} ({chatId?.users?.length} participants)
                           </Typography>
                           </Box>
                           <Box>
@@ -1262,7 +1262,7 @@ const Chat = () => {
                                 <TableHead>
                                   <TableRow>
                                        <TableCell align="left"> S.No. </TableCell>
-                                       <TableCell sx={{textAlign:"left !important"}}> Members </TableCell>
+                                       <TableCell sx={{textAlign:"left !important"}}> Participants </TableCell>
                                   </TableRow>
                                 </TableHead>
                                 <TableBody>

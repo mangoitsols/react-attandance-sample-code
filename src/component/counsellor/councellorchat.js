@@ -3,7 +3,7 @@ import Sidebar from "./sidebar";
 import ImageAvatars from "./header";
 import { authHeader } from "../../comman/authToken";
 import { API, BASE_URL, SOCKET_URL } from "../../config/config";
-import { Avatar, Box, Button, Chip, Modal, Tooltip, Typography } from "@mui/material";
+import { Avatar, Box, Button, Chip, Modal, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, Tooltip, Typography } from "@mui/material";
 import SearchBar from "material-ui-search-bar";
 import axios from "axios";
 import Loader from "../../comman/loader";
@@ -25,6 +25,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { handleLogout } from "../header";
 import CircleIcon from '@mui/icons-material/Circle';
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import { capitalizeFirstLetter } from "../../comman/capitalizeFirstLetter";
 
 
 toast.configure();
@@ -47,6 +48,8 @@ const CouncellorChat = () => {
   const [oldMessage, setOldMessage] = useState('');
   const [statusData, setStatusData] = useState([]);
   const [subHeaderOpen, setSubHeaderOpen] = useState(false);
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
   var socket;
 
@@ -413,6 +416,15 @@ const CouncellorChat = () => {
       })
 }
 
+const handleChangePage = (event, newPage) => {
+  setPage(newPage);
+};
+
+const handleChangeRowsPerPage = (event) => {
+  setRowsPerPage(+event.target.value);
+  setPage(0);
+};
+
   // Scrollable feed functionality end
 
   const receivername =
@@ -659,7 +671,8 @@ const CouncellorChat = () => {
                     <div className='group-member-name'>
                     <span style={{fontSize:'15px'}} onClick={() => setSubHeaderOpen(true)}>Click here for group info</span>
                     </div>
-                     {
+
+                    {
                       <Modal
                         open={subHeaderOpen}
                         onClose={handleCloseGroupInfoModal}
@@ -676,18 +689,45 @@ const CouncellorChat = () => {
                               
                             />
                           <Typography id="modal-modal-title" component="h6" sx={{mb:3,fontWeight: 'bold',fontSize:' 20px'}}>
-                            {chatId ? chatId.chatName.charAt(0).toUpperCase() + chatId.chatName.slice(1) : ""} ({chatId?.users?.length} participants)
+                          {chatId ? capitalizeFirstLetter(chatId.chatName) : ""} ({chatId?.users?.length} participants)
                           </Typography>
                           </Box>
                           <Box>
-                          {chatId.users.map((member, index) => {
-                        return (
-                          <Chip label={(member.name === localStorage.getItem("name")
-                          ? "You"
-                          : member.name.charAt(0).toUpperCase() +
-                            member.name.slice(1))} sx={{marginRight:1}} />                         
-                        );
-                      })}
+                          
+                          <Paper sx={{ width: "100%", overflow: "hidden" }}>
+                            <TableContainer sx={{ maxHeight: 440 }}>
+                              <Table stickyHeader aria-label="sticky table">
+                                <TableHead>
+                                  <TableRow>
+                                       <TableCell align="left"> S.No. </TableCell>
+                                       <TableCell sx={{textAlign:"left !important"}}> Participants </TableCell>
+                                  </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                  {chatId.users
+                                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                    .map((row,index) => {
+                                      return (
+                                        <TableRow hover role="checkbox" tabIndex={-1} key={index}>
+                                              <TableCell> {(index+1)} </TableCell>
+                                              <TableCell> {row.name === localStorage.getItem("name") ? "You" : (capitalizeFirstLetter(row.name) + " " + (row?.lastname ? capitalizeFirstLetter(row?.lastname) : ''))}
+                                                </TableCell>
+                                        </TableRow>
+                                      );
+                                    })}
+                                </TableBody>
+                              </Table>
+                            </TableContainer>
+                            <TablePagination
+                              rowsPerPageOptions={[5, 10, 25, 100]}
+                              component="div"
+                              count={chatId.users.length}
+                              rowsPerPage={rowsPerPage}
+                              page={page}
+                              onPageChange={handleChangePage}
+                              onRowsPerPageChange={handleChangeRowsPerPage}
+                            />
+                          </Paper>
                       </Box>
                           </Box>
                        
