@@ -22,8 +22,8 @@ import {
   Box,
   Typography,
   Slider,
+  Button,
 } from "@mui/material";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import $ from "jquery";
 import validate from "jquery-validation";
 import { BASE_URL } from "../config/config";
@@ -63,6 +63,7 @@ class Profile extends Component {
     file: "",
     image: "",
     imagePreviewUrl: "",
+    croppedFile:"",
     getUserDetail: [],
     userDetail: "",
     loading: "true",
@@ -84,11 +85,9 @@ class Profile extends Component {
   componentDidMount() {
     this.props.getAllCountry((res) => {
       if (res.status === 200) {
-        // this.setState({loading:false})
         this.setState({ getCountry: res.data.country });
       }
     });
-
     this.getDetailUser();
   }
 
@@ -108,6 +107,7 @@ class Profile extends Component {
       numberValid,
       zip_code,
 	  mobileNumberError,
+    croppedFile
     } = this.state;
     const formData = new FormData();
 
@@ -123,7 +123,7 @@ class Profile extends Component {
         email: email,
         name: name,
         zip_code: zip_code,
-        image: file === "" ? image : file,
+        image: croppedFile === "" ? image : croppedFile,
       };
 
       for (var key in requestData) {
@@ -176,29 +176,35 @@ class Profile extends Component {
     }
   }
 
+  // ******* CROP IMAGE FUNCTIONS START ****************
+
   onCropComplete = (croppedArea, croppedAreaPixels) => {
     this.setState({croppedAreaPixels})
   }
 
   showCroppedImage = async () => {
 
-    const {imagePreviewUrl,croppedAreaPixels,rotation} = this.state;
+    const {imagePreviewUrl,croppedAreaPixels,rotation,file} = this.state;
     try {
       const croppedImage = await getCroppedImg(
         imagePreviewUrl,
         croppedAreaPixels,
         rotation
       )
+
       const croppedImageData = { croppedImage }
-      const myFile = new File([croppedImageData], 'image.jpeg', {
-        type: 'image.jpeg',
-      })
-      console.log('donee', { croppedImage }, myFile)
-      this.setState({croppedImage})
+      let myFile = await fetch(croppedImageData.croppedImage)
+      .then(r => r.blob())
+      .then(blobFile => new File([blobFile], file.name, { type: file.type })).catch(error => console.log(error))
+
+      this.setState({croppedImage,croppedFile:myFile})
+      this.handleClose()
     } catch (e) {
       console.error(e)
     }
   }
+
+  handleClose = () => this.setState({ openmodel: !this.state.openmodel });
 
   setZoom = (zoom) => {
     this.setState({zoom})
@@ -211,6 +217,8 @@ class Profile extends Component {
   setRotation = (rotation) => {
     this.setState({rotation})
   }
+
+  // ******* CROP IMAGE FUNCTIONS END ****************
 
   getDetailUser() {
     const id = localStorage.getItem("id");
@@ -275,8 +283,6 @@ class Profile extends Component {
 	}
   }
 
-  handleClose = () => this.setState({ openmodel: !this.state.openmodel });
-
   render() {
     const {
       getCountry,
@@ -298,25 +304,38 @@ class Profile extends Component {
       crop,
       zoom,
       rotation,
-      openmodel
+      openmodel,
+      croppedImage
     } = this.state;
-    let $imagePreview = null;
-
-    const roleStr = localStorage?.getItem("role");
 
     const capitalizeFirstLetterofName =
       name.charAt(0).toUpperCase() + name.slice(1);
 
-      const style = {
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        bgcolor: "background.paper",
-        borderRadius: "15px",
-        p: 4,
-        width: '500px',
-      };
+    // Crop image styles start
+
+    const style = {
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      bgcolor: "background.paper",
+      borderRadius: "15px",
+      p: 4,
+      height:'550px',
+      width: "550px",
+    };
+  
+    const cropperStyle ={
+      cropperContainerStyle :{  maxHeight: '300px',  height: '100%',  top: '16%',  left: '32px',  right: '32px' },
+      cropperButtonStyle :{ marginTop:'342px',  textAlign:'center'  },
+      zoomButtonDiv :{width: '42%', display: 'inline-flex'},
+      zoomSpan :{marginRight: '15px'},
+      rotationButtonDiv :{width: "48%", display: 'inline-flex'},
+      rotationSpan :{margin: '0px 15px 0px 10px'},
+  
+    } 
+  
+    // crop image styles end
 
     return (
       <>
@@ -340,7 +359,7 @@ class Profile extends Component {
                              My Profile
                         </h1>
                     </div>
-          {/* <Modal
+          <Modal
             aria-labelledby="transition-modal-title"
             aria-describedby="transition-modal-description"
             open={openmodel}
@@ -353,71 +372,67 @@ class Profile extends Component {
           >
             <Fade in={openmodel}>
               <Box sx={style}>
-                <div style={{marginBottom:'20px'}}>
-                  <legend style={{float:'left',fontSize:'25px'}}>Crop your image</legend>
-                  
-                            <CancelOutlinedIcon
-                              sx={{
-                                fontSize: "2.5rem !important",float:'right'
-                              }}
-                            />
-                            </div>
-                    <div className="cropeer">
-                          
-                  <div className="cropperr">
-                       <Cropper
-                          image={imagePreviewUrl}
-                          crop={crop}
-                          rotation={rotation}
-                          zoom={zoom}
-                          aspect={4 / 3}
-                          onCropChange={this.setCrop}
-                          onRotationChange={this.setRotation}
-                          onCropComplete={this.onCropComplete}
-                          onZoomChange={this.setZoom}
-                        />
-
-                    </div>
-                  <div >
-                  <div>
-                    <Typography
-                      variant="overline"
-                      // classes={{ root: classes.sliderLabel }}
-                    >
-                      Zoom
-                    </Typography>
+                <div> <legend style={{fontSize:'25px'}}>Crop your image</legend> </div>
+                  <Cropper
+                    image={imagePreviewUrl}
+                    crop={crop}
+                    rotation={rotation}
+                    zoom={zoom}
+                    aspect={4 / 3}
+                    onCropChange={this.setCrop}
+                    onRotationChange={this.setRotation}
+                    onCropComplete={this.onCropComplete}
+                    onZoomChange={this.setZoom}
+                    cropShape={'round'}
+                    cropSize={ {width: 200, height: 200} }
+                    style = {{containerStyle: cropperStyle.cropperContainerStyle}}
+                  />
+                  <div style={cropperStyle.cropperButtonStyle}  >
+                  <div style={{marginBottom:'20px'}}>
+                    <div style={cropperStyle.zoomButtonDiv}>
+                      <span style={cropperStyle.zoomSpan}>Zoom</span>
                     <Slider
                       value={zoom}
                       min={1}
                       max={3}
                       step={0.1}
                       aria-labelledby="Zoom"
-                      // classes={{ root: classes.slider }}
                       onChange={(e, zoom) => this.setZoom(zoom)}
                     />
                   </div>
-                  <div >
-                    <Typography
-                      variant="overline"
-                      // classes={{ root: classes.sliderLabel }}
-                    >
-                      Rotation
-                    </Typography>
+                  <div style={cropperStyle.rotationButtonDiv}>
+                      <span style={cropperStyle.rotationSpan}>Rotation</span>
                     <Slider
                       value={rotation}
                       min={0}
                       max={360}
                       step={1}
                       aria-labelledby="Rotation"
-                      // classes={{ root: classes.slider }}
                       onChange={(e, rotation) => this.setRotation(rotation)}
                     />
                   </div>
                   </div>
+                  <div className="cancel-submit-btn">
+                  <Button
+                  onClick={this.handleClose}
+                    variant="contained"
+                    color="grey"
+                    sx={{marginRight:'25px'}}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={this.showCroppedImage}
+                    variant="contained"
+                    color="primary"
+                  >
+                    Submit
+                  </Button>
+                  </div>
                   </div>
               </Box>
             </Fade>
-          </Modal> */}
+          </Modal>
                 <form onSubmit={this.handleSubmit}>
 
                   <div className="profileBox">
@@ -426,12 +441,12 @@ class Profile extends Component {
                         <label htmlFor="upload-button">
                           <label>Profile Image</label>
                           {imagePreviewUrl
-                            ? ($imagePreview = (
+                            ? 
                                 <div className="previewText">
                                   {" "}
                                   <Avatar
                                     alt={capitalizeFirstLetterofName}
-                                    src={imagePreviewUrl}
+                                    src={croppedImage? croppedImage : `${BASE_URL}/${image}`}
                                     sx={{ width: 56, height: 56 }}
                                   />{" "}
                                   <i
@@ -439,8 +454,8 @@ class Profile extends Component {
                                     style={{ fontSize: "35px", right: "44px" }}
                                   ></i>
                                 </div>
-                              ))
-                            : ($imagePreview = (
+                             
+                            : 
                                 <div className="previewText">
                                   {" "}
                                   <Avatar
@@ -453,7 +468,7 @@ class Profile extends Component {
                                     style={{ fontSize: "35px", right: "44px" }}
                                   ></i>
                                 </div>
-                              ))}
+                             }
                         </label>
                         <input
                           type="file"

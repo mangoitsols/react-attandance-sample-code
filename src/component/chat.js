@@ -8,11 +8,14 @@ import axios from "axios";
 import { InputLabel, MenuItem, FormControl, Select } from "@material-ui/core";
 import {
   Avatar,
+  Backdrop,
   Box,
   Button,
   Chip,
+  Fade,
   Modal,
   Paper,
+  Slider,
   Table,
   TableBody,
   TableCell,
@@ -48,6 +51,8 @@ import {
 } from "../config/chatLogics";
 import CircleIcon from "@mui/icons-material/Circle";
 import { capitalizeFirstLetter } from "../comman/capitalizeFirstLetter";
+import Cropper from "react-easy-crop";
+import getCroppedImg from "../comman/cropImage";
 toast.configure();
 
 const Chat = () => {
@@ -83,6 +88,13 @@ const Chat = () => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [updatedMessage, setUpdatedMessage] = useState('')
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [zoom, setZoomValue] = useState(1);
+  const [rotation, setRotationValue] = useState(0);
+  const [crop, setCropValue] = useState({ x: 0, y: 0 });
+  const [openModelImageCrop, setOpenModelImageCrop] = useState(false);
+  const [croppedFile, setCroppedFile] = useState('');
+  const [croppedImage, setCroppedImage] = useState(null);
 
   var socket;
 
@@ -309,7 +321,7 @@ const Chat = () => {
       chatName: groupName,
       users: selected,
       adminId: id,
-      image: file,
+      image: croppedFile ? croppedFile : file,
     };
 
     for (var key in reqData) {
@@ -349,7 +361,7 @@ const Chat = () => {
       userId: selected,
       chatId: chatId._id,
       chatName: groupName ? groupName : chatId.chatName,
-      image: file ? file : chatId?.image,
+      image:  croppedFile ? croppedFile : chatId?.image,
     };
 
     if (reqData.userId.length > 0) {
@@ -388,7 +400,7 @@ const Chat = () => {
 
       setTimeout(() => {
         window.location.reload("/chat");
-      }, 3000);
+      }, 500);
     } else {
       toast.error("Failed to update the group");
     }
@@ -405,10 +417,57 @@ const Chat = () => {
         setFile(file);
         setPhoto(reader.result);
       };
+      handleCloseCropImage();
       reader.readAsDataURL(file);
     }
   };
-  let $imagePreview = null;
+ 
+   // ******* CROP IMAGE FUNCTIONS START ****************
+
+   const onCropComplete = (croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  };
+
+  const showCroppedImage = async () => {
+    try {
+      const croppedImage = await getCroppedImg(
+        photo,
+        croppedAreaPixels,
+        rotation
+      );
+
+      const croppedImageData = { croppedImage };
+      let myFile = await fetch(croppedImageData.croppedImage)
+        .then((r) => r.blob())
+        .then(
+          (blobFile) => new File([blobFile], file.name, { type: file.type })
+        )
+        .catch((error) => console.log(error, "cropimage"));
+
+      setCroppedImage(croppedImage);
+      setCroppedFile(myFile);
+      handleCloseCropImage();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleCloseCropImage = () =>
+    setOpenModelImageCrop(!openModelImageCrop);
+
+  const setZoom = (zoom) => {
+    setZoomValue(zoom);
+  };
+
+  const setCrop = (crop) => {
+    setCropValue(crop);
+  };
+
+  const setRotation = (rotation) => {
+    setRotationValue(rotation);
+  };
+
+  // ******* CROP IMAGE FUNCTIONS END ****************
 
   const style = {
     position: "absolute",
@@ -715,6 +774,32 @@ const Chat = () => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
+
+  // Crop image styles start
+
+  const styleImageCrop = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    bgcolor: "background.paper",
+    borderRadius: "15px",
+    p: 4,
+    height:'550px',
+    width: "550px",
+  };
+
+  const cropperStyle ={
+    cropperContainerStyle :{  maxHeight: '300px',  height: '100%',  top: '16%',  left: '32px',  right: '32px' },
+    cropperButtonStyle :{ marginTop:'342px',  textAlign:'center'  },
+    zoomButtonDiv :{width: '42%', display: 'inline-flex'},
+    zoomSpan :{marginRight: '15px'},
+    rotationButtonDiv :{width: "48%", display: 'inline-flex'},
+    rotationSpan :{margin: '0px 15px 0px 10px'},
+
+  } 
+
+  // crop image styles end
 
   return (
     <React.Fragment>
@@ -1428,28 +1513,17 @@ const Chat = () => {
           >
             <div className="form-outline mb-4 col-md-6">
               <label htmlFor="photo">
-                {photo
-                  ? ($imagePreview = (
-                      <Avatar
-                        alt="Remy Sharp"
-                        src={photo}
-                        sx={{ width: 56, height: 56 }}
-                      />
-                    ))
-                  : ($imagePreview = (
-                      <div className="previewText">
-                        {" "}
-                        <Avatar
-                          alt="Remy Sharp"
-                          src={`${photo}`}
-                          sx={{ width: 56, height: 56 }}
-                        />{" "}
-                        <i
-                          className="fa fa-camera"
-                          style={{ fontSize: "35px" }}
-                        ></i>
-                      </div>
-                    ))}
+              <div className="previewText">
+                  <Avatar
+                    alt="Remy Sharp"
+                    src={croppedImage ? croppedImage : photo}
+                    sx={{ width: 56, height: 56 }}
+                  />{" "}
+                  <i
+                    className="fa fa-camera"
+                    style={{ fontSize: "35px",left:'39px' }}
+                  ></i>
+                </div>
               </label>
               <input
                 type="file"
@@ -1507,9 +1581,7 @@ const Chat = () => {
           </form>
         </Box>
       </Modal>
-
       {/* ////////////// Modal Edit Exist Group ////////////// */}
-
       <Modal
         open={editModal}
         onClose={handleEditGroup}
@@ -1528,28 +1600,17 @@ const Chat = () => {
                   <>
                     <div className="form-outline mb-4 col-md-6">
                       <label htmlFor="photo">
-                        {photo
-                          ? ($imagePreview = (
+                      <div className="previewText">
                               <Avatar
                                 alt={groupName}
-                                src={`${photo}`}
+                                src={croppedImage ? croppedImage : BASE_URL+"/"+item?.image}
                                 sx={{ width: 56, height: 56 }}
                               />
-                            ))
-                          : ($imagePreview = (
-                              <div className="previewText">
-                                {" "}
-                                <Avatar
-                                  alt={groupName}
-                                  src={`${BASE_URL}/${item?.image}`}
-                                  sx={{ width: 56, height: 56 }}
-                                />{" "}
                                 <i
                                   className="fa fa-camera"
-                                  style={{ fontSize: "35px" }}
+                                  style={{ fontSize: "35px", left: "39px" }}
                                 ></i>
-                              </div>
-                            ))}
+                                </div>
                       </label>
                       <input
                         type="file"
@@ -1639,6 +1700,94 @@ const Chat = () => {
           </form>
         </Box>
       </Modal>
+
+       {/*  crop image functionality start*/}
+       <Modal
+            aria-labelledby="transition-modal-title"
+            aria-describedby="transition-modal-description"
+            open={openModelImageCrop}
+            onClose={handleCloseCropImage}
+            closeAfterTransition
+            BackdropComponent={Backdrop}
+            BackdropProps={{
+              timeout: 500,
+            }}
+          >
+            <Fade in={openModelImageCrop}>
+              <Box sx={styleImageCrop}>
+                <div>
+                  <legend style={{ fontSize: "25px" }}>
+                    Crop your image
+                  </legend>
+                </div>
+                    <Cropper
+                      image={photo}
+                      crop={crop}
+                      cropShape={'round'}
+                      cropSize={ {width: 200, height: 200} }
+                      style = {{containerStyle: cropperStyle.cropperContainerStyle}}
+                      rotation={rotation}
+                      zoom={zoom}
+                      aspect={4 / 3}
+                      onCropChange={setCrop}
+                      onRotationChange={setRotation}
+                      onCropComplete={onCropComplete}
+                      onZoomChange={setZoom}
+                    />
+                <div style={cropperStyle.cropperButtonStyle}  >
+                  
+                  <div style={{marginBottom:'20px'}}>
+                    <div style={cropperStyle.zoomButtonDiv}>
+                      <span style={cropperStyle.zoomSpan}>
+                      Zoom</span>
+                      <Slider
+                        value={zoom}
+                        min={1}
+                        max={3}
+                        step={0.1}
+                        aria-labelledby="Zoom"
+                        onChange={(e, zoom) => setZoomValue(zoom)}
+                      />
+                    </div>
+                    <div style={cropperStyle.rotationButtonDiv}>
+                      <span style={cropperStyle.rotationSpan}>
+                     Rotation</span>
+                      <Slider
+                        value={rotation}
+                        min={0}
+                        max={360}
+                        step={1}
+                        aria-labelledby="Rotation"
+                        onChange={(e, rotation) => setRotationValue(rotation)}
+                      />
+                    </div>
+                  </div>
+                  <div className="cancel-submit-btn">
+                    <Button
+                      onClick={handleCloseCropImage}
+                      variant="contained"
+                      color="grey"
+                      size="large"
+                      sx={{marginRight:'25px'}}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={showCroppedImage}
+                      variant="contained"
+                      color="primary"
+                      size="large"
+                      type='button'
+                    >
+                      Submit
+                    </Button>
+                  </div>
+                </div>
+              </Box>
+            </Fade>
+          </Modal>
+          {/*  crop image functionality end */}
+
     </React.Fragment>
   );
 };

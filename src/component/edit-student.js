@@ -5,23 +5,10 @@ import validate from "jquery-validation";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Sidebar from "./sidebar";
-import {
-  Fade,
-  Modal,
-  Backdrop,
-  Box,
-  FormControl,
-  MenuItem,
-  Select,
-  Container,
-  Checkbox,
-  TextField,
-  Avatar,
-} from "@mui/material";
+import { Fade, Modal, Backdrop, Box, FormControl, MenuItem, Select, Container, Checkbox, Avatar, Typography, Slider, Button} from "@mui/material";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
 import InputField from "../comman/inputField";
 import { API, BASE_URL } from "../config/config";
 import Loader from "../comman/loader";
@@ -32,6 +19,8 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import Example1 from "../comman/loader1";
 import { capitalizeFirstLetter } from "../comman/capitalizeFirstLetter";
+import getCroppedImg from "../comman/cropImage";
+import Cropper from "react-easy-crop";
 
 toast.configure();
 
@@ -66,6 +55,13 @@ const EditStudent = () => {
   const [zipcode, setZipcode] = useState('');
   const [stateByCountry, setStateByCountry] = useState([]);
   const [getCountry, setGetCountry] = useState([]);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const [zoom, setZoomValue] = useState(1);
+  const [rotation, setRotationValue] = useState(0);
+  const [crop, setCropValue] = useState({ x: 0, y: 0 });
+  const [openModelImageCrop, setOpenModelImageCrop] = useState(false);
+  const [croppedFile, setCroppedFile] = useState('');
+  const [croppedImage, setCroppedImage] = useState(null);
 
   $('input[name="name"]').keyup(function (e) {
     if (/[^a-zA-Z]/g.test(this.value)) {
@@ -173,6 +169,7 @@ const EditStudent = () => {
       },
     });
   });
+
   useEffect(() => {
     getClassData();
     getStudentDataById();
@@ -203,8 +200,6 @@ const EditStudent = () => {
       });
     };
 
-  let $imagePreview = null;
-
   const content =
     checked === true
       ? "display form-outline mb-4 col-md-12 medicaltextarea"
@@ -223,9 +218,58 @@ const EditStudent = () => {
         setFile(file);
         setPhoto(reader.result);
       };
+      handleCloseCropImage();
       reader.readAsDataURL(file);
     }
   };
+
+   // ******* CROP IMAGE FUNCTIONS START ****************
+
+  const onCropComplete = (croppedArea, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  };
+
+  const showCroppedImage = async () => {
+    try {
+      const croppedImage = await getCroppedImg(
+        photo,
+        croppedAreaPixels,
+        rotation
+      );
+
+      const croppedImageData = { croppedImage };
+      let myFile = await fetch(croppedImageData.croppedImage)
+        .then((r) => r.blob())
+        .then(
+          (blobFile) => new File([blobFile], file.name, { type: file.type })
+        )
+        .catch((error) => console.log(error, "cropimage"));
+
+      setCroppedImage(croppedImage);
+      setCroppedFile(myFile);
+      handleCloseCropImage();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleCloseCropImage = () =>
+    setOpenModelImageCrop(!openModelImageCrop);
+
+  const setZoom = (zoom) => {
+    setZoomValue(zoom);
+  };
+
+  const setCrop = (crop) => {
+    setCropValue(crop);
+  };
+
+  const setRotation = (rotation) => {
+    setRotationValue(rotation);
+  };
+
+  // ******* CROP IMAGE FUNCTIONS END ****************
+
 
   const getStudentDataById = async () => {
     const response = await axios
@@ -372,16 +416,13 @@ const EditStudent = () => {
     e.preventDefault();
     const formData = new FormData();
 
-    if (file.size >= 6000) {
-      toast.error("Student image must be less than 6kb");
-    } else {
       const requestData = {
         name: name,
         lastName: lastname,
         fatherName: fatherName,
         DOB: moment(dob).format(),
         street_Address: address,
-        image: file,
+        image: croppedFile ? croppedFile : file,
         assignClass: classSelect,
         medical: medical,
         city: city,
@@ -411,7 +452,6 @@ const EditStudent = () => {
       } else {
         toast.error("Something Went Wrong");
       }
-    }
   };
 
   const getClassData = () => {
@@ -478,6 +518,32 @@ const now = new Date();
 const currentYear = now?.getFullYear();
 const date = currentYear - 2;
 const dateendd = (moment(now).format('DD/MMM')+'/'+date)
+
+  // Crop image styles start
+
+  const styleImageCrop = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    bgcolor: "background.paper",
+    borderRadius: "15px",
+    p: 4,
+    height:'550px',
+    width: "550px",
+  };
+
+  const cropperStyle ={
+    cropperContainerStyle :{  maxHeight: '300px',  height: '100%',  top: '16%',  left: '32px',  right: '32px' },
+    cropperButtonStyle :{ marginTop:'342px',  textAlign:'center'  },
+    zoomButtonDiv :{width: '42%', display: 'inline-flex'},
+    zoomSpan :{marginRight: '15px'},
+    rotationButtonDiv :{width: "48%", display: 'inline-flex'},
+    rotationSpan :{margin: '0px 15px 0px 10px'},
+
+  } 
+
+  // crop image styles end
 
   return (
     <>
@@ -596,6 +662,87 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
             </Box>
           </Fade>
         </Modal>
+        {/*  crop image functionality start*/}
+        <Modal
+            aria-labelledby="transition-modal-title"
+            aria-describedby="transition-modal-description"
+            open={openModelImageCrop}
+            onClose={handleCloseCropImage}
+            closeAfterTransition
+            BackdropComponent={Backdrop}
+            BackdropProps={{
+              timeout: 500,
+            }}
+          >
+            <Fade in={openModelImageCrop}>
+              <Box sx={styleImageCrop}>
+                <div>
+                  <legend style={{ fontSize: "25px" }}>
+                    Crop your image
+                  </legend>
+                </div>
+                    <Cropper
+                      image={photo}
+                      crop={crop}
+                      rotation={rotation}
+                      zoom={zoom}
+                      aspect={4 / 3}
+                      onCropChange={setCrop}
+                      onRotationChange={setRotation}
+                      onCropComplete={onCropComplete}
+                      onZoomChange={setZoom}
+                      cropShape={'round'}
+                      cropSize={ {width: 200, height: 200} }
+                      style = {{containerStyle: cropperStyle.cropperContainerStyle}}
+                    />
+                 <div style={cropperStyle.cropperButtonStyle}  >
+                  
+                  <div style={{marginBottom:'20px'}}>
+                    <div style={cropperStyle.zoomButtonDiv}>
+                      <span style={cropperStyle.zoomSpan}>Zoom</span>
+                      <Slider
+                        value={zoom}
+                        min={1}
+                        max={3}
+                        step={0.1}
+                        aria-labelledby="Zoom"
+                        onChange={(e, zoom) => setZoomValue(zoom)}
+                      />
+                    </div>
+                    <div style={cropperStyle.rotationButtonDiv}>
+                      <span style={cropperStyle.rotationSpan}>Rotation</span>
+                      <Slider
+                        value={rotation}
+                        min={0}
+                        max={360}
+                        step={1}
+                        aria-labelledby="Rotation"
+                        onChange={(e, rotation) => setRotationValue(rotation)}
+                      />
+                    </div>
+                  </div>
+                  <div className="cancel-submit-btn">
+                    <Button
+                      onClick={handleCloseCropImage}
+                      variant="contained"
+                      color="grey"
+                      sx={{marginRight:'25px'}}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={showCroppedImage}
+                      variant="contained"
+                      color="primary"
+                    >
+                      Submit
+                    </Button>
+                  </div>
+                </div>
+              </Box>
+            </Fade>
+          </Modal>
+          {/*  crop image functionality end */}
         <Container
           maxWidth="100%"
           style={{ padding: "0", display: "inline-block" }}
@@ -855,12 +1002,12 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                       <div className="form-outline mb-4 col-md-6">
                         {photo ? "" : <label className="w-100"> Photo</label>}
                         <label htmlFor="photo">
-                          {photo
-                            ? ($imagePreview = (
+                          {croppedImage
+                            ? 
                                 <div className="previewText">
                                   <Avatar
                                     alt={name}
-                                    src={photo}
+                                    src={croppedImage ? croppedImage : photo}
                                     sx={{ width: 56, height: 56 }}
                                   />
                                   <i
@@ -868,9 +1015,9 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                                     style={{ fontSize: "35px" }}
                                   ></i>
                                 </div>
-                              ))
+                             
                             : image && image.match("uploads/")
-                            ? ($imagePreview = (
+                            ?
                                 <div className="previewText">
                                   <Avatar
                                     src={`${BASE_URL}/${image}`}
@@ -882,9 +1029,8 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                                     style={{ fontSize: "35px" }}
                                   ></i>
                                 </div>
-                              ))
                             : image && image.match("http")
-                            ? ($imagePreview = (
+                            ?
                                 <div className="previewText">
                                   <Avatar
                                     alt="Remy Sharp"
@@ -897,8 +1043,7 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                                     style={{ fontSize: "35px"}}
                                   ></i>
                                 </div>
-                              ))
-                            : ($imagePreview = (
+                              : 
                                 <div className="previewText">
                                   <Avatar
                                     alt="Remy Sharp"
@@ -910,7 +1055,7 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                                     style={{ fontSize: "35px"  }}
                                   ></i>
                                 </div>
-                              ))}
+                             }
                         </label>
                        
                         <InputField

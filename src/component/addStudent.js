@@ -3,18 +3,8 @@ import ImageAvatars, { handleLogout } from "./header";
 import Sidebar from "./sidebar";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import {
-  Fade,
-  Modal,
-  Backdrop,
-  Box,
-  FormControl,
-  Container,
-  FormControlLabel,
-  Select,
-  MenuItem,
-} from "@mui/material";
-import { createClass, getClass,getAllCountry,getStateBYCountryId } from "../action/index";
+import { Fade, Modal, Backdrop, Box, FormControl, Container, Typography, Slider, Button, Avatar} from "@mui/material";
+import { createClass, getClass, getAllCountry, getStateBYCountryId} from "../action/index";
 import { addStudent } from "../action/student";
 import { connect } from "react-redux";
 import $ from "jquery";
@@ -30,6 +20,8 @@ import { authHeader } from "../comman/authToken";
 import moment from "moment";
 import Example from "../comman/loader";
 import { capitalizeFirstLetter } from "../comman/capitalizeFirstLetter";
+import getCroppedImg from "../comman/cropImage";
+import Cropper from "react-easy-crop";
 
 toast.configure();
 
@@ -54,10 +46,10 @@ class AddStudent extends Component {
     emergency: [],
     getclasses: [],
     classSelect: "",
-    state:"",
-    stateByCountry:[],
-    getCountry:[],
-    country:"",
+    state: "",
+    stateByCountry: [],
+    getCountry: [],
+    country: "",
     addName: "",
     addNumber: "",
     database: [],
@@ -71,7 +63,14 @@ class AddStudent extends Component {
     phoneError: "",
     phone1Error: "",
     CounsellorDetail: [],
-    city:'',
+    city: "",
+    croppedAreaPixels: null,
+    croppedImage: null,
+    zoom: 1,
+    rotation: 0,
+    crop: { x: 0, y: 0 },
+    openModelImageCrop: false,
+	croppedFile:'',
   };
 
   handleChange = (event) => {
@@ -102,7 +101,6 @@ class AddStudent extends Component {
   };
 
   componentDidMount() {
-
     $('input[name="name"]').keyup(function (e) {
       if (/[^a-zA-Z]/g.test(this.value)) {
         this.value = this.value.replace(/[^a-zA-Z]/g, "");
@@ -167,13 +165,13 @@ class AddStudent extends Component {
             required: true,
             minlength: 3,
           },
-          zipcode:{
+          zipcode: {
             required: true,
-			minlength:5,
-			maxlength:5,
+            minlength: 5,
+            maxlength: 5,
           },
           phone: { required: true },
-          city: { required: true ,minlength: 3},
+          city: { required: true, minlength: 3 },
 
           demoselect: { required: true },
           countryselect: { required: true },
@@ -203,9 +201,9 @@ class AddStudent extends Component {
           },
           zipcode: {
             required: "<p style='color:red'>Zipcode is required</P>",
-			minlength:
+            minlength:
               "<p style='color:red'>zipcode must consist of at least 5 characters</p>",
-			maxlength:
+            maxlength:
               "<p style='color:red'>zipcode must consist of at least 5 characters</p>",
           },
           phone: {
@@ -247,19 +245,20 @@ class AddStudent extends Component {
     this.getCountries();
   }
 
-  getCountries = () =>{
-  this.props.getAllCountry((res) => {
-    if (res.status === 200) {
-      this.setState({ getCountry: res.data.country });
-    }
-  });
-}
+  getCountries = () => {
+    this.props.getAllCountry((res) => {
+      if (res.status === 200) {
+        this.setState({ getCountry: res.data.country });
+      }
+    });
+  };
 
   handleCountry = (e) => {
     this.setState({ country: e.target.value });
     const id = e.target.value;
-    if(id){
-    this.handleState(id)}
+    if (id) {
+      this.handleState(id);
+    }
   };
 
   handleState = (id) => {
@@ -269,10 +268,12 @@ class AddStudent extends Component {
   };
 
   getClassData = () => {
-    this.setState({getClassloading:true})
+    this.setState({ getClassloading: true });
     this.props.getClass((res) => {
-      this.setState({getClassloading:false})
-      const filterData = res.data.data.filter((fil) => fil.className !== 'class unassigned')
+      this.setState({ getClassloading: false });
+      const filterData = res.data.data.filter(
+        (fil) => fil.className !== "class unassigned"
+      );
       this.setState({ getclasses: filterData });
     });
   };
@@ -293,9 +294,8 @@ class AddStudent extends Component {
       classSelect,
       phone1Error,
       phoneError,
-      file,
+      croppedFile,
       zipcode,
-      CounsellorDetail,
       country,
       state,
       city,
@@ -306,39 +306,37 @@ class AddStudent extends Component {
       { Ename: phonename2, number: phone1 }
     );
 
-  
-    if(phone === '' && phone1 === ''){
+    if (phone === "" && phone1 === "") {
       this.setState({ phoneError: "The mobile number field is required." });
       this.setState({ phone1Error: "The mobile number field is required." });
-    }else if(phone1 === ''){
+    } else if (phone1 === "") {
       this.setState({ phone1Error: "The mobile number field is required." });
-    }else if(phone === ''){
+    } else if (phone === "") {
       this.setState({ phoneError: "The mobile number field is required." });
-    }else{
+    } else {
       this.setState({ phoneError: "" });
       this.setState({ phone1Error: "" });
 
-    const formData = new FormData();
-    if (
-      phoneError === "" ||
-      phone1Error === "" ||
-      phone !== "" ||
-      phone1 !== ""
-    ) {
-    
+      const formData = new FormData();
+      if (
+        phoneError === "" ||
+        phone1Error === "" ||
+        phone !== "" ||
+        phone1 !== ""
+      ) {
         const requestData = {
           name: name,
           lastName: lastname,
           fatherName: fatherName,
           DOB: moment(this.state.startDate).format(),
           street_Address: address,
-          image: file,
+          image: croppedFile,
           assignClass: classSelect,
           medical: medical,
           country: country,
-        city: city,
-        state: state,
-        zip_code:zipcode,
+          city: city,
+          state: state,
+          zip_code: zipcode,
           emergency: JSON.stringify(emergency),
         };
 
@@ -358,9 +356,8 @@ class AddStudent extends Component {
             toast.error("Student Added Failed");
           }
         });
-     
+      }
     }
-  }
   };
 
   handleClose = () => this.setState({ openmodel: false });
@@ -391,9 +388,9 @@ class AddStudent extends Component {
           toast.error("Classname already exists");
         } else if (res.response.status === 401) {
           handleLogout();
-        } else if(res.response.status === 400) {
+        } else if (res.response.status === 400) {
           toast.error(res.response.data.message);
-        }else {
+        } else {
           toast.error("Failed to created class");
         }
         this.setState({ AddClassloading: false });
@@ -433,10 +430,58 @@ class AddStudent extends Component {
           file: file,
           photo: reader.result,
         });
+        this.handleCloseCropImage();
       };
       reader.readAsDataURL(file);
     }
   }
+
+  // ******* CROP IMAGE FUNCTIONS START ****************
+
+  onCropComplete = (croppedArea, croppedAreaPixels) => {
+    this.setState({ croppedAreaPixels });
+  };
+
+  showCroppedImage = async () => {
+    const { photo, croppedAreaPixels, rotation, file } = this.state;
+    try {
+      const croppedImage = await getCroppedImg(
+        photo,
+        croppedAreaPixels,
+        rotation
+      );
+
+      const croppedImageData = { croppedImage };
+      let myFile = await fetch(croppedImageData.croppedImage)
+        .then((r) => r.blob())
+        .then(
+          (blobFile) => new File([blobFile], file.name, { type: file.type })
+        )
+        .catch((error) => console.log(error, "cropimage"));
+
+      this.setState({ croppedImage, croppedFile: myFile });
+      this.handleCloseCropImage();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  handleCloseCropImage = () =>
+    this.setState({ openModelImageCrop: !this.state.openModelImageCrop });
+
+  setZoom = (zoom) => {
+    this.setState({ zoom });
+  };
+
+  setCrop = (crop) => {
+    this.setState({ crop });
+  };
+
+  setRotation = (rotation) => {
+    this.setState({ rotation });
+  };
+
+  // ******* CROP IMAGE FUNCTIONS END ****************
 
   setOnChange(e) {
     this.setState({ [e.target.name]: e.target.value });
@@ -485,7 +530,7 @@ class AddStudent extends Component {
   }
 
   HandleDate(e) {
-    if(e) {
+    if (e) {
       this.setState({ startDate: e });
     }
   }
@@ -517,7 +562,12 @@ class AddStudent extends Component {
       country,
       state,
       stateByCountry,
-      getCountry
+      getCountry,
+      crop,
+      zoom,
+      rotation,
+      openModelImageCrop,
+      croppedImage,
     } = this.state;
 
     const style = {
@@ -530,14 +580,36 @@ class AddStudent extends Component {
       p: 4,
     };
 
-    const current = new Date().toISOString().split("T")[0];
+  // Crop image styles start
+
+  const styleImageCrop = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    bgcolor: "background.paper",
+    borderRadius: "15px",
+    p: 4,
+    height:'550px',
+    width: "550px",
+  };
+
+  const cropperStyle ={
+    cropperContainerStyle :{  maxHeight: '300px',  height: '100%',  top: '16%',  left: '32px',  right: '32px' },
+    cropperButtonStyle :{ marginTop:'342px',  textAlign:'center'  },
+    zoomButtonDiv :{width: '42%', display: 'inline-flex'},
+    zoomSpan :{marginRight: '15px'},
+    rotationButtonDiv :{width: "48%", display: 'inline-flex'},
+    rotationSpan :{margin: '0px 15px 0px 10px'},
+
+  } 
+
+  // crop image styles end
 
     const content =
       this.state.checked === true
         ? "display form-outline mb-4 col-md-12 medicaltextarea"
         : "no-display form-outline mb-4 col-md-12 medicaltextarea";
-
-    const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
     const addFillName = (e) => {
       $('input[name="name"]').keyup(function (e) {
@@ -575,7 +647,7 @@ class AddStudent extends Component {
     const now = new Date();
     const currentYear = now?.getFullYear();
     const date = currentYear - 2;
-    const dateendd = (moment(now).format('DD/MMM')+'/'+date)
+    const dateendd = moment(now).format("DD/MMM") + "/" + date;
 
     return (
       <>
@@ -585,7 +657,7 @@ class AddStudent extends Component {
             {" "}
             <ImageAvatars />
           </div>
-         
+
           <Modal
             aria-labelledby="transition-modal-title"
             aria-describedby="transition-modal-description"
@@ -698,13 +770,92 @@ class AddStudent extends Component {
                     >
                       CLOSE
                     </button>
-                      <input
-                        type="submit"
-                        className="btn btn-primary"
-                        value="SAVE"
-                      />
+                    <input
+                      type="submit"
+                      className="btn btn-primary"
+                      value="SAVE"
+                    />
                   </div>
                 </form>
+              </Box>
+            </Fade>
+          </Modal>
+          {/*  crop image functionality */}
+          <Modal
+            aria-labelledby="transition-modal-title"
+            aria-describedby="transition-modal-description"
+            open={openModelImageCrop}
+            onClose={this.handleCloseCropImage}
+            closeAfterTransition
+            BackdropComponent={Backdrop}
+            BackdropProps={{
+              timeout: 500,
+            }}
+          >
+            <Fade in={openModelImageCrop}>
+              <Box sx={styleImageCrop}>
+                <div>
+                  <legend style={{ fontSize: "25px" }}>
+                    Crop your image
+                  </legend>
+                </div>
+                    <Cropper
+                      image={photo}
+                      crop={crop}
+                      rotation={rotation}
+                      zoom={zoom}
+                      aspect={4 / 3}
+                      onCropChange={this.setCrop}
+                      onRotationChange={this.setRotation}
+                      onCropComplete={this.onCropComplete}
+                      onZoomChange={this.setZoom}
+					  cropShape={'round'}
+                      cropSize={ {width: 200, height: 200} }
+                      style = {{containerStyle: cropperStyle.cropperContainerStyle}}
+                    />
+                <div style={cropperStyle.cropperButtonStyle}  >
+                  <div style={{marginBottom:'20px'}}>
+                    <div style={cropperStyle.zoomButtonDiv}>
+                      <span style={cropperStyle.zoomSpan}>Zoom</span>
+                      <Slider
+                        value={zoom}
+                        min={1}
+                        max={3}
+                        step={0.1}
+                        aria-labelledby="Zoom"
+                        onChange={(e, zoom) => this.setZoom(zoom)}
+                      />
+                    </div>
+					<div style={cropperStyle.rotationButtonDiv}>
+                      <span style={cropperStyle.rotationSpan}>Rotation</span>
+                      <Slider
+                        value={rotation}
+                        min={0}
+                        max={360}
+                        step={1}
+                        aria-labelledby="Rotation"
+                        onChange={(e, rotation) => this.setRotation(rotation)}
+                      />
+                    </div>
+                  </div>
+                  <div className="cancel-submit-btn">
+                    <Button
+                      onClick={this.handleCloseCropImage}
+                      variant="contained"
+                      color="grey"
+					  sx={{marginRight:'25px'}}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={this.showCroppedImage}
+                      variant="contained"
+                      color="primary"
+                    >
+                      Submit
+                    </Button>
+                  </div>
+                </div>
               </Box>
             </Fade>
           </Modal>
@@ -716,423 +867,429 @@ class AddStudent extends Component {
               <h1>Add Student</h1>
             </div>
             <form id="myform" onSubmit={this.handleSubmit}>
-           {getClassloading ? <Example/>:<>
-              <div className="row">
-                <div className="form-outline mb-4 col-md-6">
-                  <label htmlFor="name">First Name</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    className="form-control"
-                    value={name}
-                    onChange={(e) => this.setOnChange(e)}
-                    placeholder="Please provide first name"
-                  />
-                </div>
-                <div className="form-outline mb-4 col-md-6 ">
-                  <label htmlFor="lastname">Last Name</label>
-                  <input
-                    type="text"
-                    id="lastname"
-                    name="lastname"
-                    className="form-control"
-                    value={lastname}
-                    onChange={(e) => this.setOnChange(e)}
-                    placeholder="Please provide last name"
-                  />
-                </div>
-              </div>
-              <div className="row">
-                <div className="form-outline mb-4 col-md-6">
-                  <label htmlFor="fatherName">Father Name</label>
-                  <input
-                    type="text"
-                    id="fatherName"
-                    name="fatherName"
-                    className="form-control"
-                    value={fatherName}
-                    onChange={(e) => this.setOnChange(e)}
-                    placeholder="Please provide father name"
-                  />
-                </div>
-                <div className="form-outline mb-4 col-md-6">
-                  <label htmlFor="dob">Date of Birth</label>
-                  <div>
-                    <DatePicker
-                      placeholderText="Please select date of birth"
-                      name="dob"
-                      selected={this.state.startDate}
-                      onChange={(date) => this.HandleDate(date)}
-                      peekNextMonth
-                      showMonthDropdown
-                      showYearDropdown
-                      maxDate={moment(dateendd).toDate()}
-                      dateFormat="dd/MM/yyyy"
-                      dropdownMode="select"
-                      className="form-control"
-                    />
+              {getClassloading ? (
+                <Example />
+              ) : (
+                <>
+                  <div className="row">
+                    <div className="form-outline mb-4 col-md-6">
+                      <label htmlFor="name">First Name</label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        className="form-control"
+                        value={name}
+                        onChange={(e) => this.setOnChange(e)}
+                        placeholder="Please provide first name"
+                      />
+                    </div>
+                    <div className="form-outline mb-4 col-md-6 ">
+                      <label htmlFor="lastname">Last Name</label>
+                      <input
+                        type="text"
+                        id="lastname"
+                        name="lastname"
+                        className="form-control"
+                        value={lastname}
+                        onChange={(e) => this.setOnChange(e)}
+                        placeholder="Please provide last name"
+                      />
+                    </div>
                   </div>
-                </div>
-              </div>
-
-			  <div className="row">
-			  <div className="form-outline mb-4 col-md-6">
-                    <label htmlFor="address"> Street Address</label>
-                    <input
-                      type="text"
-                      id="address"
-                      name="address"
-                      className="form-control"
-                      value={address}
-                      onChange={(e) => this.setOnChange(e)}
-                      placeholder="Please provide street address"
-                    />
-                  </div>
-				  <div className="form-outline mb-4 col-md-6">
-                        <label htmlFor="country" className="w-100">
-                          Country
-                        </label>
-                        <FormControl
-                          sx={{ m: 1, minWidth: 120 }}
-                          className="filter ml-0 mb-3 w-100 select-box"
-                        >
-                          <select
-                            labelId="demo-simple-select-helper-label"
-                            id="demo-simple-select-helper"
-                            name="countryselect"
-                            value={country}
-                            label="country"
-                            onChange={this.handleCountry}
-                            inputProps={{ "aria-label": "Without label" }}
-                            className="form-control w-100"
-                          >
-                          <option value="">select</option>
-                            {getCountry.map((item) => {
-                              return (
-                                <option key={item._id} value={item._id}>
-                                  {item.name}
-                                </option>
-                              );
-                            })}
-                          </select>
-                        </FormControl>
-                      </div>
-			  </div>
-
-			  <div className="row">
-			  <div className="form-outline mb-4 col-md-6">
-                        <label htmlFor="city">City</label>
-                        <input
-                          type="text"
-                          id="city"
-                          name="city"
+                  <div className="row">
+                    <div className="form-outline mb-4 col-md-6">
+                      <label htmlFor="fatherName">Father Name</label>
+                      <input
+                        type="text"
+                        id="fatherName"
+                        name="fatherName"
+                        className="form-control"
+                        value={fatherName}
+                        onChange={(e) => this.setOnChange(e)}
+                        placeholder="Please provide father name"
+                      />
+                    </div>
+                    <div className="form-outline mb-4 col-md-6">
+                      <label htmlFor="dob">Date of Birth</label>
+                      <div>
+                        <DatePicker
+                          placeholderText="Please select date of birth"
+                          name="dob"
+                          selected={this.state.startDate}
+                          onChange={(date) => this.HandleDate(date)}
+                          peekNextMonth
+                          showMonthDropdown
+                          showYearDropdown
+                          maxDate={moment(dateendd).toDate()}
+                          dateFormat="dd/MM/yyyy"
+                          dropdownMode="select"
                           className="form-control"
-                          placeholder="Please enter your city"
-                          value={city}
-                          onChange={(e) => this.setOnChange(e)}
                         />
                       </div>
-					  <div className="form-outline mb-4 col-md-6">
-                        <label htmlFor="state" className="w-100">
-                          State
-                        </label>
-                        <FormControl
-                          sx={{ m: 1, minWidth: 120 }}
-                          className="filter ml-0 mb-3 w-100 select-box"
-                        >
-                          <select
-                            labelId="demo-simple-select-helper-label state"
-                            id="demo-simple-select-helper state"
-                            name="stateselect"
-                            value={state}
-                            label="state"
-                            onChange={(e) =>
-                              this.setState({ state: e.target.value })
-                            }
-                            inputProps={{ "aria-label": "Without label" }}
-                            className="form-control w-100"
-                          >
-                          <option value="">select</option>
-                            {stateByCountry.map((item) => {
-                              return (
-                                <option key={item._id} value={item._id}>
-                                  {item.name}
-                                </option>
-                              );
-                            })}
-                          </select>
-                        </FormControl>
                     </div>
-                    
-                    
-			  </div>
-
-              <div className="row">
-                <div className="form-outline mb-4 col-md-6">
-                               
-                  <div className="col-md-12 pl-0 pr-0 mb-4">
-                    <label htmlFor="zipcode">Zipcode</label>
-                    <input
-                      type="number"
-                      id="zipcode"
-                      name="zipcode"
-                      className="form-control"
-                      value={zipcode}
-                      onChange={(e) => this.setOnChange(e)}
-                      placeholder="Please provide zipcode"
-                    />
                   </div>
-                  <div className="col-md-12 pl-0 pr-0">
-                    <div className="form-outline mb-4">
-                      <label className="w-100" htmlFor="demoselect">
-                        Assign Class
-                      </label>
 
+                  <div className="row">
+                    <div className="form-outline mb-4 col-md-6">
+                      <label htmlFor="address"> Street Address</label>
+                      <input
+                        type="text"
+                        id="address"
+                        name="address"
+                        className="form-control"
+                        value={address}
+                        onChange={(e) => this.setOnChange(e)}
+                        placeholder="Please provide street address"
+                      />
+                    </div>
+                    <div className="form-outline mb-4 col-md-6">
+                      <label htmlFor="country" className="w-100">
+                        Country
+                      </label>
                       <FormControl
                         sx={{ m: 1, minWidth: 120 }}
                         className="filter ml-0 mb-3 w-100 select-box"
                       >
                         <select
-                          labelId="demo-simple-select-helper-label "
-                          id="demo-simple-select-helper "
-                          name="demoselect"
-                          value={classSelect}
-                          label="Filter"
-                          onChange={(e) =>
-                            this.setState({
-                              classSelect: e.target.value,
-                            })
-                          }
+                          labelId="demo-simple-select-helper-label"
+                          id="demo-simple-select-helper"
+                          name="countryselect"
+                          value={country}
+                          label="country"
+                          onChange={this.handleCountry}
                           inputProps={{ "aria-label": "Without label" }}
-                          className="w-100 form-control "
+                          className="form-control w-100"
                         >
-                          
                           <option value="">select</option>
-                          {getclasses.map((item) => {
-                             const capitalFirstLetterClassName = capitalizeFirstLetter(item.className);
+                          {getCountry.map((item) => {
                             return (
                               <option key={item._id} value={item._id}>
-                                {capitalFirstLetterClassName}
+                                {item.name}
                               </option>
-                          )})}
-                         
+                            );
+                          })}
                         </select>
                       </FormControl>
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="form-outline mb-4 col-md-6">
+                      <label htmlFor="city">City</label>
+                      <input
+                        type="text"
+                        id="city"
+                        name="city"
+                        className="form-control"
+                        placeholder="Please enter your city"
+                        value={city}
+                        onChange={(e) => this.setOnChange(e)}
+                      />
+                    </div>
+                    <div className="form-outline mb-4 col-md-6">
+                      <label htmlFor="state" className="w-100">
+                        State
+                      </label>
+                      <FormControl
+                        sx={{ m: 1, minWidth: 120 }}
+                        className="filter ml-0 mb-3 w-100 select-box"
+                      >
+                        <select
+                          labelId="demo-simple-select-helper-label state"
+                          id="demo-simple-select-helper state"
+                          name="stateselect"
+                          value={state}
+                          label="state"
+                          onChange={(e) =>
+                            this.setState({ state: e.target.value })
+                          }
+                          inputProps={{ "aria-label": "Without label" }}
+                          className="form-control w-100"
+                        >
+                          <option value="">select</option>
+                          {stateByCountry.map((item) => {
+                            return (
+                              <option key={item._id} value={item._id}>
+                                {item.name}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </FormControl>
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="form-outline mb-4 col-md-6">
+                      <div className="col-md-12 pl-0 pr-0 mb-4">
+                        <label htmlFor="zipcode">Zipcode</label>
+                        <input
+                          type="number"
+                          id="zipcode"
+                          name="zipcode"
+                          className="form-control"
+                          value={zipcode}
+                          onChange={(e) => this.setOnChange(e)}
+                          placeholder="Please provide zipcode"
+                        />
+                      </div>
+                      <div className="col-md-12 pl-0 pr-0">
+                        <div className="form-outline mb-4">
+                          <label className="w-100" htmlFor="demoselect">
+                            Assign Class
+                          </label>
+
+                          <FormControl
+                            sx={{ m: 1, minWidth: 120 }}
+                            className="filter ml-0 mb-3 w-100 select-box"
+                          >
+                            <select
+                              labelId="demo-simple-select-helper-label "
+                              id="demo-simple-select-helper "
+                              name="demoselect"
+                              value={classSelect}
+                              label="Filter"
+                              onChange={(e) =>
+                                this.setState({
+                                  classSelect: e.target.value,
+                                })
+                              }
+                              inputProps={{ "aria-label": "Without label" }}
+                              className="w-100 form-control "
+                            >
+                              <option value="">select</option>
+                              {getclasses.map((item) => {
+                                const capitalFirstLetterClassName =
+                                  capitalizeFirstLetter(item.className);
+                                return (
+                                  <option key={item._id} value={item._id}>
+                                    {capitalFirstLetterClassName}
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          </FormControl>
+                          <a
+                            className="float-right pointer blue"
+                            onClick={this.handleOpen}
+                          >
+                            Add new class
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="form-outline mb-4 col-md-6">
+                      <label htmlFor="emergency">Emergency Contacts</label>
+                      <div className="phoneNo">
+                        <span className="col-md-4 mr-2 p-0">
+                          <input
+                            type="text"
+                            id="phonename1"
+                            name="phonename1"
+                            placeholder="Name"
+                            className="form-control mb-3 col-md-12 "
+                            value={phonename1}
+                            onChange={(e) => this.setOnChange(e)}
+                          />
+                        </span>
+                        <span className="col-md-8 p-0">
+                          <PhoneInput
+                            country={`${
+                              schoolLocation &&
+                              schoolLocation.toLowerCase() === "usa"
+                                ? "us"
+                                : currentLocation.toLowerCase()
+                            }`}
+                            value={`${phone}`}
+                            enableAreaCodes
+                            enableSearch="true"
+                            onChange={(phone) =>
+                              this.setOnChangeForPhone(phone)
+                            }
+                            inputProps={{
+                              name: "phone",
+                              required: true,
+                              autoFocus: true,
+                            }}
+                          />
+                          {phoneError !== "" ? (
+                            <p style={{ color: "red", fontSize: "12px" }}>
+                              {phoneError}
+                            </p>
+                          ) : (
+                            ""
+                          )}
+                        </span>
+                      </div>
+                      <div className="phoneNo">
+                        <span className="col-md-4 mr-2 p-0">
+                          <input
+                            type="text"
+                            id="phonename2"
+                            name="phonename2"
+                            placeholder="Name"
+                            className="form-control mb-3 col-md-12 "
+                            value={phonename2}
+                            onChange={(e) => this.setOnChange(e)}
+                          />
+
+                          {/* {this.validator.message('name',phonename1,'required|min:3' )} */}
+                        </span>
+                        <span className="col-md-8 p-0">
+                          <PhoneInput
+                            country={`${
+                              schoolLocation &&
+                              schoolLocation.toLowerCase() === "usa"
+                                ? "us"
+                                : currentLocation.toLowerCase()
+                            }`}
+                            value={`${phone1}`}
+                            enableAreaCodes
+                            enableSearch="true"
+                            onChange={(phone) =>
+                              this.setOnChangeForPhone1(phone)
+                            }
+                            inputProps={{
+                              name: "phone1",
+                            }}
+                          />
+                          {phone1Error !== "" ? (
+                            <p style={{ color: "red", fontSize: "12px" }}>
+                              {phone1Error}
+                            </p>
+                          ) : (
+                            ""
+                          )}
+                        </span>
+                      </div>
+                      {database ? (
+                        <>
+                          {database.map((data) => {
+                            return (
+                              <div className="phoneNo">
+                                <input
+                                  type="text"
+                                  className="form-control mb-3 col-md-4 mr-2"
+                                  value={data.Ename}
+                                />
+                                <PhoneInput
+                                  country={`${
+                                    schoolLocation &&
+                                    schoolLocation.toLowerCase() === "usa"
+                                      ? "us"
+                                      : currentLocation.toLowerCase()
+                                  }`}
+                                  placeholder={`${data.number}`}
+                                  disableAreaCodes
+                                  disableCountryCode
+                                  disableDropdown
+                                  enableAreaCodes
+                                  enableSearch="true"
+                                />
+                              </div>
+                            );
+                          })}
+                        </>
+                      ) : (
+                        ""
+                      )}
                       <a
                         className="float-right pointer blue"
-                        onClick={this.handleOpen}
+                        onClick={this.handleAddNumber}
                       >
-                        Add new class
+                        Add new
                       </a>
                     </div>
                   </div>
-                </div>
-                <div className="form-outline mb-4 col-md-6">
-                  <label htmlFor="emergency">Emergency Contacts</label>
-                  <div className="phoneNo">
-                    <span className="col-md-4 mr-2 p-0">
-                      <input
-                        type="text"
-                        id="phonename1"
-                        name="phonename1"
-                        placeholder="Name"
-                        className="form-control mb-3 col-md-12 "
-                        value={phonename1}
-                        onChange={(e) => this.setOnChange(e)}
-                      />
-                    </span>
-                    <span className="col-md-8 p-0">
-                      <PhoneInput
-                        country={`${
-                          schoolLocation &&
-                          schoolLocation.toLowerCase() === "usa"
-                            ? "us"
-                            : currentLocation.toLowerCase()
-                        }`}
-                        value={`${phone}`}
-                        enableAreaCodes
-                        enableSearch="true"
-                        onChange={(phone) => this.setOnChangeForPhone(phone)}
-                        inputProps={{
-                          name: "phone",
-                          required: true,
-                          autoFocus: true,
-                        }}
-                      />
-                      {phoneError !== "" ? (
-                        <p style={{ color: "red", fontSize: "12px" }}>
-                          {phoneError}
-                        </p>
-                      ) : (
-                        ""
-                      )}
-                    </span>
-                  </div>
-                  <div className="phoneNo">
-                    <span className="col-md-4 mr-2 p-0">
-                      <input
-                        type="text"
-                        id="phonename2"
-                        name="phonename2"
-                        placeholder="Name"
-                        className="form-control mb-3 col-md-12 "
-                        value={phonename2}
-                        onChange={(e) => this.setOnChange(e)}
-                      />
 
-                      {/* {this.validator.message('name',phonename1,'required|min:3' )} */}
-                    </span>
-                    <span className="col-md-8 p-0">
-                      <PhoneInput
-                        country={`${
-                          schoolLocation &&
-                          schoolLocation.toLowerCase() === "usa"
-                            ? "us"
-                            : currentLocation.toLowerCase()
-                        }`}
-                        value={`${phone1}`}
-                        enableAreaCodes
-                        enableSearch="true"
-                        onChange={(phone) => this.setOnChangeForPhone1(phone)}
-                        inputProps={{
-                          name: "phone1",
-                        }}
-                      />
-                      {phone1Error !== "" ? (
-                        <p style={{ color: "red", fontSize: "12px" }}>
-                          {phone1Error}
-                        </p>
-                      ) : (
-                        ""
-                      )}
-                    </span>
-                  </div>
-                  {database ? (
-                    <>
-                      {database.map((data) => {
-                        return (
-                          <div className="phoneNo">
-                            <input
-                              type="text"
-                              className="form-control mb-3 col-md-4 mr-2"
-                              value={data.Ename}
+                  <div className="row">
+                    <div className="form-outline mb-4 col-md-6">
+                      <label className="w-100"> Photo</label>
+
+                      <label htmlFor="photo">
+                        {croppedImage ? (
+                          <div className="previewText">
+                            <Avatar
+                              src={croppedImage}
+                              alt="croppedImage"
+                              sx={{ width: 56, height: 56 }}
                             />
-                            <PhoneInput
-                              country={`${
-                                schoolLocation &&
-                                schoolLocation.toLowerCase() === "usa"
-                                  ? "us"
-                                  : currentLocation.toLowerCase()
-                              }`}
-                              placeholder={`${data.number}`}
-                              disableAreaCodes
-                              disableCountryCode
-                              disableDropdown
-                              enableAreaCodes
-                              enableSearch="true"
-                            />
+                            <i
+                              className="fa fa-camera"
+                              style={{ fontSize: "35px", left: "39px" }}
+                            ></i>
                           </div>
-                        );
-                      })}
-                    </>
-                  ) : (
-                    ""
-                  )}
-                  <a
-                    className="float-right pointer blue"
-                    onClick={this.handleAddNumber}
-                  >
-                    Add new
-                  </a>
-                </div>
-              </div>
-
-		
-              <div className="row">
-                <div className="form-outline mb-4 col-md-6">
-                  <label className="w-100"> Photo</label>
-
-                  <label htmlFor="photo">
-                    {photo
-                      ? (
-                          <img
-                            src={photo}
-                            alt="dummy"
-                            width="80px"
-                            height="80px"
-                          />
-                        )
-                      : (
+                        ) : (
                           <>
                             <div className="previewText1">
                               {" "}
                               <strong>Upload image</strong>
                             </div>
-                           
                           </>
                         )}
-                  </label>
-                  <input
-                    type="file"
-                    id="photo"
-                    name="photo"
-                    className="form-control"
-                    style={{ display: "none" }}
-                    onChange={(e) => this._handleImageChange(e)}
-                  />
-                </div>
-              </div>
-              <div className="row">
-                <div className="form-outline mb-4 col-md-6 medicalCheckbox">
-                  <input
-                    type="checkbox"
-                    className="checkbox"
-                    checked={this.state.checked}
-                    onChange={this.handleChange}
-                  />
-
-                  <label htmlFor="medicalCheckbox" className="medicalLabel">
-                    {" "}
-                    Enter Medical Information
-                  </label>
-                  <div className={content}>
-                    <label htmlFor="medical">Medical</label>
-                    <textarea
-                      id="medical"
-                      name="medical"
-                      rows="4"
-                      cols="50"
-                      value={medical}
-                      onChange={(e) =>
-                        this.setState({ medical: e.target.value })
-                      }
-                    ></textarea>
+                      </label>
+                      <input
+                        type="file"
+                        id="photo"
+                        name="photo"
+                        className="form-control"
+                        style={{ display: "none" }}
+                        onChange={(e) => this._handleImageChange(e)}
+                      />
+                    </div>
                   </div>
-                </div>
-              </div>
+                  <div className="row">
+                    <div className="form-outline mb-4 col-md-6 medicalCheckbox">
+                      <input
+                        type="checkbox"
+                        className="checkbox"
+                        checked={this.state.checked}
+                        onChange={this.handleChange}
+                      />
 
-              <div>
-                <a
-                  href="/student"
-                  className="btn btn-transparent btn-block mb-4"
-                >
-                  CANCEL
-                </a>
-                {!this.state.loading ? (
-                  <input
-                    type="submit"
-                    className="btn btn-primary btn-block mb-4"
-                    value="SAVE"
-                  />
-                ) : (
-                  <button type="button" class="btn btn-secondary" disabled>
-                    <Loader />
-                    SAVE
-                  </button>
-                )}
-              </div>
-              </>}
+                      <label htmlFor="medicalCheckbox" className="medicalLabel">
+                        {" "}
+                        Enter Medical Information
+                      </label>
+                      <div className={content}>
+                        <label htmlFor="medical">Medical</label>
+                        <textarea
+                          id="medical"
+                          name="medical"
+                          rows="4"
+                          cols="50"
+                          value={medical}
+                          onChange={(e) =>
+                            this.setState({ medical: e.target.value })
+                          }
+                        ></textarea>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <a
+                      href="/student"
+                      className="btn btn-transparent btn-block mb-4"
+                    >
+                      CANCEL
+                    </a>
+                    {!this.state.loading ? (
+                      <input
+                        type="submit"
+                        className="btn btn-primary btn-block mb-4"
+                        value="SAVE"
+                      />
+                    ) : (
+                      <button type="button" class="btn btn-secondary" disabled>
+                        <Loader />
+                        SAVE
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
             </form>
           </Container>
         </div>
@@ -1150,5 +1307,5 @@ export default connect(mapStateToProps, {
   getClass,
   addStudent,
   getAllCountry,
-  getStateBYCountryId
+  getStateBYCountryId,
 })(AddStudent);

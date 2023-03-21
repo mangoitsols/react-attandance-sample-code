@@ -600,6 +600,7 @@ export default function EnhancedTable(props) {
   const [medicalRow, setMedicalRow] = useState('');
   const [stateByCountry, setStateByCountry] = useState([]);
   const [getCountry, setGetCountry] = useState([]);
+  const [deleteStudentDetail, setDeleteStudentDetail] = useState('')
 
   const handleGetCouncellor = () => {
     fetch(API.getAllUser, { headers: authHeader() })
@@ -643,7 +644,7 @@ export default function EnhancedTable(props) {
 
   const handleClose1 = () => setOpenmodel(false);
   const handleOpen1 = () => setOpenmodel(true);
-  const handleCloseDeleteModal = () => setOpenModelDelete(!openModelDelete);
+  const handleCloseDeleteModal = (row) => {setOpenModelDelete(!openModelDelete); setDeleteStudentDetail(row)};
 
   const fileReader = new FileReader();
 
@@ -676,16 +677,7 @@ export default function EnhancedTable(props) {
           }, {});
           return obj;
         });
-
-        // update classname
-        const check_Obj = array.map(obj => {
-          const compareClass = classData.map((res)=>{
-            return (
-           res.className === `class ${obj.assignClass}`)
-               })
-          return compareClass;
-         })
-
+        
         //  check zipcode
          const check_Zipcode = array.map(obj => {
           const zipcode_length_Compare =  (obj.zip_code.length > 5 || obj.zip_code.length < 5)
@@ -724,7 +716,7 @@ export default function EnhancedTable(props) {
          const classRegex = /[^A-Za-z0-9-\s]/g;
         classNameRegex = (obj.assignClass.match(classRegex) ? obj.assignClass.match(classRegex) : []);
         if (Object.keys('assignClass')) {
-          obj.assignClass=`class ${obj.assignClass}`;
+          obj.assignClass=`${obj.assignClass}`;
         }
         return obj
       })
@@ -1298,7 +1290,7 @@ export default function EnhancedTable(props) {
                                           />
                                         </Link>
                                       </span>
-                                      <span onClick={handleCloseDeleteModal}>
+                                      <span onClick={() => handleCloseDeleteModal(row)}>
                                         <img
                                           src={require("./images/delet.png")}
                                           alt="delete icon"
@@ -1382,12 +1374,7 @@ export default function EnhancedTable(props) {
                                           Do you really want to delete the
                                           student{" "}
                                           <strong>
-                                            {row.name?.charAt(0).toUpperCase() +
-                                              row.name?.slice(1)}{" "}
-                                            {row.lastName
-                                              ?.charAt(0)
-                                              .toUpperCase() +
-                                              row.lastName?.slice(1)}
+                                            {capitalizeFirstLetter(deleteStudentDetail.name)} {capitalizeFirstLetter(deleteStudentDetail.lastName)}
                                           </strong> ?
                                         </Typography>
                                         <Box
@@ -1400,7 +1387,7 @@ export default function EnhancedTable(props) {
                                               className="delete-button"
                                               size="large"
                                               onClick={() =>
-                                                handleStuDelete(row._id)
+                                                handleStuDelete(deleteStudentDetail._id)
                                               }
                                             >
                                               Delete
