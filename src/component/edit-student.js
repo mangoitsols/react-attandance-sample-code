@@ -5,7 +5,21 @@ import validate from "jquery-validation";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Sidebar from "./sidebar";
-import { Fade, Modal, Backdrop, Box, FormControl, MenuItem, Select, Container, Checkbox, Avatar, Typography, Slider, Button} from "@mui/material";
+import {
+  Fade,
+  Modal,
+  Backdrop,
+  Box,
+  FormControl,
+  MenuItem,
+  Select,
+  Container,
+  Checkbox,
+  Avatar,
+  Typography,
+  Slider,
+  Button,
+} from "@mui/material";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useParams } from "react-router-dom";
@@ -49,10 +63,10 @@ const EditStudent = () => {
   const [addClassLoading, setAddClassLoading] = useState(false);
   const schoolLocation = localStorage.getItem("schoolLocation");
   const currentLocation = localStorage.getItem("currentLocation");
-  const [state, setState] = useState('');
-  const [country, setCountry] = useState('');
-  const [city, setCity] = useState('');
-  const [zipcode, setZipcode] = useState('');
+  const [state, setState] = useState("");
+  const [country, setCountry] = useState("");
+  const [city, setCity] = useState("");
+  const [zipcode, setZipcode] = useState("");
   const [stateByCountry, setStateByCountry] = useState([]);
   const [getCountry, setGetCountry] = useState([]);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
@@ -60,7 +74,7 @@ const EditStudent = () => {
   const [rotation, setRotationValue] = useState(0);
   const [crop, setCropValue] = useState({ x: 0, y: 0 });
   const [openModelImageCrop, setOpenModelImageCrop] = useState(false);
-  const [croppedFile, setCroppedFile] = useState('');
+  const [croppedFile, setCroppedFile] = useState("");
   const [croppedImage, setCroppedImage] = useState(null);
 
   $('input[name="name"]').keyup(function (e) {
@@ -84,7 +98,7 @@ const EditStudent = () => {
     }
   });
 
-
+  console.log(emergency,"emergency")
   const { id } = useParams();
 
   $(document).ready(function () {
@@ -107,21 +121,21 @@ const EditStudent = () => {
         },
         dob: {
           required: true,
-        }, 
-        zipcode:{
-          required: true,
-          minlength:5,
-			    maxlength:5,
         },
-        city: { 
-          required: true ,
-          minlength: 3
+        zipcode: {
+          required: true,
+          minlength: 5,
+          maxlength: 5,
+        },
+        city: {
+          required: true,
+          minlength: 3,
         },
         countryselect: {
-           required: true
+          required: true,
         },
-        stateselect: { 
-            required: true
+        stateselect: {
+          required: true,
         },
       },
       messages: {
@@ -151,9 +165,9 @@ const EditStudent = () => {
         zipcode: {
           required: "<p style='color:red'>zipcode is required</P>",
           minlength:
-              "<p style='color:red'>zipcode must consist  5 characters</p>",
-			    maxlength:
-              "<p style='color:red'>zipcode must consist 5 characters</p>",
+            "<p style='color:red'>zipcode must consist  5 characters</p>",
+          maxlength:
+            "<p style='color:red'>zipcode must consist 5 characters</p>",
         },
         dob: {
           required: "<p style='color:red'>Please provide a Date Of Birth</p>",
@@ -176,29 +190,34 @@ const EditStudent = () => {
     getCountries();
   }, []);
 
-  const getCountries = async() =>{
-    await axios.get(`${API.getAllCountry}`, { headers: authHeader() }).then((ress) => {
-      setGetCountry(ress.data.country);
-    })
-    .catch((err) => {
-      if (err.response.status === 401) {
-        handleLogout();
-      }
-    });
-  }
-  
-   const handleCountry = (e) => {
-      setCountry(e.target.value);
-      const id = e.target.value;
-      if(id){
-      handleState(id)}
-    };
-  
-    const handleState = async(id) => {
-    await axios.get(`${API.getStateBYCountryId}/${id}`, { headers: authHeader() }).then((res) => {
+  const getCountries = async () => {
+    await axios
+      .get(`${API.getAllCountry}`, { headers: authHeader() })
+      .then((ress) => {
+        setGetCountry(ress.data.country);
+      })
+      .catch((err) => {
+        if (err.response.status === 401) {
+          handleLogout();
+        }
+      });
+  };
+
+  const handleCountry = (e) => {
+    setCountry(e.target.value);
+    const id = e.target.value;
+    if (id) {
+      handleState(id);
+    }
+  };
+
+  const handleState = async (id) => {
+    await axios
+      .get(`${API.getStateBYCountryId}/${id}`, { headers: authHeader() })
+      .then((res) => {
         setStateByCountry(res.data);
       });
-    };
+  };
 
   const content =
     checked === true
@@ -223,7 +242,7 @@ const EditStudent = () => {
     }
   };
 
-   // ******* CROP IMAGE FUNCTIONS START ****************
+  // ******* CROP IMAGE FUNCTIONS START ****************
 
   const onCropComplete = (croppedArea, croppedAreaPixels) => {
     setCroppedAreaPixels(croppedAreaPixels);
@@ -253,8 +272,7 @@ const EditStudent = () => {
     }
   };
 
-  const handleCloseCropImage = () =>
-    setOpenModelImageCrop(!openModelImageCrop);
+  const handleCloseCropImage = () => setOpenModelImageCrop(!openModelImageCrop);
 
   const setZoom = (zoom) => {
     setZoomValue(zoom);
@@ -269,7 +287,6 @@ const EditStudent = () => {
   };
 
   // ******* CROP IMAGE FUNCTIONS END ****************
-
 
   const getStudentDataById = async () => {
     const response = await axios
@@ -294,11 +311,8 @@ const EditStudent = () => {
       setCountry(response.data[0].country);
       setState(response.data[0].state);
       setMedical(response.data[0].medical);
-      handleState(response.data[0].country)
-      const result = response.data[0].emergency.map(({ _id, ...rest }) => ({
-        ...rest,
-      }));
-      setEmergency(result);
+      handleState(response.data[0].country);
+      setEmergency(response.data[0].emergency);
     } else {
       setLoading(true);
     }
@@ -365,38 +379,38 @@ const EditStudent = () => {
   const handleCreateClass = async (e) => {
     e.preventDefault();
 
-    if(nameC === ''){
+    if (nameC === "") {
       toast.error("Class name is required");
-  }
-   else {
+    } else {
       const requestData = {
         className: nameC,
       };
-      setAddClassLoading(true)
+      setAddClassLoading(true);
       await axios({
         method: "post",
         url: `${API.createClass}`,
         data: requestData,
         headers: authHeader(),
-      }).then((res) => {
-        toast.success(`${capitalizeFirstLetter(nameC)} created successfully`);
-        setAddClassLoading(false);
-        setOpenmodel(false);
-        setClassSelect(res);
-        setNameC('')
-        getClassData();
-      }).catch((err) => {
-        if (err.response.data.message === "class already exists") {
-          toast.error("Classname already exists");
-
-        } else if (err.response.status === 401) {
-          handleLogout();
-        } else if(err.response.status === 400) {
-          toast.error(err.response.data.message);
-          }else {
-          toast.error("Failed to created class");
-        }
-        setAddClassLoading(false)
+      })
+        .then((res) => {
+          toast.success(`${capitalizeFirstLetter(nameC)} created successfully`);
+          setAddClassLoading(false);
+          setOpenmodel(false);
+          setClassSelect(res);
+          setNameC("");
+          getClassData();
+        })
+        .catch((err) => {
+          if (err.response.data.message === "class already exists") {
+            toast.error("Classname already exists");
+          } else if (err.response.status === 401) {
+            handleLogout();
+          } else if (err.response.status === 400) {
+            toast.error(err.response.data.message);
+          } else {
+            toast.error("Failed to created class");
+          }
+          setAddClassLoading(false);
         });
     }
   };
@@ -416,49 +430,55 @@ const EditStudent = () => {
     e.preventDefault();
     const formData = new FormData();
 
-      const requestData = {
-        name: name,
-        lastName: lastname,
-        fatherName: fatherName,
-        DOB: moment(dob).format(),
-        street_Address: address,
-        image: croppedFile ? croppedFile : file,
-        assignClass: classSelect,
-        medical: medical,
-        city: city,
-        zip_code: zipcode,
-        country: country,
-        state: state,
-        emergency: JSON.stringify(emergency),
-      };
-      for (var key in requestData) {
-        formData.append(key, requestData[key]);
+	const result = emergency.map(({ _id, ...rest }) => ({
+        ...rest,
+      }));
+
+    const requestData = {
+      name: name,
+      lastName: lastname,
+      fatherName: fatherName,
+      DOB: moment(dob).format(),
+      street_Address: address,
+      image: croppedFile ? croppedFile : file,
+      assignClass: classSelect,
+      medical: medical,
+      city: city,
+      zip_code: zipcode,
+      country: country,
+      state: state,
+      emergency: JSON.stringify(result),
+    };
+    for (var key in requestData) {
+      formData.append(key, requestData[key]);
+    }
+    const request = await axios({
+      method: "put",
+      url: `${API.studentUpdate}/${id}`,
+      data: formData,
+      headers: authHeader(),
+    }).catch((err) => {
+      if (err.response.status === 401) {
+        handleLogout();
       }
-      const request = await axios({
-        method: "put",
-        url: `${API.studentUpdate}/${id}`,
-        data: formData,
-        headers: authHeader(),
-      }).catch((err) => {
-        if (err.response.status === 401) {
-          handleLogout();
-        }
-      });
-      if (request.status === 200) {
-        toast.success("Student Updated Successfully");
-        setTimeout(() => {
-          window.location.replace("/student");
-        }, 1000);
-      } else {
-        toast.error("Something Went Wrong");
-      }
+    });
+    if (request.status === 200) {
+      toast.success("Student Updated Successfully");
+      setTimeout(() => {
+        window.location.replace("/student");
+      }, 1000);
+    } else {
+      toast.error("Something Went Wrong");
+    }
   };
 
   const getClassData = () => {
     fetch(`${API.getClass}`)
       .then((res) => res.json())
       .then((ress) => {
-        const filterData = ress.data.filter((fil) => fil.className !== 'class unassigned')
+        const filterData = ress.data.filter(
+          (fil) => fil.className !== "class unassigned"
+        );
         setGetClasses(filterData);
       })
       .catch((err) => {
@@ -484,40 +504,40 @@ const EditStudent = () => {
   };
 
   const handleDate = (e) => {
-    if (e){
+    if (e) {
       setDob(e);
     }
   };
 
   const handleOnChange = (e) => {
-    setNameC(e.target.value)
-   
+    setNameC(e.target.value);
+
     $(document).ready(function () {
-        $("#addClass").validate({
-          rules: {
-            class: {
-              required: true,
-                },
-            },
-            messages: {
-                class: {
-                  required: "<p style='color:red'>Class name is required</P>",
-                },
-            }
-        })
+      $("#addClass").validate({
+        rules: {
+          class: {
+            required: true,
+          },
+        },
+        messages: {
+          class: {
+            required: "<p style='color:red'>Class name is required</P>",
+          },
+        },
+      });
     });
 
-  $('input[name="class"]').keyup(function (e) {
-    if (/[^A-Za-z0-9-\s]/g.test(this.value)) {
+    $('input[name="class"]').keyup(function (e) {
+      if (/[^A-Za-z0-9-\s]/g.test(this.value)) {
         this.value = this.value.replace(/[^A-Za-z0-9-\s]/g, "");
       }
-  });
-}
+    });
+  };
 
-const now = new Date();
-const currentYear = now?.getFullYear();
-const date = currentYear - 2;
-const dateendd = (moment(now).format('DD/MMM')+'/'+date)
+  const now = new Date();
+  const currentYear = now?.getFullYear();
+  const date = currentYear - 2;
+  const dateendd = moment(now).format("DD/MMM") + "/" + date;
 
   // Crop image styles start
 
@@ -529,21 +549,42 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
     bgcolor: "background.paper",
     borderRadius: "15px",
     p: 4,
-    height:'550px',
+    height: "550px",
     width: "550px",
   };
 
-  const cropperStyle ={
-    cropperContainerStyle :{  maxHeight: '300px',  height: '100%',  top: '16%',  left: '32px',  right: '32px' },
-    cropperButtonStyle :{ marginTop:'342px',  textAlign:'center'  },
-    zoomButtonDiv :{width: '42%', display: 'inline-flex'},
-    zoomSpan :{marginRight: '15px'},
-    rotationButtonDiv :{width: "48%", display: 'inline-flex'},
-    rotationSpan :{margin: '0px 15px 0px 10px'},
-
-  } 
+  const cropperStyle = {
+    cropperContainerStyle: {
+      maxHeight: "300px",
+      height: "100%",
+      top: "16%",
+      left: "32px",
+      right: "32px",
+    },
+    cropperButtonStyle: { marginTop: "342px", textAlign: "center" },
+    zoomButtonDiv: { width: "42%", display: "inline-flex" },
+    zoomSpan: { marginRight: "15px" },
+    rotationButtonDiv: { width: "48%", display: "inline-flex" },
+    rotationSpan: { margin: "0px 15px 0px 10px" },
+  };
 
   // crop image styles end
+
+  const updateEmergency = (text,row,identifier) => {
+	  const updatedd = emergency.map(x => { 
+		  if(x._id === row._id && identifier === 'name' ) {
+			  return ({...x,Ename:text})
+			}else if(x._id === row._id && identifier === 'number'){
+			const convertStringToNumber = parseInt(text)
+				return ({...x,number:convertStringToNumber})
+			}
+			else{
+				return ({...x})
+			}
+
+		})
+	setEmergency(updatedd)
+  }
 
   return (
     <>
@@ -566,7 +607,11 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
         >
           <Fade in={openmodel}>
             <Box sx={style}>
-              <form id='addClass' className="mui-form" onSubmit={handleCreateClass}>
+              <form
+                id="addClass"
+                className="mui-form"
+                onSubmit={handleCreateClass}
+              >
                 <legend>Add Class</legend>
                 <div className="mui-textfield">
                   <input
@@ -585,12 +630,16 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                   >
                     CLOSE
                   </button>
-                  {addClassLoading ? <Example1/> :<input
-                    type="submit"
-                    className="btn btn-primary"
-                    value="SAVE"
-                    disabled={addClassLoading}
-                  />}
+                  {addClassLoading ? (
+                    <Example1 />
+                  ) : (
+                    <input
+                      type="submit"
+                      className="btn btn-primary"
+                      value="SAVE"
+                      disabled={addClassLoading}
+                    />
+                  )}
                 </div>
               </form>
             </Box>
@@ -632,7 +681,6 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                     placeholder="Please enter your number"
                     enaableAreaCodes
                     value={`${addNumber}`}
-                    
                     onChange={(phone) => setAddNumber(phone)}
                     enableAreaCodes
                     enableSearch="true"
@@ -664,85 +712,82 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
         </Modal>
         {/*  crop image functionality start*/}
         <Modal
-            aria-labelledby="transition-modal-title"
-            aria-describedby="transition-modal-description"
-            open={openModelImageCrop}
-            onClose={handleCloseCropImage}
-            closeAfterTransition
-            BackdropComponent={Backdrop}
-            BackdropProps={{
-              timeout: 500,
-            }}
-          >
-            <Fade in={openModelImageCrop}>
-              <Box sx={styleImageCrop}>
-                <div>
-                  <legend style={{ fontSize: "25px" }}>
-                    Crop your image
-                  </legend>
-                </div>
-                    <Cropper
-                      image={photo}
-                      crop={crop}
-                      rotation={rotation}
-                      zoom={zoom}
-                      aspect={4 / 3}
-                      onCropChange={setCrop}
-                      onRotationChange={setRotation}
-                      onCropComplete={onCropComplete}
-                      onZoomChange={setZoom}
-                      cropShape={'round'}
-                      cropSize={ {width: 200, height: 200} }
-                      style = {{containerStyle: cropperStyle.cropperContainerStyle}}
+          aria-labelledby="transition-modal-title"
+          aria-describedby="transition-modal-description"
+          open={openModelImageCrop}
+          onClose={handleCloseCropImage}
+          closeAfterTransition
+          BackdropComponent={Backdrop}
+          BackdropProps={{
+            timeout: 500,
+          }}
+        >
+          <Fade in={openModelImageCrop}>
+            <Box sx={styleImageCrop}>
+              <div>
+                <legend style={{ fontSize: "25px" }}>Crop your image</legend>
+              </div>
+              <Cropper
+                image={photo}
+                crop={crop}
+                rotation={rotation}
+                zoom={zoom}
+                aspect={4 / 3}
+                onCropChange={setCrop}
+                onRotationChange={setRotation}
+                onCropComplete={onCropComplete}
+                onZoomChange={setZoom}
+                cropShape={"round"}
+                cropSize={{ width: 200, height: 200 }}
+                style={{ containerStyle: cropperStyle.cropperContainerStyle }}
+              />
+              <div style={cropperStyle.cropperButtonStyle}>
+                <div style={{ marginBottom: "20px" }}>
+                  <div style={cropperStyle.zoomButtonDiv}>
+                    <span style={cropperStyle.zoomSpan}>Zoom</span>
+                    <Slider
+                      value={zoom}
+                      min={1}
+                      max={3}
+                      step={0.1}
+                      aria-labelledby="Zoom"
+                      onChange={(e, zoom) => setZoomValue(zoom)}
                     />
-                 <div style={cropperStyle.cropperButtonStyle}  >
-                  
-                  <div style={{marginBottom:'20px'}}>
-                    <div style={cropperStyle.zoomButtonDiv}>
-                      <span style={cropperStyle.zoomSpan}>Zoom</span>
-                      <Slider
-                        value={zoom}
-                        min={1}
-                        max={3}
-                        step={0.1}
-                        aria-labelledby="Zoom"
-                        onChange={(e, zoom) => setZoomValue(zoom)}
-                      />
-                    </div>
-                    <div style={cropperStyle.rotationButtonDiv}>
-                      <span style={cropperStyle.rotationSpan}>Rotation</span>
-                      <Slider
-                        value={rotation}
-                        min={0}
-                        max={360}
-                        step={1}
-                        aria-labelledby="Rotation"
-                        onChange={(e, rotation) => setRotationValue(rotation)}
-                      />
-                    </div>
                   </div>
-                  <div className="cancel-submit-btn">
-                    <Button
-                      onClick={handleCloseCropImage}
-                      variant="contained"
-                      color="grey"
-                      sx={{marginRight:'25px'}}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={showCroppedImage}
-                      variant="contained"
-                      color="primary"
-                    >
-                      Submit
-                    </Button>
+                  <div style={cropperStyle.rotationButtonDiv}>
+                    <span style={cropperStyle.rotationSpan}>Rotation</span>
+                    <Slider
+                      value={rotation}
+                      min={0}
+                      max={360}
+                      step={1}
+                      aria-labelledby="Rotation"
+                      onChange={(e, rotation) => setRotationValue(rotation)}
+                    />
                   </div>
                 </div>
-              </Box>
-            </Fade>
-          </Modal>
-          {/*  crop image functionality end */}
+                <div className="cancel-submit-btn">
+                  <Button
+                    onClick={handleCloseCropImage}
+                    variant="contained"
+                    color="grey"
+                    sx={{ marginRight: "25px" }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={showCroppedImage}
+                    variant="contained"
+                    color="primary"
+                  >
+                    Submit
+                  </Button>
+                </div>
+              </div>
+            </Box>
+          </Fade>
+        </Modal>
+        {/*  crop image functionality end */}
         <Container
           maxWidth="100%"
           style={{ padding: "0", display: "inline-block" }}
@@ -809,116 +854,109 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                             showMonthDropdown
                             showYearDropdown
                             dropdownMode="select"
-                         />
+                          />
                         </div>
                       </div>
                       <div className="row">
-                      <div className="form-outline mb-4 col-md-6">
-                      <InputField
-                              htmlFor="address"
-                              label=" Street Address"
-                              id="address"
-                              name="address"
-                              className="form-control"
-                              placeholder="Please enter your street address"
-                              value={address}
-                              onChange={(e) => setAddress(e.target.value)}
-                            />
-                            </div>
-                            <div className="form-outline mb-4 col-md-6">
-                        <label htmlFor="country" className="w-100">
-                          Country
-                        </label>
-                        <FormControl
-                          sx={{ m: 1, minWidth: 120 }}
-                          className="filter ml-0 mb-3 w-100 select-box"
-                        >
-                          <select
-                            labelId="demo-simple-select-helper-label"
-                            id="demo-simple-select-helper"
-                            name="countryselect"
-                            value={country}
-                            label="country"
-                            onChange={handleCountry}
-                            inputProps={{ "aria-label": "Without label" }}
-                            className="form-control w-100"
+                        <div className="form-outline mb-4 col-md-6">
+                          <InputField
+                            htmlFor="address"
+                            label=" Street Address"
+                            id="address"
+                            name="address"
+                            className="form-control"
+                            placeholder="Please enter your street address"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                          />
+                        </div>
+                        <div className="form-outline mb-4 col-md-6">
+                          <label htmlFor="country" className="w-100">
+                            Country
+                          </label>
+                          <FormControl
+                            sx={{ m: 1, minWidth: 120 }}
+                            className="filter ml-0 mb-3 w-100 select-box"
                           >
-                          <option value="">select</option>
-                            {getCountry.map((item) => {
-                              return (
-                                <option key={item._id} value={item._id}>
-                                  {item.name}
-                                </option>
-                              );
-                            })}
-                          </select>
-                        </FormControl>
+                            <select
+                              labelId="demo-simple-select-helper-label"
+                              id="demo-simple-select-helper"
+                              name="countryselect"
+                              value={country}
+                              label="country"
+                              onChange={handleCountry}
+                              inputProps={{ "aria-label": "Without label" }}
+                              className="form-control w-100"
+                            >
+                              <option value="">select</option>
+                              {getCountry.map((item) => {
+                                return (
+                                  <option key={item._id} value={item._id}>
+                                    {item.name}
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          </FormControl>
+                        </div>
                       </div>
-
-
-</div>
-
-<div className="row">
-			  <div className="form-outline mb-4 col-md-6">
-                        <label htmlFor="city">City</label>
-                        <input
-                          type="text"
-                          id="city"
-                          name="city"
-                          className="form-control"
-                          placeholder="Please enter your city"
-                          value={city}
-                          onChange={(e) => setCity(e.target.value)}
-                        />
-                      </div>
-					  <div className="form-outline mb-4 col-md-6">
-                        <label htmlFor="state" className="w-100">
-                          State
-                        </label>
-                        <FormControl
-                          sx={{ m: 1, minWidth: 120 }}
-                          className="filter ml-0 mb-3 w-100 select-box"
-                        >
-                          <select
-                            labelId="demo-simple-select-helper-label state"
-                            id="demo-simple-select-helper state"
-                            name="stateselect"
-                            value={state}
-                            label="state"
-                            onChange={(e) =>  setState(e.target.value)  }
-                            inputProps={{ "aria-label": "Without label" }}
-                            className="form-control w-100"
-                          >
-                          <option value="">select</option>
-                            {stateByCountry.map((item) => {
-                              return (
-                                <option key={item._id} value={item._id}>
-                                  {item.name}
-                                </option>
-                              );
-                            })}
-                          </select>
-                        </FormControl>
-                    </div>
-                    
-                    
-			  </div>
-
-
                       <div className="row">
                         <div className="form-outline mb-4 col-md-6">
-                        <div className="col-md-12 pl-0 pr-0 mb-4">
-                    <label htmlFor="zipcode">Zipcode</label>
-                    <input
-                      type="number"
-                      id="zipcode"
-                      name="zipcode"
-                      className="form-control"
-                      value={zipcode}
-                      onChange={(e) => setZipcode(e.target.value)}
-                      placeholder="Please provide zipcode"
-                    />
-                  </div>
+                          <label htmlFor="city">City</label>
+                          <input
+                            type="text"
+                            id="city"
+                            name="city"
+                            className="form-control"
+                            placeholder="Please enter your city"
+                            value={city}
+                            onChange={(e) => setCity(e.target.value)}
+                          />
+                        </div>
+                        <div className="form-outline mb-4 col-md-6">
+                          <label htmlFor="state" className="w-100">
+                            State
+                          </label>
+                          <FormControl
+                            sx={{ m: 1, minWidth: 120 }}
+                            className="filter ml-0 mb-3 w-100 select-box"
+                          >
+                            <select
+                              labelId="demo-simple-select-helper-label state"
+                              id="demo-simple-select-helper state"
+                              name="stateselect"
+                              value={state}
+                              label="state"
+                              onChange={(e) => setState(e.target.value)}
+                              inputProps={{ "aria-label": "Without label" }}
+                              className="form-control w-100"
+                            >
+                              <option value="">select</option>
+                              {stateByCountry.map((item) => {
+                                return (
+                                  <option key={item._id} value={item._id}>
+                                    {item.name}
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          </FormControl>
+                        </div>
+                      </div>
+                      <div className="row">
+                        <div className="form-outline mb-4 col-md-6">
+                          <div className="col-md-12 pl-0 pr-0 mb-4">
+                            <label htmlFor="zipcode">Zipcode</label>
+                            <input
+                              type="number"
+                              id="zipcode"
+                              name="zipcode"
+                              className="form-control"
+                              value={zipcode}
+                              onChange={(e) => setZipcode(e.target.value)}
+                              placeholder="Please provide zipcode"
+                            />
+                          </div>
                           <div className="col-md-12 pl-0 pr-0">
                             <div className="form-outline mb-4">
                               <label className="w-100" htmlFor="assign">
@@ -940,7 +978,8 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                                   className="w-100"
                                 >
                                   {getclasses.map((item) => {
-                                    const capitalFirstLetterClassName = capitalizeFirstLetter(item?.className);
+                                    const capitalFirstLetterClassName =
+                                      capitalizeFirstLetter(item?.className);
                                     return (
                                       <MenuItem key={item._id} value={item._id}>
                                         {capitalFirstLetterClassName}
@@ -960,21 +999,20 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                         </div>
                         <div className="form-outline mb-4 col-md-6">
                           <label htmlFor="emergency">Emergency</label>
-                          {emergency.map((i) => {
+                          {emergency.map((i,index) => {
                             return (
                               <>
                                 <div className="phoneNo" key={i._id}>
                                   <InputField
-                                    id="phonename1"
-                                    name="phonename1"
-                                    disabled={true}
+                                    id="phonename"
+                                    name="phonename"
                                     className="form-control mb-3 col-md-4 mr-2 "
-                                    value={i.Ename}
+                                    value={emergency[index].Ename}
                                     onChange={(e) =>
-                                      setClassSelect(e.target.value)
+                                      updateEmergency(e.target.value,i,'name')
                                     }
                                   />
-
+								<div>
                                   <PhoneInput
                                     country={`${
                                       schoolLocation &&
@@ -982,9 +1020,13 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                                         ? "us"
                                         : currentLocation.toLowerCase()
                                     }`}
-                                    value={`${i.number}`}
-                                    disabled
+                                    value={`${emergency[index].number}`}
+									onChange={(e) =>
+										updateEmergency(e,i,'number')
+									  }
+                                   
                                   />
+								  </div>
                                 </div>
                               </>
                             );
@@ -1002,62 +1044,58 @@ const dateendd = (moment(now).format('DD/MMM')+'/'+date)
                       <div className="form-outline mb-4 col-md-6">
                         {photo ? "" : <label className="w-100"> Photo</label>}
                         <label htmlFor="photo">
-                          {croppedImage
-                            ? 
-                                <div className="previewText">
-                                  <Avatar
-                                    alt={name}
-                                    src={croppedImage ? croppedImage : photo}
-                                    sx={{ width: 56, height: 56 }}
-                                  />
-                                  <i
-                                    className="fa fa-camera"
-                                    style={{ fontSize: "35px" }}
-                                  ></i>
-                                </div>
-                             
-                            : image && image.match("uploads/")
-                            ?
-                                <div className="previewText">
-                                  <Avatar
-                                    src={`${BASE_URL}/${image}`}
-                                    alt={name}
-                                    sx={{ width: 56, height: 56 }}
-                                  />
-                                  <i
-                                    className="fa fa-camera"
-                                    style={{ fontSize: "35px" }}
-                                  ></i>
-                                </div>
-                            : image && image.match("http")
-                            ?
-                                <div className="previewText">
-                                  <Avatar
-                                    alt="Remy Sharp"
-                                    src={image}
-                                    sx={{ width: 56, height: 56 }}
-                                  />
+                          {croppedImage ? (
+                            <div className="previewText">
+                              <Avatar
+                                alt={name}
+                                src={croppedImage ? croppedImage : photo}
+                                sx={{ width: 56, height: 56 }}
+                              />
+                              <i
+                                className="fa fa-camera"
+                                style={{ fontSize: "35px" }}
+                              ></i>
+                            </div>
+                          ) : image && image.match("uploads/") ? (
+                            <div className="previewText">
+                              <Avatar
+                                src={`${BASE_URL}/${image}`}
+                                alt={name}
+                                sx={{ width: 56, height: 56 }}
+                              />
+                              <i
+                                className="fa fa-camera"
+                                style={{ fontSize: "35px" }}
+                              ></i>
+                            </div>
+                          ) : image && image.match("http") ? (
+                            <div className="previewText">
+                              <Avatar
+                                alt="Remy Sharp"
+                                src={image}
+                                sx={{ width: 56, height: 56 }}
+                              />
 
-                                  <i
-                                    className="fa fa-camera"
-                                    style={{ fontSize: "35px"}}
-                                  ></i>
-                                </div>
-                              : 
-                                <div className="previewText">
-                                  <Avatar
-                                    alt="Remy Sharp"
-                                    src={photo}
-                                    sx={{ width: 56, height: 56 }}
-                                  />
-                                  <i
-                                    className="fa fa-camera"
-                                    style={{ fontSize: "35px"  }}
-                                  ></i>
-                                </div>
-                             }
+                              <i
+                                className="fa fa-camera"
+                                style={{ fontSize: "35px" }}
+                              ></i>
+                            </div>
+                          ) : (
+                            <div className="previewText">
+                              <Avatar
+                                alt="Remy Sharp"
+                                src={photo}
+                                sx={{ width: 56, height: 56 }}
+                              />
+                              <i
+                                className="fa fa-camera"
+                                style={{ fontSize: "35px" }}
+                              ></i>
+                            </div>
+                          )}
                         </label>
-                       
+
                         <InputField
                           type="file"
                           id="photo"
