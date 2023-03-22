@@ -1127,10 +1127,7 @@ const Chat = () => {
                       {
                         <Avatar
                           alt={
-                            chatId
-                              ? chatId.chatName.charAt(0).toUpperCase() +
-                                chatId.chatName.slice(1)
-                              : ""
+                            chatId ? capitalizeFirstLetter(chatId.chatName) : ""
                           }
                           src={`${BASE_URL}/${chatId ? chatId?.image : ""}`}
                           sx={{ width: 56, height: 56 }}
@@ -1139,10 +1136,7 @@ const Chat = () => {
                     </span>
                     <div className="group-name">
                       <h3>
-                        {chatId
-                          ? chatId.chatName.charAt(0).toUpperCase() +
-                            chatId.chatName.slice(1)
-                          : ""}
+                        {chatId ? capitalizeFirstLetter(chatId.chatName) : ""}
                       </h3>
                     </div>
 
@@ -1191,10 +1185,7 @@ const Chat = () => {
                           >
                             Do you really want to delete the{" "}
                             <strong>
-                              {chatId
-                                ? chatId.chatName.charAt(0).toUpperCase() +
-                                  chatId.chatName.slice(1)
-                                : ""}
+                              {chatId ? capitalizeFirstLetter(chatId.chatName) : ""}
                             </strong> ?
                           </Typography>
                           <Box marginTop={"30px"}>

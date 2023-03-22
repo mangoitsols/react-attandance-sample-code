@@ -217,11 +217,9 @@ export default function Counsellor() {
                                 <TableCell>
                                   {" "}
                                   {item &&
-                                    item.name.charAt(0).toUpperCase() +
-                                      item.name.slice(1)}{" "}
+                                    capitalizeFirstLetter(item.name)}{" "}
                                   {item &&
-                                    item.lastname.charAt(0).toUpperCase() +
-                                      item.lastname.slice(1)}
+                                    capitalizeFirstLetter(item.lastname)}
                                 </TableCell>
                                 <TableCell
                                   align="left"
@@ -319,12 +317,10 @@ export default function Counsellor() {
                                              id="modal-modal-description"
                                              component={'subtitle2'}>
                                                Do you really want to delete the counsellor  
-                                               <strong> { selectedCouncellorDetail &&
-                                       selectedCouncellorDetail?.name?.charAt(0).toUpperCase() +
-                                         selectedCouncellorDetail?.name?.slice(1) }{' '} 
-                                     { selectedCouncellorDetail &&
-                                       selectedCouncellorDetail?.lastname?.charAt(0).toUpperCase() +
-                                         selectedCouncellorDetail?.lastname?.slice(1)}</strong> ?
+                                               <strong> 
+                                                { selectedCouncellorDetail && capitalizeFirstLetter(selectedCouncellorDetail?.name)}{' '} 
+                                                { selectedCouncellorDetail && capitalizeFirstLetter(selectedCouncellorDetail?.lastname)}
+                                              </strong> ?
                                              </Typography>
                                            <Box marginTop={'30px'} className="button-action" >
                                           
@@ -338,7 +334,6 @@ export default function Counsellor() {
                                                </>
                                              )}
                                           
-                                       
                                               <Button variant='outlined' size="large"  onClick={() => setOpenModelDelete(!openModelDelete)} sx={{marginLeft:'15px',borderColor:'text.primary',color:'text.primary'}}>
                                                Cancel
                                              </Button>

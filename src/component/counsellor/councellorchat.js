@@ -661,13 +661,13 @@ const handleChangeRowsPerPage = (event) => {
                     <span className="avatar-image">
                       {
                         <Avatar
-                          alt={chatId ? chatId.chatName.charAt(0).toUpperCase() + chatId.chatName.slice(1) : ""}
+                          alt={chatId ? capitalizeFirstLetter(chatId.chatName) : ""}
                           src={`${BASE_URL}/${chatId ? chatId?.image : ""}`}
                           sx={{ width: 56, height: 56 }}
                         />
                       }
                     </span>
-                    <div className='group-name'><h3>{chatId ? chatId.chatName.charAt(0).toUpperCase() + chatId.chatName.slice(1) : ""}</h3></div>
+                    <div className='group-name'><h3>{chatId ? capitalizeFirstLetter(chatId.chatName) : ""}</h3></div>
                     <div className='group-member-name'>
                     <span style={{fontSize:'15px'}} onClick={() => setSubHeaderOpen(true)}>Click here for group info</span>
                     </div>

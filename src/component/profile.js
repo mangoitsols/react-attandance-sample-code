@@ -15,17 +15,14 @@ import {
   Select,
   Container,
   Avatar,
-  Stack,
   Fade,
   Modal,
   Backdrop,
   Box,
-  Typography,
   Slider,
   Button,
 } from "@mui/material";
 import $ from "jquery";
-import validate from "jquery-validation";
 import { BASE_URL } from "../config/config";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -36,13 +33,11 @@ import { Link } from "react-router-dom";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import getCroppedImg from "../comman/cropImage";
+import { capitalizeFirstLetter } from "../comman/capitalizeFirstLetter";
 
 toast.configure();
 
 class Profile extends Component {
-  constructor(props) {
-    super(props);
-  }
 
   componentWillMount() {
     this.validator = new SimpleReactValidator();
@@ -103,7 +98,6 @@ class Profile extends Component {
       email,
       streetAddress,
       image,
-      file,
       numberValid,
       zip_code,
 	  mobileNumberError,
@@ -308,8 +302,7 @@ class Profile extends Component {
       croppedImage
     } = this.state;
 
-    const capitalizeFirstLetterofName =
-      name.charAt(0).toUpperCase() + name.slice(1);
+    const capitalizeFirstLetterofName = capitalizeFirstLetter(name);
 
     // Crop image styles start
 

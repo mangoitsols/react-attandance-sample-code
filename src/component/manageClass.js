@@ -37,8 +37,6 @@ toast.configure();
         const [counsellorDetail,setCounsellorDetail]=useState([]);
         const [openModelClassDelete, setOpenModelClassDelete] = useState(false);
         const [selectedClassDetail, setSelectedClassDetail] = useState('');
-        const [studentDetail, setStudentDetail] = useState([]);
-
 
         const handleCloseClassDeleteModal = (classDetail,councellorDetail) => { 
            if(councellorDetail.length > 0 && classDetail?.totalStudents > 0) {
@@ -77,20 +75,6 @@ toast.configure();
           })
       };
 
-      const GetStudentData = async () => {
-        
-         await axios
-          .get(`${API.getStudent}`, { headers: authHeader() })
-          .then((res) => {
-            setStudentDetail(res.data.data);
-          })
-          .catch((err) => {
-            if (err?.response?.status === 401) {
-              handleLogout();
-            }
-          })
-      };
-        
         const handleGetClass = async() =>{
             setLoading(true)
             await axios.get(`${API.getClass}`).then((res) => {
@@ -98,7 +82,6 @@ toast.configure();
                     const filterData = res.data.data.filter((fil) => fil.className !== 'class unassigned')
                     setClassDetail(filterData)
                     handleGetUser();
-                    GetStudentData()
                 }).catch((err) => {
                     if (err.response.status === 401) {
                         handleLogout()
@@ -281,7 +264,7 @@ toast.configure();
             };
     
         const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - classDetail.length) : 0;
-    const classnamee = selectedClassDetail?.className
+        const classnamee = selectedClassDetail?.className
 
         return (
             <>
@@ -382,7 +365,7 @@ toast.configure();
                                            
                                             <TableRow key={item && item._id}>
                                                 
-                                                 <TableCell  > {" "}{tableclassnamee?.charAt(0).toUpperCase() + tableclassnamee.slice(1)}</TableCell>
+                                                 <TableCell  > {" "}{capitalizeFirstLetter(tableclassnamee)}</TableCell>
                                                  <TableCell  > {" "}{counDetail.length > 0 ? capitalizeFirstLetter(counDetail[0]?.name) :''}  {counDetail.length > 0 ? capitalizeFirstLetter(counDetail[0]?.lastname): ''}</TableCell>
                                                  <TableCell  > {" "}{item.totalStudents ? item.totalStudents : 0}</TableCell>
                                                 
