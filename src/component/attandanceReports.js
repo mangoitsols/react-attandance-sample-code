@@ -48,6 +48,7 @@ import html2pdf from "html2pdf-jspdf2";
 import Example1 from "../comman/loader1";
 import  io  from "socket.io-client";
 import { capitalizeFirstLetter } from "../comman/capitalizeFirstLetter";
+import holidays from 'date-holidays'
 toast.configure();
 
 export default function AttandanceReport(props) {
@@ -72,12 +73,20 @@ export default function AttandanceReport(props) {
 	const [startDateOfMonth, setStartDateMonth] = useState(getFirstDayOfMonth(new Date()));
 	const [search, setSearch] = useState("");
 	let classNameId = localStorage.getItem("className");
+	let getGovernHoliday = new holidays('US')
+	const holiday = getGovernHoliday.getHolidays()
+	let usPublicHolidays = [];
 
 	useEffect(() => {
 		handleAttandanceReport(finalId, monthData,'','','',calenderDate);
 		GetClassData();
 		handleCounsellorNameByClassId(finalId);
 	}, []);
+
+	holiday && holiday.filter(offDay => {
+		return (
+		offDay.type === "public" ? usPublicHolidays.push({OffDate:moment(offDay.start).format('YYYY-MM-DD'),OffName:offDay.name}) : ''
+	)})
 
 	const { id } = useParams();
 
@@ -172,6 +181,9 @@ export default function AttandanceReport(props) {
 	const renderCellsToday = () => {
 		
 		const todayDate = moment(calenderDate).format('DD/MM/YYYY')
+		const filterNameDate = usPublicHolidays.filter((fil) => {return( fil.OffDate === moment(calenderDate).format('YYYY-MM-DD'))})
+		let day = calenderDate.getDay()
+		const LeaveNameWordColor = filterNameDate.length > 0 ? '#007bff' :' black'
 		return(
 			<div id="weekpdf" className="counselloTabel" style={{ width: "100%" }}>
 				{/* Start dismiss take reason modal */}
@@ -283,7 +295,8 @@ export default function AttandanceReport(props) {
 						<TableBody>
 							{!loadingAttendance ? attandanceData && attandanceData.length > 0 ? attandanceData.map((item) => {
 				
-								return (
+							
+							return (
 									
 									<TableRow >
 										<TableCell style={{ textAlign: "left" }}>
@@ -294,14 +307,14 @@ export default function AttandanceReport(props) {
 										return(
 											<>
 											{todayDate === dateCreated ? 
-										<TableCell style={{ textAlign: "left" }}>
-										{ moment(attn.dismiss_date).format('DD/MM/YYYY') === dateCreated && attn.dismiss_date !== null ? "Dismissed" : attn.attendence === null || attn.attendence === "0" ? "Absent" : attn.attendence === "1" ? "Present" : '-' }
+										<TableCell style={{ textAlign: "left",color:LeaveNameWordColor }}>
+										{day === 6 || day === 0 ? 'Leave' : filterNameDate?.length > 0 ? filterNameDate[0].OffName : moment(attn.dismiss_date).format('DD/MM/YYYY') === dateCreated && attn.dismiss_date !== null ? "Dismissed" : attn.attendence === null || attn.attendence === "0" ? "Absent" : attn.attendence === "1" ? "Present" : '-' }
 										</TableCell>
 										
-										:search !== ''?<TableCell style={{ textAlign: "left" }}>-</TableCell>:null}
+										:search !== ''? <TableCell style={{ textAlign: "left" }}>-</TableCell>:null}
 
 										</> 
-										)}):<TableCell style={{ textAlign: "left" }}>- </TableCell>}
+										)}):<TableCell style={{ textAlign: "left" ,color:LeaveNameWordColor}}>{day === 6 || day === 0 ? 'Leave' : filterNameDate?.length > 0 ? filterNameDate[0].OffName :'-'}</TableCell>}
 
 										 {item.attandan.length > 0 ? item.attandan.map((attn)=> { 
 										const dateCreated = moment(attn.createdAt).format('DD/MM/YYYY')
@@ -414,13 +427,13 @@ export default function AttandanceReport(props) {
 									
 									<TableRow >
 										<TableCell style={{ textAlign: "left" }}>
-										{item.studentId && item.studentId.name}{" "}{item.studentId && item.studentId.lastName}
+										{item.studentId && capitalizeFirstLetter(item.studentId.name)}{" "}{item.studentId && capitalizeFirstLetter(item.studentId.lastName)}
 										</TableCell>
 										{rows[0].props.children.map((week) => {
-											
+											const filterNameDate = usPublicHolidays.filter((fil) => {return( fil.OffDate === moment(week.key).format('YYYY-MM-DD'))})
 											return (
 												moment(week.key).format("ddd") === "Sat" || moment(week.key).format("ddd") === "Sun" ?
-												<TableCell style={{ textAlign: "center" }} > Leave </TableCell> :
+												<TableCell style={{ textAlign: "center" }} > Leave </TableCell> : filterNameDate?.length > 0 ? <TableCell style={{ textAlign: "center",color:'#007bff' }} >{filterNameDate[0].OffName}</TableCell> :
 												item.attandan.length === 0 ?  <TableCell style={{ textAlign: "center" }} > - </TableCell>:
 												<TableCell   style={{ textAlign: "center" }}>
 													{ 
@@ -536,18 +549,20 @@ export default function AttandanceReport(props) {
 						</TableHead>
 						<TableBody>
 							{!loadingAttendance ? attandanceData && attandanceData.length > 0 ? attandanceData.map((item) => {
+								
 									return (
 										<>
 											<TableRow key={item._id}>
 												<TableCell style={{ textAlign: "left" }}>
-													{item.studentId && item.studentId.name}{" "}{item.studentId && item.studentId.lastName}
+													{item.studentId && capitalizeFirstLetter(item.studentId.name)}{" "}{item.studentId && capitalizeFirstLetter(item.studentId.lastName)}
 												</TableCell >
 												{rows[0].props.children.map((month) => {
+													const filterNameDate = usPublicHolidays.filter((fil) => {return( fil.OffDate === moment(month.key).format('YYYY-MM-DD'))})
 													return (
 														
 														moment(month.key).format("ddd") === "Sat" || moment(month.key).format("ddd") === "Sun" ?
-														<TableCell style={{ textAlign: "center" }} > Leave </TableCell> 
-														: item.attandan.length === 0 ?  <TableCell   style={{ textAlign: "center" }}> - </TableCell> :(
+														<TableCell style={{ textAlign: "center" }} > Leave </TableCell> : filterNameDate?.length > 0 ? <TableCell style={{ textAlign: "center",color:'#007bff' }} >{filterNameDate[0].OffName}</TableCell> :
+														item.attandan.length === 0 ?  <TableCell   style={{ textAlign: "center" }}> - </TableCell> :(
 														<TableCell  style={{ textAlign: "center" }}>															
 																{item.attandan.map((e) => {
 																	if (moment(e.createdAt).format("YYYY-MM-DD") === moment(month.key).format("YYYY-MM-DD")) {
@@ -812,6 +827,7 @@ export default function AttandanceReport(props) {
 
 											{/* previous next functionality of week */}
 											<div style={{fontSize: '13px'}}>
+												&nbsp;
 												<div onClick={() => changeWeekHandle("prev")} style={{ display: "inline-block",cursor:'pointer' }}>
 													<ArrowBackIosIcon
 														
@@ -833,9 +849,10 @@ export default function AttandanceReport(props) {
 														className="form-control"
 														/> 
 												</div> */}
-											
+											&nbsp;
 												 <div style={{ display: "inline-block",marginLeft:'3px',cursor:'pointer' }} onClick={() => changeWeekHandle("next")}>
-													 Next Week
+													 Next Week 
+													 
 													<ArrowForwardIosIcon
 														
 													/>
@@ -874,6 +891,7 @@ export default function AttandanceReport(props) {
 								<span onClick={() => handleDataAccWeekAndMonth("today")} style={{color:monthData === 'today'? '#007bff':'black' ,cursor:'pointer'}}>{moment(calenderDate).format('DD-MMM-YYYY') === moment().format('DD-MMM-YYYY') ? 'Today' : moment(calenderDate).format('DD-MMM-YYYY')}</span> |
 								<span onClick={() => handleDataAccWeekAndMonth("week")} style={{color:monthData === 'week'? '#007bff':'black' ,cursor:'pointer'}}> Week{" "}  </span> | 
 								<span onClick={() => handleDataAccWeekAndMonth("month")} style={{color:monthData === 'month'? '#007bff':'black' ,cursor:'pointer'}}>{" "} Month </span>
+								<div style={{float:'right'}}>Total {attandanceData.length} Students</div>
 								</div>
 								<SearchBar
 									value={search}

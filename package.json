@@ -16,6 +16,7 @@
     "axios": "^0.26.1",
     "bootstrap": "^4.1.1",
     "date-fns": "^2.29.3",
+    "date-holidays": "^3.19.0",
     "font-awesome": "^4.7.0",
     "html2pdf-jspdf2": "^0.1.2",
     "jquery": "^3.6.0",
