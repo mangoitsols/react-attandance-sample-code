@@ -1,7 +1,7 @@
 //Domain URL
 
- export const BASE_URL = "https://api-aelix.mangoitsol.com";
- export const SOCKET_URL = "https://api-aelix.mangoitsol.com/"; 
+ export const BASE_URL = "http://localhost:5030";
+ export const SOCKET_URL = "http://localhost:5030/"; 
 
 
 export const API = {
